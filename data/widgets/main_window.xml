@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
-  <window id="main_window" noborders="true" desktop="true">
+  <window id="main_window" noborders="true" desktop="true" text="KPaint Belko Edition">
     <vbox noborders="true" expansive="true">
       <hbox noborders="true" id="menu_bar_placeholder" />
       <hbox noborders="true" id="tabs_placeholder" />
@@ -26,9 +27,5 @@
       </splitter>
       <hbox noborders="true" id="status_bar_placeholder" />
     </vbox>
-    <menubar id="main_menubar">
-      <menu text="KPaint Belko Edition" id="app_menu">
-      </menu>
-    </menubar>
   </window>
 </gui>
