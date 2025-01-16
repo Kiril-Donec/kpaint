@@ -1,19 +1,21 @@
-// Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "ui/keys.h"
-
+ endif
+ include "ui/keys.h"
 namespace app { namespace script {
-
-// Same order that os::KeyScancode
-// Based on code values of the KeyboardEvent on web code:
+ Same order that os::KeyScancode
+ Based on code values of the KeyboardEvent on web code:
 // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_code_values
 static const char* vkcode_to_code_table[] = {
   "Unidentified",
@@ -144,10 +146,8 @@ static const char* vkcode_to_code_table[] = {
   "NumLock",
   "CapsLock",
 };
-
 static int vkcode_to_code_table_size = sizeof(vkcode_to_code_table) /
                                        sizeof(vkcode_to_code_table[0]);
-
 const char* vkcode_to_code(const ui::KeyScancode vkcode)
 {
   if (vkcode >= 0 && vkcode < vkcode_to_code_table_size && vkcode_to_code_table[vkcode]) {
@@ -157,5 +157,4 @@ const char* vkcode_to_code(const ui::KeyScancode vkcode)
     return vkcode_to_code_table[0];
   }
 }
-
 }} // namespace app::script

@@ -1,26 +1,25 @@
-// Aseprite Document IO Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
-// Copyright (c) 2017 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef DIO_ASEPRITE_DECODER_H_INCLUDED
-#define DIO_ASEPRITE_DECODER_H_INCLUDED
-#pragma once
-
-#include "dio/decoder.h"
-#include "doc/frame.h"
-#include "doc/layer_list.h"
-#include "doc/pixel_format.h"
-#include "doc/slices.h"
-#include "doc/tags.h"
-#include "doc/tileset.h"
-#include "doc/user_data.h"
-
-#include <string>
-#include <vector>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document IO Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifndef DIO_ASEPRITE_DECODER_H_INCLUDED
+ define DIO_ASEPRITE_DECODER_H_INCLUDED
+ pragma once
+ include "dio/decoder.h"
+ include "doc/frame.h"
+ include "doc/layer_list.h"
+ include "doc/pixel_format.h"
+ include "doc/slices.h"
+ include "doc/tags.h"
+ include "doc/tileset.h"
+ include "doc/user_data.h"
+ include <string>
+ include <vector>
 namespace doc {
 class Cel;
 class Layer;
@@ -30,13 +29,10 @@ class Palette;
 class Sprite;
 class UserData;
 } // namespace doc
-
 namespace dio {
-
 struct AsepriteHeader;
 struct AsepriteFrameHeader;
 class AsepriteExternalFiles;
-
 class AsepriteDecoder : public Decoder {
 public:
   bool decode() override;
@@ -75,11 +71,8 @@ private:
                           const AsepriteExternalFiles& extFiles);
   const doc::UserData::Variant readPropertyValue(uint16_t type);
   void readTilesData(doc::Tileset* tileset, const AsepriteExternalFiles& extFiles);
-
   doc::LayerList m_allLayers;
   std::vector<uint32_t> m_tilesetFlags;
 };
-
 } // namespace dio
-
-#endif
+ endif

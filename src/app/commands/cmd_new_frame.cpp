@@ -1,40 +1,40 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/color.h"
-#include "app/commands/command.h"
-#include "app/commands/params.h"
-#include "app/console.h"
-#include "app/context_access.h"
-#include "app/doc_api.h"
-#include "app/i18n/strings.h"
-#include "app/modules/gui.h"
-#include "app/tx.h"
-#include "app/ui/doc_view.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/main_window.h"
-#include "app/ui/status_bar.h"
-#include "app/ui/timeline/timeline.h"
-#include "app/ui_context.h"
-#include "doc/cel.h"
-#include "doc/image.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
-#include "ui/ui.h"
-
-#include <stdexcept>
-
+ endif
+ include "app/app.h"
+ include "app/color.h"
+ include "app/commands/command.h"
+ include "app/commands/params.h"
+ include "app/console.h"
+ include "app/context_access.h"
+ include "app/doc_api.h"
+ include "app/i18n/strings.h"
+ include "app/modules/gui.h"
+ include "app/tx.h"
+ include "app/ui/doc_view.h"
+ include "app/ui/editor/editor.h"
+ include "app/ui/main_window.h"
+ include "app/ui/status_bar.h"
+ include "app/ui/timeline/timeline.h"
+ include "app/ui_context.h"
+ include "doc/cel.h"
+ include "doc/image.h"
+ include "doc/layer.h"
+ include "doc/sprite.h"
+ include "ui/ui.h"
+ include <stdexcept>
 namespace app {
-
 class NewFrameCommand : public Command {
 public:
   enum class Content {
@@ -44,7 +44,6 @@ public:
     DUPLICATE_CELS_COPIES,
     DUPLICATE_CELS_LINKED,
   };
-
   NewFrameCommand();
 
 protected:
@@ -56,15 +55,12 @@ protected:
 private:
   Content m_content;
 };
-
 NewFrameCommand::NewFrameCommand() : Command(CommandId::NewFrame(), CmdRecordableFlag)
 {
 }
-
 void NewFrameCommand::onLoadParams(const Params& params)
 {
   m_content = Content::DUPLICATE_FRAME;
-
   std::string content = params.get("content");
   if (content == "current" || content == "frame")
     m_content = Content::DUPLICATE_FRAME;
@@ -77,33 +73,26 @@ void NewFrameCommand::onLoadParams(const Params& params)
   else if (content == "cellinked")
     m_content = Content::DUPLICATE_CELS_LINKED;
 }
-
 bool NewFrameCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite);
 }
-
 void NewFrameCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
-
   // Show the tooltip feedback only if we are not inside a transaction
   // (e.g. we can be already in a transaction if we are running in a
   // Lua script app.transaction()).
   const bool showTooltip = (document->transaction() == nullptr);
-
   {
     Tx tx(writer, friendlyName());
     DocApi api = document->getApi(tx);
-
     switch (m_content) {
       case Content::DUPLICATE_FRAME:       api.addFrame(sprite, writer.frame() + 1); break;
-
       case Content::NEW_EMPTY_FRAME:       api.addEmptyFrame(sprite, writer.frame() + 1); break;
-
       case Content::DUPLICATE_CELS:
       case Content::DUPLICATE_CELS_LINKED:
       case Content::DUPLICATE_CELS_COPIES: {
@@ -112,14 +101,12 @@ void NewFrameCommand::onExecute(Context* context)
           case Content::DUPLICATE_CELS_COPIES: continuous.reset(new bool(false)); break;
           case Content::DUPLICATE_CELS_LINKED: continuous.reset(new bool(true)); break;
         }
-
         const Site* site = writer.site();
         if (site->inTimeline() && !site->selectedLayers().empty() &&
             !site->selectedFrames().empty()) {
           auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
           DocRange range = timeline->range();
-
           SelectedLayers selLayers;
           if (site->inFrames())
             selLayers.selectAllLayers(writer.sprite()->root());
@@ -127,10 +114,8 @@ void NewFrameCommand::onExecute(Context* context)
             selLayers = site->selectedLayers();
             selLayers.expandCollapsedGroups();
           }
-
           frame_t frameRange = (site->selectedFrames().lastFrame() -
                                 site->selectedFrames().firstFrame() + 1);
-
           for (Layer* layer : selLayers) {
             if (layer->isImage()) {
               for (frame_t srcFrame : site->selectedFrames().reversed()) {
@@ -143,38 +128,30 @@ void NewFrameCommand::onExecute(Context* context)
               }
             }
           }
-
           range.displace(0, frameRange);
           timeline->moveRange(range);
         }
         else if (auto layer = static_cast<LayerImage*>(writer.layer())) {
           api.copyCel(layer, writer.frame(), layer, writer.frame() + 1, continuous.get());
-
           context->setActiveFrame(writer.frame() + 1);
         }
         break;
       }
     }
-
     tx.commit();
   }
-
   if (context->isUIAvailable() && showTooltip) {
     update_screen_for_document(document);
-
     StatusBar::instance()->showTip(
       1000,
       Strings::commands_NewFrame_tooltip((int)context->activeSite().frame() + 1,
                                          (int)sprite->totalFrames()));
-
     App::instance()->mainWindow()->popTimeline();
   }
 }
-
 std::string NewFrameCommand::onGetFriendlyName() const
 {
   std::string text;
-
   switch (m_content) {
     case Content::DUPLICATE_FRAME: text = Strings::commands_NewFrame(); break;
     case Content::NEW_EMPTY_FRAME: text = Strings::commands_NewFrame_NewEmptyFrame(); break;
@@ -186,13 +163,10 @@ std::string NewFrameCommand::onGetFriendlyName() const
       text = Strings::commands_NewFrame_DuplicateCelsLinked();
       break;
   }
-
   return text;
 }
-
 Command* CommandFactory::createNewFrameCommand()
 {
   return new NewFrameCommand;
 }
-
 } // namespace app

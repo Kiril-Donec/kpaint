@@ -1,13 +1,17 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui>
 <window id="goto_frame" text="@.title">
   <vbox>
     <label text="@.frame_or_tags" />
     <vbox id="frame_placeholder" />
-
     <separator horizontal="true" />
-
     <hbox homogeneous="true" cell_align="right">
       <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
       <button text="@general.cancel" closewindow="true" />

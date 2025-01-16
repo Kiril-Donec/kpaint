@@ -1,39 +1,34 @@
-// Aseprite Render Library
-// Copyright (C) 2019  Igara Studio S.A.
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Render Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "render/rasterize.h"
-
-#include "base/debug.h"
-#include "doc/blend_internals.h"
-#include "doc/cel.h"
-#include "doc/sprite.h"
-#include "render/render.h"
-
+ endif
+ include "base/debug.h"
+ include "doc/blend_internals.h"
+ include "doc/cel.h"
+ include "doc/sprite.h"
+ include "render/rasterize.h"
+ include "render/render.h"
 namespace render {
-
 void rasterize(doc::Image* dst, const doc::Cel* cel, const int x, const int y, const bool clear)
 {
   ASSERT(dst);
   ASSERT(dst->pixelFormat() != IMAGE_TILEMAP);
   ASSERT(cel);
-
   const doc::Sprite* sprite = cel->sprite();
   ASSERT(sprite);
-
   if (clear)
     dst->clear(sprite->transparentColor());
-
   int t;
   int opacity;
   opacity = MUL_UN8(cel->opacity(), cel->layer()->opacity(), t);
-
   if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
     render::Render render;
     render.renderCel(dst,
@@ -60,43 +55,33 @@ void rasterize(doc::Image* dst, const doc::Cel* cel, const int x, const int y, c
                       cel->layer()->blendMode());
   }
 }
-
 void rasterize_with_cel_bounds(doc::Image* dst, const doc::Cel* cel)
 {
   rasterize(dst, cel, -cel->x(), -cel->y(), true);
 }
-
 void rasterize_with_sprite_bounds(doc::Image* dst, const doc::Cel* cel)
 {
   rasterize(dst, cel, 0, 0, true);
 }
-
 doc::Image* rasterize_with_cel_bounds(const doc::Cel* cel)
 {
   ASSERT(cel);
-
   const doc::Sprite* sprite = cel->sprite();
   ASSERT(sprite);
-
   doc::ImageSpec spec = sprite->spec();
   spec.setWidth(cel->bounds().w);
   spec.setHeight(cel->bounds().h);
-
   std::unique_ptr<doc::Image> dst(doc::Image::create(spec));
   rasterize_with_cel_bounds(dst.get(), cel);
   return dst.release();
 }
-
 doc::Image* rasterize_with_sprite_bounds(const doc::Cel* cel)
 {
   ASSERT(cel);
-
   const doc::Sprite* sprite = cel->sprite();
   ASSERT(sprite);
-
   std::unique_ptr<doc::Image> dst(doc::Image::create(sprite->spec()));
   rasterize_with_sprite_bounds(dst.get(), cel);
   return dst.release();
 }
-
 } // namespace render

@@ -1,19 +1,20 @@
-// Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cmd/set_tile_data_properties.h"
-
-#include "doc/tileset.h"
-
+ endif
+ include "app/cmd/set_tile_data_properties.h"
+ include "doc/tileset.h"
 namespace app { namespace cmd {
-
 SetTileDataProperties::SetTileDataProperties(doc::Tileset* ts,
                                              doc::tile_index ti,
                                              const std::string& group,
@@ -25,19 +26,16 @@ SetTileDataProperties::SetTileDataProperties(doc::Tileset* ts,
   , m_newProperties(std::move(newProperties))
 {
 }
-
 void SetTileDataProperties::onExecute()
 {
   auto ts = tileset();
   ts->getTileData(m_ti).properties(m_group) = m_newProperties;
   ts->incrementVersion();
 }
-
 void SetTileDataProperties::onUndo()
 {
   auto ts = tileset();
   ts->getTileData(m_ti).properties(m_group) = m_oldProperties;
   ts->incrementVersion();
 }
-
 }} // namespace app::cmd

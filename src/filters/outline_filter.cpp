@@ -1,50 +1,45 @@
-// Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "filters/outline_filter.h"
-
-#include "doc/image.h"
-#include "doc/palette.h"
-#include "doc/rgbmap.h"
-#include "filters/filter_indexed_data.h"
-#include "filters/filter_manager.h"
-#include "filters/neighboring_pixels.h"
-
-#include <algorithm>
-
+ endif
+ include "doc/image.h"
+ include "doc/palette.h"
+ include "doc/rgbmap.h"
+ include "filters/filter_indexed_data.h"
+ include "filters/filter_manager.h"
+ include "filters/neighboring_pixels.h"
+ include "filters/outline_filter.h"
+ include <algorithm>
 namespace filters {
-
 using namespace doc;
-
 namespace {
-
 struct GetPixelsDelegate {
   color_t bgColor;
   int transparent; // Transparent pixels
   int opaque;      // Opaque pixels
   int matrix;
   int bit;
-
   void init(const color_t bgColor, const OutlineFilter::Matrix matrix)
   {
     this->bgColor = bgColor;
     this->matrix = (int)matrix;
   }
-
   void reset()
   {
     transparent = opaque = 0;
     bit = 1;
   }
 };
-
 struct GetPixelsDelegateRgba : public GetPixelsDelegate {
   void operator()(RgbTraits::pixel_t color)
   {
@@ -55,7 +50,6 @@ struct GetPixelsDelegateRgba : public GetPixelsDelegate {
     bit <<= 1;
   }
 };
-
 struct GetPixelsDelegateGrayscale : public GetPixelsDelegate {
   void operator()(GrayscaleTraits::pixel_t color)
   {
@@ -66,12 +60,9 @@ struct GetPixelsDelegateGrayscale : public GetPixelsDelegate {
     bit <<= 1;
   }
 };
-
 struct GetPixelsDelegateIndexed : public GetPixelsDelegate {
   const Palette* pal;
-
   GetPixelsDelegateIndexed(const Palette* pal) : pal(pal) {}
-
   void operator()(IndexedTraits::pixel_t color)
   {
     color_t rgba = pal->getEntry(color);
@@ -82,9 +73,7 @@ struct GetPixelsDelegateIndexed : public GetPixelsDelegate {
     bit <<= 1;
   }
 };
-
 } // namespace
-
 OutlineFilter::OutlineFilter()
   : m_place(Place::Outside)
   , m_matrix(Matrix::Circle)
@@ -93,31 +82,25 @@ OutlineFilter::OutlineFilter()
   , m_bgColor(0)
 {
 }
-
 const char* OutlineFilter::getName()
 {
   return "Outline";
 }
-
 void OutlineFilter::applyToRgba(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
   int r, g, b, a, n;
   color_t c;
   bool isTransparent;
-
   GetPixelsDelegateRgba delegate;
   delegate.init(m_bgColor, m_matrix);
-
   FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t)
   {
     delegate.reset();
     get_neighboring_pixels<RgbTraits>(src, x, y, 3, 3, 1, 1, m_tiledMode, delegate);
-
     c = *src_address;
     n = (m_place == Place::Outside ? delegate.opaque : delegate.transparent);
     isTransparent = (rgba_geta(c) == 0 || c == m_bgColor);
-
     if ((n >= 1) && ((m_place == Place::Outside && isTransparent) ||
                      (m_place == Place::Inside && !isTransparent))) {
       r = (target & TARGET_RED_CHANNEL ? rgba_getr(m_color) : rgba_getr(c));
@@ -126,43 +109,35 @@ void OutlineFilter::applyToRgba(FilterManager* filterMgr)
       a = (target & TARGET_ALPHA_CHANNEL ? rgba_geta(m_color) : rgba_geta(c));
       c = rgba(r, g, b, a);
     }
-
     *dst_address = c;
   }
   FILTER_LOOP_THROUGH_ROW_END()
 }
-
 void OutlineFilter::applyToGrayscale(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
   int k, a, n;
   color_t c;
   bool isTransparent;
-
   GetPixelsDelegateGrayscale delegate;
   delegate.init(m_bgColor, m_matrix);
-
   FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t)
   {
     delegate.reset();
     get_neighboring_pixels<GrayscaleTraits>(src, x, y, 3, 3, 1, 1, m_tiledMode, delegate);
-
     c = *src_address;
     n = (m_place == Place::Outside ? delegate.opaque : delegate.transparent);
     isTransparent = (graya_geta(c) == 0 || c == m_bgColor);
-
     if ((n >= 1) && ((m_place == Place::Outside && isTransparent) ||
                      (m_place == Place::Inside && !isTransparent))) {
       k = (target & TARGET_GRAY_CHANNEL ? graya_getv(m_color) : graya_getv(c));
       a = (target & TARGET_ALPHA_CHANNEL ? graya_geta(m_color) : graya_geta(c));
       c = graya(k, a);
     }
-
     *dst_address = c;
   }
   FILTER_LOOP_THROUGH_ROW_END()
 }
-
 void OutlineFilter::applyToIndexed(FilterManager* filterMgr)
 {
   const Image* src = filterMgr->getSourceImage();
@@ -171,25 +146,20 @@ void OutlineFilter::applyToIndexed(FilterManager* filterMgr)
   int r, g, b, a, n;
   color_t c;
   bool isTransparent;
-
   GetPixelsDelegateIndexed delegate(pal);
   delegate.init(m_bgColor, m_matrix);
-
   FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t)
   {
     delegate.reset();
     get_neighboring_pixels<IndexedTraits>(src, x, y, 3, 3, 1, 1, m_tiledMode, delegate);
-
     c = *src_address;
     n = (m_place == Place::Outside ? delegate.opaque : delegate.transparent);
-
     if (target & TARGET_INDEX_CHANNEL) {
       isTransparent = (c == m_bgColor);
     }
     else {
       isTransparent = (rgba_geta(pal->getEntry(c)) == 0 || c == m_bgColor);
     }
-
     if ((n >= 1) && ((m_place == Place::Outside && isTransparent) ||
                      (m_place == Place::Inside && !isTransparent))) {
       if (target & TARGET_INDEX_CHANNEL) {
@@ -204,10 +174,8 @@ void OutlineFilter::applyToIndexed(FilterManager* filterMgr)
         c = rgbmap->mapColor(r, g, b, a);
       }
     }
-
     *dst_address = c;
   }
   FILTER_LOOP_THROUGH_ROW_END()
 }
-
 } // namespace filters

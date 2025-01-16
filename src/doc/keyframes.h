@@ -1,21 +1,19 @@
-// Aseprite Document Library
-// Copyright (c) 2022-2024 Igara Studio S.A.
-// Copyright (c) 2017 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef DOC_KEYFRAMES_H_INCLUDED
-#define DOC_KEYFRAMES_H_INCLUDED
-#pragma once
-
-#include "doc/frame.h"
-
-#include <memory>
-#include <vector>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifndef DOC_KEYFRAMES_H_INCLUDED
+ define DOC_KEYFRAMES_H_INCLUDED
+ pragma once
+ include "doc/frame.h"
+ include <memory>
+ include <vector>
 namespace doc {
-
 template<typename T>
 class Keyframes {
 public:
@@ -36,11 +34,9 @@ public:
     frame_t m_frame = 0;
     std::unique_ptr<T> m_value = nullptr;
   };
-
   typedef std::vector<Key> List;
   typedef typename List::iterator iterator;
   typedef typename List::const_iterator const_iterator;
-
   class Range {
   public:
     class RangeIterator {
@@ -111,15 +107,12 @@ public:
     const iterator m_fromIt, m_endIt;
     const frame_t m_from, m_to;
   };
-
   Keyframes() {}
-
   Keyframes(const Keyframes& other)
   {
     for (const auto& key : other.m_keys)
       m_keys.push_back(Key(key.frame(), std::make_unique<T>(*key.value())));
   }
-
   void insert(const frame_t frame, std::unique_ptr<T>&& value)
   {
     auto it = getIterator(frame);
@@ -137,14 +130,12 @@ public:
       m_keys.insert(it, Key(frame, std::move(value)));
     }
   }
-
   void remove(const frame_t frame)
   {
     auto it = getIterator(frame);
     if (it != end())
       m_keys.erase(it);
   }
-
   T* operator[](const frame_t frame)
   {
     auto it = getIterator(frame);
@@ -152,15 +143,12 @@ public:
       return it->value();
     return nullptr;
   }
-
   iterator begin() { return m_keys.begin(); }
   iterator end() { return m_keys.end(); }
   const_iterator begin() const { return m_keys.begin(); }
   const_iterator end() const { return m_keys.end(); }
-
   std::size_t size() const { return m_keys.size(); }
   bool empty() const { return m_keys.empty(); }
-
   iterator getIterator(const frame_t frame)
   {
     auto it = m_keys.begin(), end = m_keys.end();
@@ -174,21 +162,18 @@ public:
     }
     return end;
   }
-
   frame_t fromFrame() const
   {
     if (!m_keys.empty())
       return m_keys.front().frame();
     return -1;
   }
-
   frame_t toFrame() const
   {
     if (!m_keys.empty())
       return m_keys.back().frame();
     return -1;
   }
-
   Range range(const frame_t from, const frame_t to)
   {
     return Range(getIterator(from), end(), from, to);
@@ -197,7 +182,5 @@ public:
 private:
   List m_keys;
 };
-
 } // namespace doc
-
-#endif
+ endif

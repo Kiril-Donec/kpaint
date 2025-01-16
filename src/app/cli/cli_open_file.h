@@ -1,25 +1,24 @@
-// Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
-// Copyright (C) 2016-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CLI_CLI_OPEN_FILE_H_INCLUDED
-#define APP_CLI_CLI_OPEN_FILE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "doc/frame.h"
-#include "gfx/rect.h"
 
-#include <string>
-#include <vector>
 
+ ifndef APP_CLI_CLI_OPEN_FILE_H_INCLUDED
+ define APP_CLI_CLI_OPEN_FILE_H_INCLUDED
+ pragma once
+ include "doc/frame.h"
+ include "gfx/rect.h"
+ include <string>
+ include <vector>
 namespace app {
-
 class Doc;
 class FileOpROI;
-
 struct CliOpenFile {
   Doc* document = nullptr;
   std::string filename;
@@ -47,18 +46,11 @@ struct CliOpenFile {
   bool exportTileset = false;
   bool playSubtags = false;
   gfx::Rect crop;
-
   bool hasTag() const { return (!tag.empty()); }
-
   bool hasSlice() const { return (!slice.empty()); }
-
   bool hasFrameRange() const { return (fromFrame >= 0 && toFrame >= 0); }
-
   bool hasLayersFilter() const { return (!includeLayers.empty() || !excludeLayers.empty()); }
-
   FileOpROI roi() const;
 };
-
 } // namespace app
-
-#endif
+ endif

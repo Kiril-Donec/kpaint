@@ -1,14 +1,15 @@
-// Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#define TEST_GUI
-#include "tests/app_test.h"
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint UI Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ define TEST_GUI
+ include "tests/app_test.h"
 using namespace ui;
-
 TEST(Accelerator, Parser)
 {
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyF1, '\0'), Accelerator("F1"));
@@ -20,14 +21,12 @@ TEST(Accelerator, Parser)
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyNil, '+'), Accelerator("+"));
   EXPECT_EQ(Accelerator(kKeyShiftModifier, kKeyNil, '+'), Accelerator("Shift++"));
   EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyNil, '+'), Accelerator("Ctrl++"));
-
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0), Accelerator("Minus Pad"));
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0), Accelerator("- Pad"));
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyPlusPad, 0), Accelerator("Plus Pad"));
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyPlusPad, 0), Accelerator("+ Pad"));
   EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyPlusPad, 0), Accelerator("Ctrl++ Pad"));
 }
-
 TEST(Accelerator, ToString)
 {
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyF1, '\0').toString(), Accelerator("F1").toString());
@@ -42,7 +41,6 @@ TEST(Accelerator, ToString)
             Accelerator("Shift++").toString());
   EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyNil, '+').toString(),
             Accelerator("Ctrl++").toString());
-
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString(),
             Accelerator("Minus Pad").toString());
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString(),
@@ -53,11 +51,9 @@ TEST(Accelerator, ToString)
             Accelerator("+ Pad").toString());
   EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyPlusPad, 0).toString(),
             Accelerator("Ctrl++ Pad").toString());
-
   EXPECT_EQ("- Pad", Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString());
   EXPECT_EQ("- Pad", Accelerator("Minus Pad").toString());
   EXPECT_EQ("- Pad", Accelerator("- Pad").toString());
-
   EXPECT_EQ("+ Pad", Accelerator(kKeyNoneModifier, kKeyPlusPad, 0).toString());
   EXPECT_EQ("+ Pad", Accelerator("Plus Pad").toString());
   EXPECT_EQ("+ Pad", Accelerator("+ Pad").toString());

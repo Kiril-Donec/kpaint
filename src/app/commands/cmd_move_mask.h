@@ -1,25 +1,24 @@
-// Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
-#define APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/commands/command.h"
-#include "app/commands/move_thing.h"
 
+
+ ifndef APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
+ define APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
+ pragma once
+ include "app/commands/command.h"
+ include "app/commands/move_thing.h"
 namespace app {
-
 class MoveMaskCommand : public Command {
 public:
   enum Target { Boundaries, Content };
-
   MoveMaskCommand();
-
   Target getTarget() const { return m_target; }
   MoveThing getMoveThing() const { return m_moveThing; }
   bool isWrap() const { return m_wrap; }
@@ -36,7 +35,5 @@ private:
   MoveThing m_moveThing;
   bool m_wrap;
 };
-
 } // namespace app
-
-#endif
+ endif

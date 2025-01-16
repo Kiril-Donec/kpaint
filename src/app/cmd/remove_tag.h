@@ -1,19 +1,20 @@
-// Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_REMOVE_TAG_H_INCLUDED
-#define APP_CMD_REMOVE_TAG_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd/add_tag.h"
 
+
+ ifndef APP_CMD_REMOVE_TAG_H_INCLUDED
+ define APP_CMD_REMOVE_TAG_H_INCLUDED
+ pragma once
+ include "app/cmd/add_tag.h"
 namespace app { namespace cmd {
 using namespace doc;
-
 class RemoveTag : public AddTag {
 public:
   RemoveTag(Sprite* sprite, Tag* tag);
@@ -23,7 +24,5 @@ protected:
   void onUndo() override;
   void onRedo() override;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

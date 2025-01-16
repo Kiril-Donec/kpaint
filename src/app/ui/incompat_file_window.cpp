@@ -1,19 +1,20 @@
-// Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/incompat_file_window.h"
-
-#include "base/trim_string.h"
-
+ endif
+ include "app/ui/incompat_file_window.h"
+ include "base/trim_string.h"
 namespace app {
-
 void IncompatFileWindow::show(std::string incompatibilities)
 {
   base::trim_string(incompatibilities, incompatibilities);
@@ -27,9 +28,7 @@ void IncompatFileWindow::show(std::string incompatibilities)
   else {
     errorsPlaceholder()->setVisible(false);
   }
-
   // Run modal
   openWindowInForeground();
 }
-
 } // namespace app

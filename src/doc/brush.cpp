@@ -1,31 +1,27 @@
-// Aseprite Document Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
-// Copyright (C) 2001-2016  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/brush.h"
-
-#include "base/pi.h"
-#include "doc/algo.h"
-#include "doc/algorithm/polygon.h"
-#include "doc/blend_internals.h"
-#include "doc/image.h"
-#include "doc/image_impl.h"
-#include "doc/primitives.h"
-
-#include <algorithm>
-#include <cmath>
-
+ endif
+ include "base/pi.h"
+ include "doc/algo.h"
+ include "doc/algorithm/polygon.h"
+ include "doc/blend_internals.h"
+ include "doc/brush.h"
+ include "doc/image.h"
+ include "doc/image_impl.h"
+ include "doc/primitives.h"
+ include <algorithm>
+ include <cmath>
 namespace doc {
-
 static int generation = 0;
-
 Brush::Brush()
 {
   m_type = kCircleBrushType;
@@ -33,10 +29,8 @@ Brush::Brush()
   m_angle = 0;
   m_pattern = BrushPattern::DEFAULT_FOR_UI;
   m_gen = 0;
-
   regenerate();
 }
-
 Brush::Brush(BrushType type, int size, int angle)
 {
   m_type = type;
@@ -44,22 +38,18 @@ Brush::Brush(BrushType type, int size, int angle)
   m_angle = angle;
   m_pattern = BrushPattern::DEFAULT_FOR_UI;
   m_gen = 0;
-
   regenerate();
 }
-
 Brush::~Brush()
 {
   clean();
 }
-
 BrushRef Brush::cloneWithSharedImages() const
 {
   BrushRef newBrush = std::make_shared<Brush>();
   newBrush->copyFieldsFromBrush(*this);
   return newBrush;
 }
-
 BrushRef Brush::cloneWithNewImages() const
 {
   BrushRef newBrush = std::make_shared<Brush>();
@@ -70,34 +60,28 @@ BrushRef Brush::cloneWithNewImages() const
     newBrush->m_maskBitmap.reset(Image::createCopy(newBrush->m_maskBitmap.get()));
   return newBrush;
 }
-
 BrushRef Brush::cloneWithExistingImages(const ImageRef& image, const ImageRef& maskBitmap) const
 {
   BrushRef newBrush = std::make_shared<Brush>();
   newBrush->copyFieldsFromBrush(*this);
-
   newBrush->m_image = image;
   if (maskBitmap)
     newBrush->m_maskBitmap = maskBitmap;
   else
     newBrush->regenerateMaskBitmap();
-
   newBrush->resetBounds();
   return newBrush;
 }
-
 void Brush::setSize(int size)
 {
   m_size = size;
   regenerate();
 }
-
 void Brush::setAngle(int angle)
 {
   m_angle = angle;
   regenerate();
 }
-
 void Brush::setImage(const Image* image, const Image* maskBitmap)
 {
   m_type = kImageBrushType;
@@ -106,14 +90,11 @@ void Brush::setImage(const Image* image, const Image* maskBitmap)
     m_maskBitmap.reset(Image::createCopy(maskBitmap));
   else
     regenerateMaskBitmap();
-
   m_backupImage.reset();
   m_mainColor.reset();
   m_bgColor.reset();
-
   resetBounds();
 }
-
 template<class ImageTraits, color_t color_mask, color_t alpha_mask, color_t alpha_shift>
 static void replace_image_colors(Image* image,
                                  Image* maskBitmap,
@@ -127,12 +108,10 @@ static void replace_image_colors(Image* image,
   bool hasAlpha = false; // True if "image" has a pixel with alpha < 255
   color_t srcMainColor, srcBgColor;
   srcMainColor = srcBgColor = 0;
-
   auto mask_it = maskBits.begin();
   for (const auto& pixel : bits) {
     if (!*mask_it)
       continue;
-
     if ((pixel & alpha_mask) != alpha_mask) { // If alpha != 255
       hasAlpha = true;
     }
@@ -142,10 +121,8 @@ static void replace_image_colors(Image* image,
     else if (pixel != srcBgColor && srcMainColor == srcBgColor) {
       srcMainColor = pixel;
     }
-
     ++mask_it;
   }
-
   int t;
   if (hasAlpha) {
     if (useMain || useBg) {
@@ -167,7 +144,6 @@ static void replace_image_colors(Image* image,
         color = bgColor;
       else
         continue;
-
       color_t a1 = (pixel & alpha_mask) >> alpha_shift;
       color_t a2 = (color & alpha_mask) >> alpha_shift;
       a1 = MUL_UN8(a1, a2, t);
@@ -175,7 +151,6 @@ static void replace_image_colors(Image* image,
     }
   }
 }
-
 static void replace_image_colors_indexed(Image* image,
                                          Image* maskBitmap,
                                          const bool useMain,
@@ -189,12 +164,10 @@ static void replace_image_colors_indexed(Image* image,
   color_t maskColor = image->maskColor();
   color_t srcMainColor, srcBgColor;
   srcMainColor = srcBgColor = maskColor;
-
   auto mask_it = maskBits.begin();
   for (const auto& pixel : bits) {
     if (!*mask_it)
       continue;
-
     if (pixel == maskColor) {
       hasAlpha = true;
     }
@@ -204,10 +177,8 @@ static void replace_image_colors_indexed(Image* image,
     else if (pixel != srcBgColor && srcMainColor == srcBgColor) {
       srcMainColor = pixel;
     }
-
     ++mask_it;
   }
-
   if (hasAlpha) {
     for (auto& pixel : bits) {
       if (pixel != maskColor) {
@@ -229,26 +200,21 @@ static void replace_image_colors_indexed(Image* image,
     }
   }
 }
-
 void Brush::setImageColor(const ImageColor imageColor, const color_t color)
 {
   ASSERT(m_image);
   if (!m_image)
     return;
-
   if (!m_backupImage)
     m_backupImage.reset(Image::createCopy(m_image.get()));
   else
     m_image.reset(Image::createCopy(m_backupImage.get()));
-
   ASSERT(m_maskBitmap);
-
   switch (imageColor) {
     case ImageColor::MainColor:       m_mainColor = color; break;
     case ImageColor::BackgroundColor: m_bgColor = color; break;
     case ImageColor::BothColors:      m_mainColor = m_bgColor = color; break;
   }
-
   switch (m_image->pixelFormat()) {
     case IMAGE_RGB:
       replace_image_colors<RgbTraits, rgba_rgb_mask, rgba_a_mask, rgba_a_shift>(
@@ -259,7 +225,6 @@ void Brush::setImageColor(const ImageColor imageColor, const color_t color)
         (m_bgColor ? true : false),
         (m_bgColor ? *m_bgColor : 0));
       break;
-
     case IMAGE_GRAYSCALE:
       replace_image_colors<GrayscaleTraits, graya_v_mask, graya_a_mask, graya_a_shift>(
         m_image.get(),
@@ -269,7 +234,6 @@ void Brush::setImageColor(const ImageColor imageColor, const color_t color)
         (m_bgColor ? true : false),
         (m_bgColor ? *m_bgColor : 0));
       break;
-
     case IMAGE_INDEXED:
       replace_image_colors_indexed(m_image.get(),
                                    m_maskBitmap.get(),
@@ -280,7 +244,6 @@ void Brush::setImageColor(const ImageColor imageColor, const color_t color)
       break;
   }
 }
-
 void Brush::resetImageColors()
 {
   if (m_backupImage) {
@@ -289,14 +252,12 @@ void Brush::resetImageColors()
     m_bgColor.reset();
   }
 }
-
 void Brush::setCenter(const gfx::Point& center)
 {
   m_center = center;
   m_bounds = gfx::Rect(-m_center, gfx::Size(m_image->width(), m_image->height()));
 }
-
-// Cleans the brush's data (image and region).
+ Cleans the brush's data (image and region).
 void Brush::clean()
 {
   m_gen = ++generation;
@@ -304,39 +265,30 @@ void Brush::clean()
   m_maskBitmap.reset();
   m_backupImage.reset();
 }
-
 static void algo_hline(int x1, int y, int x2, void* data)
 {
   draw_hline(reinterpret_cast<Image*>(data), x1, y, x2, BitmapTraits::max_value);
 }
-
-// Regenerates the brush bitmap and its rectangle's region.
+ Regenerates the brush bitmap and its rectangle's region.
 void Brush::regenerate()
 {
   clean();
-
   ASSERT(m_size > 0);
-
   int size = m_size;
   if (m_type == kSquareBrushType && m_angle != 0 && m_size > 2)
     size = (int)std::sqrt((double)2 * m_size * m_size) + 2;
-
   m_image.reset(Image::create(IMAGE_BITMAP, size, size));
   m_maskBitmap.reset();
-
   resetBounds();
-
   if (size == 1) {
     clear_image(m_image.get(), BitmapTraits::max_value);
   }
   else {
     clear_image(m_image.get(), BitmapTraits::min_value);
-
     switch (m_type) {
       case kCircleBrushType:
         fill_ellipse(m_image.get(), 0, 0, size - 1, size - 1, 0, 0, BitmapTraits::max_value);
         break;
-
       case kSquareBrushType:
         if (m_angle == 0 || size <= 2) {
           clear_image(m_image.get(), BitmapTraits::max_value);
@@ -355,11 +307,9 @@ void Brush::regenerate()
           int x4 = int(x3 + d * cos(a + PI));
           int y4 = int(y3 - d * sin(a + PI));
           int points[8] = { x1, y1, x2, y2, x3, y3, x4, y4 };
-
           doc::algorithm::polygon(4, points, m_image.get(), algo_hline);
         }
         break;
-
       case kLineBrushType: {
         const double a = PI * m_angle / 180;
         const double r = m_size / 2.0;
@@ -367,7 +317,6 @@ void Brush::regenerate()
         const int cy = m_center.y;
         const int dx = int(r * cos(-a));
         const int dy = int(r * sin(-a));
-
         draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, BitmapTraits::max_value);
         draw_line(m_image.get(), cx, cy, cx - dx, cy - dy, BitmapTraits::max_value);
         break;
@@ -375,13 +324,11 @@ void Brush::regenerate()
     }
   }
 }
-
 void Brush::regenerateMaskBitmap()
 {
   ASSERT(m_image);
   if (!m_image)
     return;
-
   int w = m_image->width();
   int h = m_image->height();
   m_maskBitmap.reset(Image::create(IMAGE_BITMAP, w, h));
@@ -391,13 +338,11 @@ void Brush::regenerateMaskBitmap()
     for (int u = 0; u < w; ++u, ++pos)
       *pos = (get_pixel(m_image.get(), u, v) != m_image->maskColor());
 }
-
 void Brush::resetBounds()
 {
   m_center = gfx::Point(std::max(0, m_image->width() / 2), std::max(0, m_image->height() / 2));
   m_bounds = gfx::Rect(-m_center, gfx::Size(m_image->width(), m_image->height()));
 }
-
 void Brush::copyFieldsFromBrush(const Brush& brush)
 {
   m_type = brush.m_type;
@@ -412,5 +357,4 @@ void Brush::copyFieldsFromBrush(const Brush& brush)
   m_patternImage = brush.m_patternImage;
   m_gen = 0;
 }
-
 } // namespace doc

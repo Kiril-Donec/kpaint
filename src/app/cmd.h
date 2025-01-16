@@ -1,37 +1,33 @@
-// Aseprite
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_H_INCLUDED
-#define APP_CMD_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "base/disable_copying.h"
-#include "undo/undo_command.h"
 
-#include <string>
 
+ ifndef APP_CMD_H_INCLUDED
+ define APP_CMD_H_INCLUDED
+ pragma once
+ include "base/disable_copying.h"
+ include "undo/undo_command.h"
+ include <string>
 namespace app {
-
 class Context;
-
 class Cmd : public undo::UndoCommand {
 public:
   Cmd();
   virtual ~Cmd();
-
   void execute(Context* ctx);
-
   // undo::UndoCommand impl
   void undo() override;
   void redo() override;
   void dispose() override;
-
   std::string label() const;
   size_t memSize() const;
-
   Context* context() const { return m_ctx; }
 
 protected:
@@ -44,14 +40,11 @@ protected:
 
 private:
   Context* m_ctx;
-#if _DEBUG
+ if _DEBUG
   enum class State { NotExecuted, Executed, Undone, Redone };
   State m_state;
-#endif
-
+ endif
   DISABLE_COPYING(Cmd);
 };
-
 } // namespace app
-
-#endif
+ endif

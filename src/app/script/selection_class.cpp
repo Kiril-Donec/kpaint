@@ -1,31 +1,30 @@
-// Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
-// Copyright (C) 2015-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cmd/deselect_mask.h"
-#include "app/cmd/set_mask.h"
-#include "app/doc.h"
-#include "app/doc_api.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/transaction.h"
-#include "app/tx.h"
-#include "doc/mask.h"
-
+ endif
+ include "app/cmd/deselect_mask.h"
+ include "app/cmd/set_mask.h"
+ include "app/doc.h"
+ include "app/doc_api.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/transaction.h"
+ include "app/tx.h"
+ include "doc/mask.h"
 namespace app { namespace script {
-
 using namespace doc;
-
 namespace {
-
 struct SelectionObj {
   ObjectId maskId;
   ObjectId spriteId;
@@ -36,16 +35,13 @@ struct SelectionObj {
   }
   SelectionObj(const SelectionObj&) = delete;
   SelectionObj& operator=(const SelectionObj&) = delete;
-
   ~SelectionObj() { ASSERT(!maskId); }
-
   void gc(lua_State* L)
   {
     if (!spriteId)
       delete this->mask(L);
     maskId = 0;
   }
-
   Mask* mask(lua_State* L)
   {
     if (maskId)
@@ -53,7 +49,6 @@ struct SelectionObj {
     else {
       auto doc = static_cast<Doc*>(sprite(L)->document());
       ASSERT(doc);
-
       // The selection might be invisible but has something (e.g. when
       // the user calls "Select > Deselect" option). In this case we
       // want to show to the script an empty selection, so we'll clear
@@ -63,7 +58,6 @@ struct SelectionObj {
       // like the expected behavior for script authors.
       if (!doc->isMaskVisible())
         doc->mask()->clear();
-
       return doc->mask();
     }
   }
@@ -75,19 +69,15 @@ struct SelectionObj {
       return nullptr;
   }
 };
-
 int Selection_new(lua_State* L)
 {
   gfx::Rect bounds = convert_args_into_rect(L, 1);
-
   auto mask = new Mask;
   if (!bounds.isEmpty())
     mask->replace(bounds);
-
   push_new<SelectionObj>(L, mask, nullptr);
   return 1;
 }
-
 int Selection_gc(lua_State* L)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
@@ -95,7 +85,6 @@ int Selection_gc(lua_State* L)
   obj->~SelectionObj();
   return 0;
 }
-
 int Selection_eq(lua_State* L)
 {
   auto a = get_obj<SelectionObj>(L, 1);
@@ -108,14 +97,12 @@ int Selection_eq(lua_State* L)
   lua_pushboolean(L, result);
   return 1;
 }
-
 int Selection_deselect(lua_State* L)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
   if (auto sprite = obj->sprite(L)) {
     Doc* doc = static_cast<Doc*>(sprite->document());
     ASSERT(doc);
-
     if (doc->isMaskVisible()) {
       Tx tx(doc);
       tx(new cmd::DeselectMask(doc));
@@ -128,7 +115,6 @@ int Selection_deselect(lua_State* L)
   }
   return 0;
 }
-
 template<typename T>
 void replace(Mask& dst, const Mask& a, const T& b)
 {
@@ -137,7 +123,6 @@ void replace(Mask& dst, const Mask& a, const T& b)
   else
     dst.replace(b);
 }
-
 template<typename T>
 void add(Mask& dst, const Mask& a, const T& b)
 {
@@ -146,7 +131,6 @@ void add(Mask& dst, const Mask& a, const T& b)
   if (!b.isEmpty())
     dst.add(b);
 }
-
 template<typename T>
 void subtract(Mask& dst, const Mask& a, const T& b)
 {
@@ -155,7 +139,6 @@ void subtract(Mask& dst, const Mask& a, const T& b)
   if (!b.isEmpty())
     dst.subtract(b);
 }
-
 template<typename T>
 void intersect(Mask& dst, const Mask& a, const T& b)
 {
@@ -167,7 +150,6 @@ void intersect(Mask& dst, const Mask& a, const T& b)
     dst.intersect(b);
   }
 }
-
 template<typename OpMask, typename OpRect>
 int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
 {
@@ -180,10 +162,8 @@ int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
     if (sprite) {
       Doc* doc = static_cast<Doc*>(sprite->document());
       ASSERT(doc);
-
       Mask newMask;
       opMask(newMask, *mask, *otherMask);
-
       Tx tx(sprite);
       tx(new cmd::SetMask(doc, &newMask));
       tx.commit();
@@ -198,10 +178,8 @@ int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
     if (sprite) {
       Doc* doc = static_cast<Doc*>(sprite->document());
       ASSERT(doc);
-
       Mask newMask;
       opRect(newMask, *mask, bounds);
-
       Tx tx(sprite);
       tx(new cmd::SetMask(doc, &newMask));
       tx.commit();
@@ -212,7 +190,6 @@ int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
   }
   return 0;
 }
-
 int Selection_select(lua_State* L)
 {
   return Selection_op(L, replace<Mask>, replace<gfx::Rect>);
@@ -229,16 +206,13 @@ int Selection_intersect(lua_State* L)
 {
   return Selection_op(L, intersect<Mask>, intersect<gfx::Rect>);
 }
-
 int Selection_selectAll(lua_State* L)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
   if (auto sprite = obj->sprite(L)) {
     Doc* doc = static_cast<Doc*>(sprite->document());
-
     Mask newMask;
     newMask.replace(sprite->bounds());
-
     Tx tx(doc);
     tx(new cmd::SetMask(doc, &newMask));
     tx.commit();
@@ -251,7 +225,6 @@ int Selection_selectAll(lua_State* L)
   }
   return 0;
 }
-
 int Selection_contains(lua_State* L)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
@@ -260,7 +233,6 @@ int Selection_contains(lua_State* L)
   lua_pushboolean(L, mask->containsPoint(pt.x, pt.y));
   return 1;
 }
-
 int Selection_get_bounds(lua_State* L)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
@@ -279,7 +251,6 @@ int Selection_get_bounds(lua_State* L)
   }
   return 1;
 }
-
 int Selection_get_origin(lua_State* L)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
@@ -298,7 +269,6 @@ int Selection_get_origin(lua_State* L)
   }
   return 1;
 }
-
 int Selection_set_origin(lua_State* L)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
@@ -317,7 +287,6 @@ int Selection_set_origin(lua_State* L)
   }
   return 0;
 }
-
 int Selection_get_isEmpty(lua_State* L)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
@@ -325,7 +294,6 @@ int Selection_get_isEmpty(lua_State* L)
   lua_pushboolean(L, mask->isEmpty());
   return 1;
 }
-
 const luaL_Reg Selection_methods[] = {
   { "deselect",  Selection_deselect  },
   { "select",    Selection_select    },
@@ -338,19 +306,15 @@ const luaL_Reg Selection_methods[] = {
   { "__eq",      Selection_eq        },
   { nullptr,     nullptr             }
 };
-
 const Property Selection_properties[] = {
   { "bounds",  Selection_get_bounds,  nullptr              },
   { "origin",  Selection_get_origin,  Selection_set_origin },
   { "isEmpty", Selection_get_isEmpty, nullptr              },
   { nullptr,   nullptr,               nullptr              }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(SelectionObj);
 DEF_MTNAME_ALIAS(SelectionObj, Mask);
-
 void register_selection_class(lua_State* L)
 {
   using Selection = SelectionObj;
@@ -358,15 +322,12 @@ void register_selection_class(lua_State* L)
   REG_CLASS_NEW(L, Selection);
   REG_CLASS_PROPERTIES(L, Selection);
 }
-
 void push_sprite_selection(lua_State* L, Sprite* sprite)
 {
   push_new<SelectionObj>(L, nullptr, sprite);
 }
-
 const doc::Mask* get_mask_from_arg(lua_State* L, int index)
 {
   return get_obj<SelectionObj>(L, index)->mask(L);
 }
-
 }} // namespace app::script

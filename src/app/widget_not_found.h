@@ -1,18 +1,20 @@
-// Aseprite
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_WIDGET_NOT_FOUND_H_INCLUDED
-#define APP_WIDGET_NOT_FOUND_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include <stdexcept>
-#include <string>
 
+
+ ifndef APP_WIDGET_NOT_FOUND_H_INCLUDED
+ define APP_WIDGET_NOT_FOUND_H_INCLUDED
+ pragma once
+ include <stdexcept>
+ include <string>
 namespace app {
-
 class WidgetNotFound : public std::runtime_error {
 public:
   WidgetNotFound(const std::string& widgetId)
@@ -22,7 +24,5 @@ public:
   {
   }
 };
-
 } // namespace app
-
-#endif
+ endif

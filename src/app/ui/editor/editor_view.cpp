@@ -1,45 +1,41 @@
-// Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/editor/editor_view.h"
-
-#include "app/app.h"
-#include "app/modules/gui.h"
-#include "app/pref/preferences.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/skin/skin_theme.h"
-#include "os/surface.h"
-#include "ui/paint_event.h"
-#include "ui/resize_event.h"
-#include "ui/scroll_region_event.h"
-
+ endif
+ include "app/app.h"
+ include "app/modules/gui.h"
+ include "app/pref/preferences.h"
+ include "app/ui/editor/editor.h"
+ include "app/ui/editor/editor_view.h"
+ include "app/ui/skin/skin_theme.h"
+ include "os/surface.h"
+ include "ui/paint_event.h"
+ include "ui/resize_event.h"
+ include "ui/scroll_region_event.h"
 namespace app {
-
 using namespace app::skin;
 using namespace ui;
-
-// static
+ static
 EditorView::Method EditorView::g_scrollUpdateMethod = Method::KeepOrigin;
-
-// static
+ static
 void EditorView::SetScrollUpdateMethod(Method method)
 {
   g_scrollUpdateMethod = method;
 }
-
 EditorView::EditorView(EditorView::Type type) : View(), m_type(type)
 {
   m_scrollSettingsConn = Preferences::instance().editor.showScrollbars.AfterChange.connect(
     [this] { setupScrollbars(); });
-
   InitTheme.connect([this] {
     auto theme = SkinTheme::get(this);
     setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
@@ -48,7 +44,6 @@ EditorView::EditorView(EditorView::Type type) : View(), m_type(type)
   });
   initTheme();
 }
-
 void EditorView::onPaint(PaintEvent& ev)
 {
   switch (m_type) {
@@ -59,14 +54,11 @@ void EditorView::onPaint(PaintEvent& ev)
       else
         disableFlags(SELECTED);
       break;
-
       // Always show selected
     case AlwaysSelected: enableFlags(SELECTED); break;
   }
-
   View::onPaint(ev);
 }
-
 void EditorView::onResize(ResizeEvent& ev)
 {
   Editor* editor = this->editor();
@@ -77,9 +69,7 @@ void EditorView::onResize(ResizeEvent& ev)
       case KeepCenter: oldPos = editor->screenToEditor(viewportBounds().center()); break;
     }
   }
-
   View::onResize(ev);
-
   if (editor) {
     switch (g_scrollUpdateMethod) {
       case KeepOrigin: {
@@ -93,7 +83,6 @@ void EditorView::onResize(ResizeEvent& ev)
     }
   }
 }
-
 void EditorView::onSetViewScroll(const gfx::Point& pt)
 {
   Editor* editor = this->editor();
@@ -103,7 +92,6 @@ void EditorView::onSetViewScroll(const gfx::Point& pt)
     View::onSetViewScroll(pt);
   }
 }
-
 void EditorView::onScrollRegion(ui::ScrollRegionEvent& ev)
 {
   gfx::Region& region = ev.region();
@@ -115,17 +103,14 @@ void EditorView::onScrollRegion(ui::ScrollRegionEvent& ev)
     region.createSubtraction(region, invalidRegion);
   }
 }
-
 void EditorView::onScrollChange()
 {
   View::onScrollChange();
-
   Editor* editor = this->editor();
   ASSERT(editor != NULL);
   if (editor)
     editor->notifyScrollChanged();
 }
-
 void EditorView::setupScrollbars()
 {
   if (m_type == AlwaysSelected || !Preferences::instance().editor.showScrollbars()) {
@@ -134,22 +119,17 @@ void EditorView::setupScrollbars()
   else {
     auto theme = SkinTheme::get(this);
     int barsize = theme->dimensions.miniScrollbarSize();
-
     horizontalBar()->setBarWidth(barsize);
     verticalBar()->setBarWidth(barsize);
-
     horizontalBar()->setStyle(theme->styles.miniScrollbar());
     verticalBar()->setStyle(theme->styles.miniScrollbar());
     horizontalBar()->setThumbStyle(theme->styles.miniScrollbarThumb());
     verticalBar()->setThumbStyle(theme->styles.miniScrollbarThumb());
-
     showScrollBars();
   }
 }
-
 Editor* EditorView::editor()
 {
   return static_cast<Editor*>(attachedWidget());
 }
-
 } // namespace app

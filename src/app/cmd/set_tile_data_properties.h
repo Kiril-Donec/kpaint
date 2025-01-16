@@ -1,20 +1,22 @@
-// Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_SET_TILE_DATA_PROPERTIES_H_INCLUDED
-#define APP_CMD_SET_TILE_DATA_PROPERTIES_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd.h"
-#include "app/cmd/with_tileset.h"
-#include "doc/tile.h"
-#include "doc/user_data.h"
 
+
+ ifndef APP_CMD_SET_TILE_DATA_PROPERTIES_H_INCLUDED
+ define APP_CMD_SET_TILE_DATA_PROPERTIES_H_INCLUDED
+ pragma once
+ include "app/cmd.h"
+ include "app/cmd/with_tileset.h"
+ include "doc/tile.h"
+ include "doc/user_data.h"
 namespace app { namespace cmd {
-
 class SetTileDataProperties : public Cmd,
                               public WithTileset {
 public:
@@ -37,7 +39,5 @@ private:
   doc::UserData::Properties m_oldProperties;
   doc::UserData::Properties m_newProperties;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

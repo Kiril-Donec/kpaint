@@ -1,19 +1,18 @@
-// Aseprite Document Library
-// Copyright (c) 2023  Igara Studio S.A.
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/user_data.h"
-
-#include "base/debug.h"
-
+ endif
+ include "base/debug.h"
+ include "doc/user_data.h"
 namespace doc {
-
 size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& propertiesMaps)
 {
   size_t i = 0;
@@ -22,7 +21,6 @@ size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& properties
       ++i;
   return i;
 }
-
 static bool is_negative(const UserData::Variant& value)
 {
   switch (value.type()) {
@@ -45,13 +43,11 @@ static bool is_negative(const UserData::Variant& value)
   }
   return false;
 }
-
 uint16_t all_elements_of_same_type(const UserData::Vector& vector)
 {
   uint16_t type = vector.empty() ? 0 : vector.front().type();
   uint16_t commonReducedType = 0;
   bool hasNegativeNumbers = false;
-
   for (const auto& value : vector) {
     if (type != value.type()) {
       return 0;
@@ -64,11 +60,9 @@ uint16_t all_elements_of_same_type(const UserData::Vector& vector)
       }
     }
   }
-
   // TODO: The following check probably is not useful right now, I believe this could
   // become useful if at some point we want to try to find a common integer type for vectors
   // that contains elements of different integer types only.
-
   // If our common reduced type is unsigned and we have negative numbers
   // in our vector we should select the next signed type that includes it.
   if (commonReducedType != 0 && (commonReducedType & 1) && // TODO fix this assumption about
@@ -80,10 +74,8 @@ uint16_t all_elements_of_same_type(const UserData::Vector& vector)
     if (commonReducedType >= USER_DATA_PROPERTY_TYPE_UINT64)
       commonReducedType = 0;
   }
-
   return (commonReducedType ? commonReducedType : type);
 }
-
 UserData::Variant cast_to_smaller_int_type(const UserData::Variant& value, uint16_t type)
 {
   ASSERT(type < value.type());
@@ -163,7 +155,6 @@ UserData::Variant cast_to_smaller_int_type(const UserData::Variant& value, uint1
   }
   return value;
 }
-
 UserData::Variant reduce_int_type_size(const UserData::Variant& value)
 {
   switch (value.type()) {
@@ -242,5 +233,4 @@ UserData::Variant reduce_int_type_size(const UserData::Variant& value)
     default: return value;
   }
 }
-
 } // namespace doc

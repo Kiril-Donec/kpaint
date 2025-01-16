@@ -1,20 +1,20 @@
-// Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
-// Copyright (C) 2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/sprite_job.h"
-
-#include "base/log.h"
-
+ endif
+ include "app/sprite_job.h"
+ include "base/log.h"
 namespace app {
-
 SpriteJob::SpriteJob(Context* ctx, Doc* doc, const std::string& jobName, const bool showProgress)
   : Job(jobName, showProgress)
   , m_doc(doc)
@@ -31,7 +31,6 @@ SpriteJob::SpriteJob(Context* ctx, Doc* doc, const std::string& jobName, const b
     m_doc->unlock(lockResult);
   }
 }
-
 SpriteJob::~SpriteJob()
 {
   try {
@@ -42,27 +41,22 @@ SpriteJob::~SpriteJob()
     LOG(ERROR, "Error committing changes: %s\n", ex.what());
   }
 }
-
 void SpriteJob::onSpriteJob(Tx& tx)
 {
   if (m_callback)
     m_callback(tx);
 }
-
 void SpriteJob::onJob()
 {
   Tx subtx(m_lockAction, m_ctx, m_doc);
   onSpriteJob(subtx);
 }
-
 bool SpriteJob::continueTask()
 {
   return !isCanceled();
 }
-
 void SpriteJob::notifyTaskProgress(double progress)
 {
   jobProgress(progress);
 }
-
 } // namespace app

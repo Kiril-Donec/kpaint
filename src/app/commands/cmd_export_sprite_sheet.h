@@ -1,22 +1,23 @@
-// Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
-#define APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/commands/new_params.h"
-#include "app/sprite_sheet_data_format.h"
-#include "app/sprite_sheet_type.h"
 
-#include <limits>
-#include <sstream>
 
+ ifndef APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
+ define APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
+ pragma once
+ include "app/commands/new_params.h"
+ include "app/sprite_sheet_data_format.h"
+ include "app/sprite_sheet_type.h"
+ include <limits>
+ include <sstream>
 namespace app {
-
 struct ExportSpriteSheetParams : public NewParams {
   Param<bool> ui{ this, true, "ui" };
   Param<bool> recent{ this, true, "recent" };
@@ -61,7 +62,6 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<bool> listSlices{ this, true, "listSlices" };
   Param<bool> fromTilesets{ this, false, "fromTilesets" };
 };
-
 class ExportSpriteSheetCommand : public CommandWithNewParams<ExportSpriteSheetParams> {
 public:
   ExportSpriteSheetCommand(const char* id = CommandId::ExportSpriteSheet());
@@ -70,7 +70,5 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
-
 } // namespace app
-
-#endif // APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED
+// endif // APP_COMMANDS_CMD_EXPORT_SPRITE_SHEET_H_INCLUDED

@@ -1,27 +1,27 @@
-// Aseprite
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/optional_alert.h"
-
-#include "app/i18n/strings.h"
-#include "ui/alert.h"
-#include "ui/button.h"
-
+ endif
+ include "app/i18n/strings.h"
+ include "app/ui/optional_alert.h"
+ include "ui/alert.h"
+ include "ui/button.h"
 namespace app {
-
-// static
+ static
 int OptionalAlert::show(Option<bool>& option, const int optionWhenDisabled, const std::string& msg)
 {
   if (!option())
     return optionWhenDisabled;
-
   ui::AlertPtr alert(ui::Alert::create(msg));
   ui::CheckBox* cb = alert->addCheckBox(Strings::general_dont_show());
   const int ret = alert->show();
@@ -29,5 +29,4 @@ int OptionalAlert::show(Option<bool>& option, const int optionWhenDisabled, cons
     option(!cb->isSelected());
   return ret;
 }
-
 } // namespace app

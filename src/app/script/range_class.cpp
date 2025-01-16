@@ -1,37 +1,37 @@
-// Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/context.h"
-#include "app/doc_range.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/site.h"
-#include "app/ui/editor/editor.h"
-#include "app/util/range_utils.h"
-#include "doc/cel.h"
-#include "doc/layer.h"
-#include "doc/object_ids.h"
-#include "doc/slice.h"
-#include "doc/slices.h"
-#include "doc/sprite.h"
-#include "doc/tile.h"
-
-#include <set>
-#include <vector>
-
+ endif
+ include "app/app.h"
+ include "app/context.h"
+ include "app/doc_range.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/site.h"
+ include "app/ui/editor/editor.h"
+ include "app/util/range_utils.h"
+ include "doc/cel.h"
+ include "doc/layer.h"
+ include "doc/object_ids.h"
+ include "doc/slice.h"
+ include "doc/slices.h"
+ include "doc/sprite.h"
+ include "doc/tile.h"
+ include <set>
+ include <vector>
 namespace app { namespace script {
-
 namespace {
-
 struct RangeObj { // This is like DocRange but referencing objects with IDs
   DocRange::Type type;
   ObjectId spriteId;
@@ -41,11 +41,9 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
   doc::SelectedObjects slices;
   std::vector<color_t> colors;
   std::vector<tile_index> tiles;
-
   RangeObj(Site& site) { updateFromSite(site); }
   RangeObj(const RangeObj&) = delete;
   RangeObj& operator=(const RangeObj&) = delete;
-
   void updateFromSite(const Site& site)
   {
     if (!site.sprite()) {
@@ -53,23 +51,18 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
       spriteId = NullId;
       return;
     }
-
     const DocRange& range = site.range();
-
     spriteId = site.sprite()->id();
     type = range.type();
-
     layers.clear();
     frames.clear();
     cels.clear();
     colors.clear();
-
     if (range.enabled()) {
       for (const Layer* layer : range.selectedLayers())
         layers.insert(layer->id());
       for (const frame_t frame : range.selectedFrames())
         frames.push_back(frame);
-
       // TODO improve this, in the best case we should defer layers,
       // frames, and cels vectors when the properties are accessed, but
       // it might not be possible because we have to save the IDs of the
@@ -86,18 +79,13 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
       if (site.cel())
         cels.insert(site.cel()->id());
     }
-
     if (site.selectedColors().picks() > 0)
       colors = site.selectedColors().toVectorOfIndexes();
-
     if (site.selectedTiles().picks() > 0)
       tiles = site.selectedTiles().toVectorOfIndexes();
-
     slices = site.selectedSlices();
   }
-
   Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
-
   bool contains(const Layer* layer) const { return layers.contains(layer->id()); }
   bool contains(const frame_t frame) const
   {
@@ -114,27 +102,23 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
     return (std::find(tiles.begin(), tiles.end(), tile) != tiles.end());
   }
 };
-
 int Range_gc(lua_State* L)
 {
   get_obj<RangeObj>(L, 1)->~RangeObj();
   return 0;
 }
-
 int Range_get_sprite(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   push_docobj<Sprite>(L, obj->spriteId);
   return 1;
 }
-
 int Range_get_type(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   lua_pushinteger(L, int(obj->type));
   return 1;
 }
-
 int Range_contains(lua_State* L)
 {
   bool result = false;
@@ -155,7 +139,6 @@ int Range_contains(lua_State* L)
   lua_pushboolean(L, result);
   return 1;
 }
-
 int Range_containsColor(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -163,7 +146,6 @@ int Range_containsColor(lua_State* L)
   lua_pushboolean(L, obj->containsColor(color));
   return 1;
 }
-
 int Range_containsTile(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -171,36 +153,29 @@ int Range_containsTile(lua_State* L)
   lua_pushboolean(L, obj->containsTile(tile));
   return 1;
 }
-
 int Range_clear(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   auto ctx = App::instance()->context();
-
   // Set an empty range
   DocRange range;
   ctx->setRange(range);
-
   // Set empty palette picks
   doc::PalettePicks picks;
   ctx->setSelectedColors(picks);
-
   // Empty selected slices in the current editor
   // TODO add a new function to Context class for this
   if (auto editor = Editor::activeEditor())
     editor->clearSlicesSelection();
-
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
-
 int Range_get_isEmpty(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   lua_pushboolean(L, obj->type == DocRange::kNone);
   return 1;
 }
-
 int Range_get_layers(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -211,14 +186,12 @@ int Range_get_layers(lua_State* L)
   push_layers(L, layers);
   return 1;
 }
-
 int Range_get_frames(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   push_sprite_frames(L, obj->sprite(L), obj->frames);
   return 1;
 }
-
 int Range_get_cels(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -229,7 +202,6 @@ int Range_get_cels(lua_State* L)
   push_cels(L, cels);
   return 1;
 }
-
 int Range_get_images(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -246,7 +218,6 @@ int Range_get_images(lua_State* L)
   push_cel_images(L, cels);
   return 1;
 }
-
 int Range_get_editableImages(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -264,7 +235,6 @@ int Range_get_editableImages(lua_State* L)
   push_cel_images(L, cels);
   return 1;
 }
-
 int Range_get_colors(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -276,7 +246,6 @@ int Range_get_colors(lua_State* L)
   }
   return 1;
 }
-
 int Range_get_tiles(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -288,7 +257,6 @@ int Range_get_tiles(lua_State* L)
   }
   return 1;
 }
-
 int Range_get_slices(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -300,13 +268,11 @@ int Range_get_slices(lua_State* L)
   }
   return 1;
 }
-
 int Range_set_layers(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
   DocRange range = ctx->activeSite().range();
-
   doc::SelectedLayers layers;
   if (lua_istable(L, 2)) {
     lua_pushnil(L);
@@ -317,18 +283,15 @@ int Range_set_layers(lua_State* L)
     }
   }
   range.setSelectedLayers(layers);
-
   ctx->setRange(range);
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
-
 int Range_set_frames(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
   DocRange range = ctx->activeSite().range();
-
   doc::SelectedFrames frames;
   if (lua_istable(L, 2)) {
     lua_pushnil(L);
@@ -339,12 +302,10 @@ int Range_set_frames(lua_State* L)
     }
   }
   range.setSelectedFrames(frames);
-
   ctx->setRange(range);
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
-
 int Range_set_colors(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -360,12 +321,10 @@ int Range_set_colors(lua_State* L)
       lua_pop(L, 1);
     }
   }
-
   ctx->setSelectedColors(picks);
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
-
 int Range_set_tiles(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
@@ -385,12 +344,10 @@ int Range_set_tiles(lua_State* L)
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
-
 int Range_set_slices(lua_State* L)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
-
   // TODO we should add support to CLI scripts
   if (auto editor = Editor::activeEditor()) {
     editor->clearSlicesSelection();
@@ -401,11 +358,9 @@ int Range_set_slices(lua_State* L)
       lua_pop(L, 1);
     }
   }
-
   obj->updateFromSite(ctx->activeSite());
   return 0;
 }
-
 const luaL_Reg Range_methods[] = {
   { "__gc",          Range_gc            },
   { "contains",      Range_contains      },
@@ -414,7 +369,6 @@ const luaL_Reg Range_methods[] = {
   { "clear",         Range_clear         },
   { nullptr,         nullptr             }
 };
-
 const Property Range_properties[] = {
   { "sprite",         Range_get_sprite,         nullptr          },
   { "type",           Range_get_type,           nullptr          },
@@ -429,21 +383,16 @@ const Property Range_properties[] = {
   { "slices",         Range_get_slices,         Range_set_slices },
   { nullptr,          nullptr,                  nullptr          }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(RangeObj);
-
 void register_range_class(lua_State* L)
 {
   using Range = RangeObj;
   REG_CLASS(L, Range);
   REG_CLASS_PROPERTIES(L, Range);
 }
-
 void push_doc_range(lua_State* L, Site& site)
 {
   push_new<RangeObj>(L, site);
 }
-
 }} // namespace app::script

@@ -1,71 +1,64 @@
-// Aseprite
-// Copyright (C) 2021-2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/commands/command.h"
-#include "app/context.h"
-#include "app/context_observer.h"
-#include "app/doc.h"
-#include "app/doc_event.h"
-#include "app/doc_undo.h"
-#include "app/doc_undo_observer.h"
-#include "app/pref/preferences.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/script/values.h"
-#include "app/site.h"
-#include "app/ui/main_window.h"
-#include "doc/document.h"
-#include "doc/sprite.h"
-#include "ui/app_state.h"
-#include "ui/resize_event.h"
-
-#include <any>
-#include <cstring>
-#include <initializer_list>
-#include <map>
-#include <memory>
-
-// This event was disabled because it can be triggered in a background thread
-// when any effect (e.g. like Replace Color or Convolution Matrix) is running.
-// And running script code in a background is not supported.
-// #define ENABLE_REMAP_TILESET_EVENT
-
+ endif
+ include "app/app.h"
+ include "app/commands/command.h"
+ include "app/context.h"
+ include "app/context_observer.h"
+ include "app/doc.h"
+ include "app/doc_event.h"
+ include "app/doc_undo.h"
+ include "app/doc_undo_observer.h"
+ include "app/pref/preferences.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/script/values.h"
+ include "app/site.h"
+ include "app/ui/main_window.h"
+ include "doc/document.h"
+ include "doc/sprite.h"
+ include "ui/app_state.h"
+ include "ui/resize_event.h"
+ include <any>
+ include <cstring>
+ include <initializer_list>
+ include <map>
+ include <memory>
+ This event was disabled because it can be triggered in a background thread
+ when any effect (e.g. like Replace Color or Convolution Matrix) is running.
+ And running script code in a background is not supported.
+ #define ENABLE_REMAP_TILESET_EVENT
 namespace app {
 namespace script {
-
 using namespace doc;
-
 namespace {
-
 using EventListener = int;
-
 class AppEvents;
 class WindowEvents;
 class SpriteEvents;
 static std::unique_ptr<AppEvents> g_appEvents;
 static std::unique_ptr<WindowEvents> g_windowEvents;
 static std::map<doc::ObjectId, std::unique_ptr<SpriteEvents>> g_spriteEvents;
-
 class Events {
 public:
   using EventType = int;
-
   Events() {}
   virtual ~Events() {}
   Events(const Events&) = delete;
   Events& operator=(const Events&) = delete;
-
   virtual EventType eventType(const char* eventName) const = 0;
-
   bool hasListener(EventListener callbackRef) const
   {
     for (auto& listeners : m_listeners) {
@@ -76,18 +69,15 @@ public:
     }
     return false;
   }
-
   void add(EventType eventType, EventListener callbackRef)
   {
     if (eventType >= m_listeners.size())
       m_listeners.resize(eventType + 1);
-
     auto& listeners = m_listeners[eventType];
     listeners.push_back(callbackRef);
     if (listeners.size() == 1)
       onAddFirstListener(eventType);
   }
-
   void remove(EventListener callbackRef)
   {
     for (int i = 0; i < int(m_listeners.size()); ++i) {
@@ -115,15 +105,12 @@ protected:
   {
     if (eventType >= m_listeners.size())
       return;
-
     script::Engine* engine = App::instance()->scriptEngine();
     lua_State* L = engine->luaState();
-
     try {
       for (EventListener callbackRef : m_listeners[eventType]) {
         // Get user-defined callback function
         lua_rawgeti(L, LUA_REGISTRYINDEX, callbackRef);
-
         int callbackArgs = 0;
         if (args.size() > 0) {
           ++callbackArgs;
@@ -133,7 +120,6 @@ protected:
             lua_setfield(L, -2, kv.first.c_str());
           }
         }
-
         if (lua_pcall(L, callbackArgs, 0, 0)) {
           if (const char* s = lua_tostring(L, -1))
             engine->consolePrint(s);
@@ -148,14 +134,11 @@ protected:
 private:
   virtual void onAddFirstListener(EventType eventType) = 0;
   virtual void onRemoveLastListener(EventType eventType) = 0;
-
   using EventListeners = std::vector<EventListener>;
   std::vector<EventListeners> m_listeners;
 };
-
-// Used in BeforeCommand
+ Used in BeforeCommand
 static bool s_stopPropagationFlag = false;
-
 class AppEvents : public Events,
                   private ContextObserver {
 public:
@@ -167,9 +150,7 @@ public:
     BeforeCommand,
     AfterCommand,
   };
-
   AppEvents() {}
-
   EventType eventType(const char* eventName) const override
   {
     if (std::strcmp(eventName, "sitechange") == 0)
@@ -208,7 +189,6 @@ private:
         break;
     }
   }
-
   void onRemoveLastListener(EventType eventType) override
   {
     switch (eventType) {
@@ -219,11 +199,8 @@ private:
       case AfterCommand:  m_afterCmdConn.disconnect(); break;
     }
   }
-
   void onFgColorChange() { call(FgColorChange); }
-
   void onBgColorChange() { call(BgColorChange); }
-
   void onBeforeCommand(CommandExecutionEvent& ev)
   {
     s_stopPropagationFlag = false;
@@ -241,7 +218,6 @@ private:
 if (s_stopPropagationFlag)
   ev.cancel();
 } // namespace script
-
 void onAfterCommand(CommandExecutionEvent& ev)
 {
   call(AfterCommand,
@@ -250,8 +226,7 @@ void onAfterCommand(CommandExecutionEvent& ev)
          { "params", ev.params()        }
   });
 }
-
-// ContextObserver impl
+ ContextObserver impl
 void onActiveSiteChange(const Site& site) override
 {
   const bool fromUndo = (site.document() && site.document()->isUndoing());
@@ -260,14 +235,12 @@ void onActiveSiteChange(const Site& site) override
          { "fromUndo", fromUndo }
   });
 }
-
 obs::scoped_connection m_fgConn;
 obs::scoped_connection m_bgConn;
 obs::scoped_connection m_beforeCmdConn;
 obs::scoped_connection m_afterCmdConn;
 obs::scoped_connection m_beforePaintConn;
 }; // namespace app
-
 class WindowEvents : public Events,
                      private ContextObserver {
 public:
@@ -275,11 +248,8 @@ public:
     Unknown = -1,
     Resize,
   };
-
   WindowEvents(ui::Window* window) : m_window(window) {}
-
   ui::Window* window() const { return m_window; }
-
   EventType eventType(const char* eventName) const override
   {
     if (std::strcmp(eventName, "resize") == 0)
@@ -295,14 +265,12 @@ private:
       case Resize: m_resizeConn = m_window->Resize.connect(&WindowEvents::onResize, this); break;
     }
   }
-
   void onRemoveLastListener(EventType eventType) override
   {
     switch (eventType) {
       case Resize: m_resizeConn.disconnect(); break;
     }
   }
-
   void onResize(ui::ResizeEvent& ev)
   {
     call(Resize,
@@ -311,11 +279,9 @@ private:
            { "height", ev.bounds().h }
     });
   }
-
   ui::Window* m_window;
   obs::scoped_connection m_resizeConn;
 };
-
 class SpriteEvents : public Events,
                      public DocUndoObserver,
                      public DocObserver {
@@ -325,13 +291,11 @@ public:
     Change,
     FilenameChange,
     AfterAddTile,
-#if ENABLE_REMAP_TILESET_EVENT
+ if ENABLE_REMAP_TILESET_EVENT
     RemapTileset,
-#endif
+ endif
   };
-
   SpriteEvents(const Sprite* sprite) : m_spriteId(sprite->id()) { doc()->add_observer(this); }
-
   ~SpriteEvents()
   {
     auto doc = this->doc();
@@ -346,7 +310,6 @@ public:
       doc->remove_observer(this);
     }
   }
-
   EventType eventType(const char* eventName) const override
   {
     if (std::strcmp(eventName, "change") == 0)
@@ -355,14 +318,13 @@ public:
       return FilenameChange;
     else if (std::strcmp(eventName, "afteraddtile") == 0)
       return AfterAddTile;
-#if ENABLE_REMAP_TILESET_EVENT
+ if ENABLE_REMAP_TILESET_EVENT
     else if (std::strcmp(eventName, "remaptileset") == 0)
       return RemapTileset;
-#endif
+ endif
     else
       return Unknown;
   }
-
   // DocObserver impl
   void onCloseDocument(Doc* doc) override
   {
@@ -373,9 +335,7 @@ public:
       g_spriteEvents.erase(it);
     }
   }
-
   void onFileNameChanged(Doc* doc) override { call(FilenameChange); }
-
   void onAfterAddTile(DocEvent& ev) override
   {
     call(AfterAddTile,
@@ -388,8 +348,7 @@ public:
            { "tileIndex",   ev.tileIndex() }
     });
   }
-
-#if ENABLE_REMAP_TILESET_EVENT
+ if ENABLE_REMAP_TILESET_EVENT
   void onRemapTileset(DocEvent& ev, const doc::Remap& remap) override
   {
     const bool fromUndo = (ev.document()->transaction() == nullptr);
@@ -400,8 +359,7 @@ public:
            { "fromUndo", fromUndo         }
     });
   }
-#endif
-
+ endif
   // DocUndoObserver impl
   void onAddUndoState(DocUndo* history) override
   {
@@ -429,7 +387,6 @@ private:
         break;
     }
   }
-
   void onRemoveLastListener(EventType eventType) override
   {
     switch (eventType) {
@@ -439,7 +396,6 @@ private:
       }
     }
   }
-
   Doc* doc()
   {
     Sprite* sprite = doc::get<Sprite>(m_spriteId);
@@ -448,7 +404,6 @@ private:
     else
       return nullptr;
   }
-
   void disconnectFromUndoHistory(Doc* doc)
   {
     if (m_observingUndo) {
@@ -456,41 +411,33 @@ private:
       m_observingUndo = false;
     }
   }
-
   ObjectId m_spriteId;
   bool m_observingUndo = false;
 };
-
 int Events_on(lua_State* L)
 {
   auto evs = get_ptr<Events>(L, 1);
   const char* eventName = lua_tostring(L, 2);
   if (!eventName)
     return 0;
-
   const int type = evs->eventType(eventName);
   if (type < 0)
     return luaL_error(L, "invalid event name to listen");
-
   if (!lua_isfunction(L, 3))
     return luaL_error(L, "second argument must be a function");
-
   // Copy the callback function to add it to the global registry
   lua_pushvalue(L, 3);
   int callbackRef = luaL_ref(L, LUA_REGISTRYINDEX);
   evs->add(type, callbackRef);
-
   // Return the callback ref (this is an EventListener easier to use
   // in Events_off())
   lua_pushinteger(L, callbackRef);
   return 1;
 }
-
 int Events_off(lua_State* L)
 {
   auto evs = get_ptr<Events>(L, 1);
   int callbackRef = LUA_REFNIL;
-
   // Remove by listener value
   if (lua_isinteger(L, 2)) {
     callbackRef = lua_tointeger(L, 2);
@@ -516,7 +463,6 @@ int Events_off(lua_State* L)
   else {
     return luaL_error(L, "first argument must be a function or a EventListener");
   }
-
   if (callbackRef != LUA_REFNIL &&
       // Check that we are removing a listener from this Events and no
       // other random value from the Lua registry
@@ -526,24 +472,19 @@ int Events_off(lua_State* L)
   }
   return 0;
 }
-
-// We don't need a __gc (to call ~Events()), because Events instances
-// will be deleted when the Sprite is deleted or on App Exit
+ We don't need a __gc (to call ~Events()), because Events instances
+ will be deleted when the Sprite is deleted or on App Exit
 const luaL_Reg Events_methods[] = {
   { "on",    Events_on  },
   { "off",   Events_off },
   { nullptr, nullptr    }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(Events);
-
 void register_events_class(lua_State* L)
 {
   REG_CLASS(L, Events);
 }
-
 void push_app_events(lua_State* L)
 {
   if (!g_appEvents) {
@@ -552,7 +493,6 @@ void push_app_events(lua_State* L)
   }
   push_ptr<Events>(L, g_appEvents.get());
 }
-
 void push_sprite_events(lua_State* L, Sprite* sprite)
 {
   // Clear the g_spriteEvents map on Exit() signal because if the dtor
@@ -567,11 +507,8 @@ void push_sprite_events(lua_State* L, Sprite* sprite)
     atExit = true;
     App::instance()->Exit.connect([] { g_spriteEvents.clear(); });
   }
-
   ASSERT(sprite);
-
   SpriteEvents* spriteEvents;
-
   auto it = g_spriteEvents.find(sprite->id());
   if (it != g_spriteEvents.end())
     spriteEvents = it->second.get();
@@ -579,10 +516,8 @@ void push_sprite_events(lua_State* L, Sprite* sprite)
     spriteEvents = new SpriteEvents(sprite);
     g_spriteEvents[sprite->id()].reset(spriteEvents);
   }
-
   push_ptr<Events>(L, spriteEvents);
 }
-
 void push_window_events(lua_State* L, ui::Window* window)
 {
   if (!g_windowEvents) {
@@ -594,6 +529,5 @@ void push_window_events(lua_State* L, ui::Window* window)
   }
   push_ptr<Events>(L, g_windowEvents.get());
 }
-
 } // namespace script
 } // namespace app

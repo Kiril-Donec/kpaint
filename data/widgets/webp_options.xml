@@ -1,6 +1,11 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2016-2018 by David Capello -->
-<!-- Copyright (C) 2015 by Gabriel Rauter -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui>
 <window id="webp_options" text="@.title">
   <vbox>

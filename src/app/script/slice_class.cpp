@@ -1,30 +1,29 @@
-// Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cmd/set_slice_key.h"
-#include "app/cmd/set_slice_name.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/script/userdata.h"
-#include "app/tx.h"
-#include "doc/slice.h"
-#include "doc/sprite.h"
-
+ endif
+ include "app/cmd/set_slice_key.h"
+ include "app/cmd/set_slice_name.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/script/userdata.h"
+ include "app/tx.h"
+ include "doc/slice.h"
+ include "doc/sprite.h"
 namespace app { namespace script {
-
 using namespace doc;
-
 namespace {
-
 int Slice_eq(lua_State* L)
 {
   const auto a = may_get_docobj<Slice>(L, 1);
@@ -32,21 +31,18 @@ int Slice_eq(lua_State* L)
   lua_pushboolean(L, (!a && !b) || (a && b && a->id() == b->id()));
   return 1;
 }
-
 int Slice_get_sprite(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
   push_docobj(L, slice->owner()->sprite());
   return 1;
 }
-
 int Slice_get_name(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
   lua_pushstring(L, slice->name().c_str());
   return 1;
 }
-
 int Slice_get_bounds(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
@@ -56,7 +52,6 @@ int Slice_get_bounds(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Slice_get_center(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
@@ -66,7 +61,6 @@ int Slice_get_center(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Slice_get_pivot(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
@@ -76,7 +70,6 @@ int Slice_get_pivot(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Slice_set_name(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
@@ -88,7 +81,6 @@ int Slice_set_name(lua_State* L)
   }
   return 0;
 }
-
 int Slice_set_bounds(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
@@ -102,7 +94,6 @@ int Slice_set_bounds(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Slice_set_center(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
@@ -116,7 +107,6 @@ int Slice_set_center(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Slice_set_pivot(lua_State* L)
 {
   auto slice = get_docobj<Slice>(L, 1);
@@ -130,12 +120,10 @@ int Slice_set_pivot(lua_State* L)
   tx.commit();
   return 0;
 }
-
 const luaL_Reg Slice_methods[] = {
   { "__eq",  Slice_eq },
   { nullptr, nullptr  }
 };
-
 const Property Slice_properties[] = {
   { "sprite",     Slice_get_sprite,               nullptr                        },
   { "name",       Slice_get_name,                 Slice_set_name                 },
@@ -147,16 +135,12 @@ const Property Slice_properties[] = {
   { "properties", UserData_get_properties<Slice>, UserData_set_properties<Slice> },
   { nullptr,      nullptr,                        nullptr                        }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(Slice);
-
 void register_slice_class(lua_State* L)
 {
   using doc::Slice;
   REG_CLASS(L, Slice);
   REG_CLASS_PROPERTIES(L, Slice);
 }
-
 }} // namespace app::script

@@ -1,26 +1,26 @@
-// Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_COMMANDS_CMD_SAVE_FILE_H_INCLUDED
-#define APP_COMMANDS_CMD_SAVE_FILE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/commands/command.h"
-#include "app/commands/new_params.h"
-#include "doc/anidir.h"
-#include "doc/frames_sequence.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 
-#include <string>
 
+ ifndef APP_COMMANDS_CMD_SAVE_FILE_H_INCLUDED
+ define APP_COMMANDS_CMD_SAVE_FILE_H_INCLUDED
+ pragma once
+ include "app/commands/command.h"
+ include "app/commands/new_params.h"
+ include "doc/anidir.h"
+ include "doc/frames_sequence.h"
+ include "gfx/point.h"
+ include "gfx/rect.h"
+ include <string>
 namespace app {
 class Doc;
-
 struct SaveFileParams : public NewParams {
   Param<bool> ui{
     this,
@@ -60,19 +60,16 @@ struct SaveFileParams : public NewParams {
   Param<gfx::Rect> bounds{ this, gfx::Rect(), "bounds" };
   Param<bool> playSubtags{ this, false, "playSubtags" };
 };
-
 class SaveFileBaseCommand : public CommandWithNewParams<SaveFileParams> {
 public:
   enum class MarkAsSaved { Off, On };
   enum class SaveInBackground { Off, On };
   enum class ResizeOnTheFly { Off, On };
-
   SaveFileBaseCommand(const char* id, CommandFlags flags);
 
 protected:
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
-
   std::string saveAsDialog(Context* context,
                            const std::string& dlgTitle,
                            const std::string& filename,
@@ -85,11 +82,8 @@ protected:
                                 const MarkAsSaved markAsSaved,
                                 const ResizeOnTheFly resizeOnTheFly = ResizeOnTheFly::Off,
                                 const gfx::PointF& scale = gfx::PointF(1.0, 1.0));
-
   doc::FramesSequence m_framesSeq;
   bool m_adjustFramesByTag;
 };
-
 } // namespace app
-
-#endif
+ endif

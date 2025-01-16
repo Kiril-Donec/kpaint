@@ -1,39 +1,37 @@
-// Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_ACTIVE_SITE_HANDLER_H_INCLUDED
-#define APP_ACTIVE_SITE_HANDLER_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/doc_observer.h"
-#include "app/doc_range.h"
-#include "doc/frame.h"
-#include "doc/object_id.h"
-#include "doc/palette_picks.h"
 
-#include <map>
 
+ ifndef APP_ACTIVE_SITE_HANDLER_H_INCLUDED
+ define APP_ACTIVE_SITE_HANDLER_H_INCLUDED
+ pragma once
+ include "app/doc_observer.h"
+ include "app/doc_range.h"
+ include "doc/frame.h"
+ include "doc/object_id.h"
+ include "doc/palette_picks.h"
+ include <map>
 namespace doc {
 class Layer;
 }
-
 namespace app {
 class Doc;
 class Site;
-
-// Pseudo-DocViews to handle active layer/frame in a non-UI context
-// per Doc.
-//
-// TODO we could move code to handle active frame/layer from
-//      Timeline to this class.
+ Pseudo-DocViews to handle active layer/frame in a non-UI context
+ per Doc.
+// // TODO we could move code to handle active frame/layer from
+ Timeline to this class.
 class ActiveSiteHandler : public DocObserver {
 public:
   ActiveSiteHandler();
   virtual ~ActiveSiteHandler();
-
   void addDoc(Doc* doc);
   void removeDoc(Doc* doc);
   void getActiveSiteForDoc(Doc* doc, Site* site);
@@ -49,7 +47,6 @@ private:
   void onAddFrame(DocEvent& ev) override;
   void onBeforeRemoveLayer(DocEvent& ev) override;
   void onRemoveFrame(DocEvent& ev) override;
-
   // Active data for a document
   struct Data {
     doc::ObjectId layer;
@@ -58,12 +55,8 @@ private:
     doc::PalettePicks selectedColors;
     doc::PalettePicks selectedTiles;
   };
-
   Data& getData(Doc* doc);
-
   std::map<Doc*, Data> m_data;
 };
-
 } // namespace app
-
-#endif
+ endif

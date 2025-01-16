@@ -1,18 +1,20 @@
-// Aseprite
-// Copyright (C) 2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_REMOVE_SLICE_H_INCLUDED
-#define APP_CMD_REMOVE_SLICE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd/add_slice.h"
 
+
+ ifndef APP_CMD_REMOVE_SLICE_H_INCLUDED
+ define APP_CMD_REMOVE_SLICE_H_INCLUDED
+ pragma once
+ include "app/cmd/add_slice.h"
 namespace app { namespace cmd {
 using namespace doc;
-
 class RemoveSlice : public AddSlice {
 public:
   RemoveSlice(Sprite* sprite, Slice* slice);
@@ -22,7 +24,5 @@ protected:
   void onUndo() override;
   void onRedo() override;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

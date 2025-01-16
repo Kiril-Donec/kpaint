@@ -1,21 +1,19 @@
-// Aseprite Code Generator
-// Copyright (c) 2024 Igara Studio S.A.
-// Copyright (c) 2015-2017 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#include "gen/theme_class.h"
-
-#include "base/string.h"
-#include "gen/common.h"
-
-#include <cstring>
-#include <iostream>
-#include <vector>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Code Generator
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ include "gen/theme_class.h"
+ include "base/string.h"
+ include "gen/common.h"
+ include <cstring>
+ include <iostream>
+ include <vector>
 using namespace tinyxml2;
-
 void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
 {
   std::vector<std::string> dimensions;
@@ -23,7 +21,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
   std::vector<std::string> parts;
   std::vector<std::string> cursors;
   std::vector<std::string> styles;
-
   XMLHandle handle(doc);
   XMLElement* elem = handle.FirstChildElement("theme")
                        .FirstChildElement("dimensions")
@@ -34,7 +31,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     dimensions.push_back(id);
     elem = elem->NextSiblingElement();
   }
-
   elem = handle.FirstChildElement("theme")
            .FirstChildElement("colors")
            .FirstChildElement("color")
@@ -44,7 +40,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     colors.push_back(id);
     elem = elem->NextSiblingElement();
   }
-
   elem = handle.FirstChildElement("theme")
            .FirstChildElement("parts")
            .FirstChildElement("part")
@@ -58,7 +53,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
       parts.push_back(id);
     elem = elem->NextSiblingElement();
   }
-
   elem = handle.FirstChildElement("theme")
            .FirstChildElement("styles")
            .FirstChildElement("style")
@@ -68,7 +62,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     styles.push_back(id);
     elem = elem->NextSiblingElement();
   }
-
   std::cout << "// Don't modify, generated file from " << inputFn << "\n"
             << "\n"
             << "#ifndef GENERATED_THEME_H_INCLUDED\n"
@@ -82,7 +75,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
             << "  class ThemeFile {\n"
             << "  public:\n"
             << "\n";
-
   // Dimensions sub class
   std::cout << "    class Dimensions {\n"
             << "      template<typename> friend class ThemeFile;\n"
@@ -97,7 +89,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     std::cout << "      int m_" << id << ";\n";
   }
   std::cout << "    };\n";
-
   // Colors sub class
   std::cout << "    class Colors {\n"
             << "      template<typename> friend class ThemeFile;\n"
@@ -112,7 +103,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     std::cout << "      gfx::Color m_" << id << ";\n";
   }
   std::cout << "    };\n";
-
   // Parts sub class
   std::cout << "    class Parts {\n"
             << "      template<typename> friend class ThemeFile;\n"
@@ -127,7 +117,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     std::cout << "      skin::SkinPartPtr m_" << id << ";\n";
   }
   std::cout << "    };\n";
-
   // Cursors sub class
   std::cout << "    class Cursors {\n"
             << "      template<typename> friend class ThemeFile;\n"
@@ -142,7 +131,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     std::cout << "      ui::Cursor* m_" << id << ";\n";
   }
   std::cout << "    };\n";
-
   // Styles sub class
   std::cout << "\n"
             << "    class Styles {\n"
@@ -158,7 +146,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
     std::cout << "      ui::Style* m_" << id << ";\n";
   }
   std::cout << "    };\n";
-
   std::cout << "\n"
             << "    Dimensions dimensions;\n"
             << "    Colors colors;\n"
@@ -206,7 +193,6 @@ void gen_theme_class(XMLDocument* doc, const std::string& inputFn)
             << "    void byId(ui::Style*& style, const std::string& id) {\n"
             << "      style = static_cast<T*>(this)->getStyleById(id);\n"
             << "    }\n";
-
   std::cout << "  };\n"
             << "\n"
             << "} // namespace gen\n"

@@ -1,17 +1,19 @@
-// Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/util/tile_flags_utils.h"
-
+ endif
+ include "app/util/tile_flags_utils.h"
 namespace app {
-
 void build_tile_flags_string(const doc::tile_flags tf, std::string& result)
 {
   if (tf & doc::tile_f_xflip)
@@ -21,5 +23,4 @@ void build_tile_flags_string(const doc::tile_flags tf, std::string& result)
   if (tf & doc::tile_f_dflip)
     result += "D";
 }
-
 } // namespace app

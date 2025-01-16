@@ -1,24 +1,20 @@
-// Aseprite
-// Copyright (c) 2020-2024 Igara Studio S.A.
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/octree_map.h"
-
-#include "doc/palette.h"
-
-#define MIN_LEVEL_OCTREE_DEEP 3
-
+ endif
+ include "doc/octree_map.h"
+ include "doc/palette.h"
+ define MIN_LEVEL_OCTREE_DEEP 3
 namespace doc {
-
-//////////////////////////////////////////////////////////////////////
-// OctreeNode
-
+// ////////////////////////////////////////////////////////////////////
+ OctreeNode
 void OctreeNode::addColor(color_t c, int level, OctreeNode* parent, int paletteIndex, int levelDeep)
 {
   m_parent = parent;
@@ -33,7 +29,6 @@ void OctreeNode::addColor(color_t c, int level, OctreeNode* parent, int paletteI
   }
   (*m_children)[index].addColor(c, level + 1, this, paletteIndex, levelDeep);
 }
-
 int OctreeNode::mapColor(int r,
                          int g,
                          int b,
@@ -55,12 +50,10 @@ int OctreeNode::mapColor(int r,
     m_children.reset(new std::array<OctreeNode, 16>());
   return (*m_children)[index].mapColor(r, g, b, a, mask_index, palette, level + 1, octree);
 }
-
 void OctreeNode::collectLeafNodes(OctreeNodes& leavesVector, int& paletteIndex)
 {
   for (int i = 0; i < 16; i++) {
     OctreeNode& child = (*m_children)[i];
-
     if (child.isLeaf()) {
       child.paletteIndex(paletteIndex);
       leavesVector.push_back(&child);
@@ -71,17 +64,15 @@ void OctreeNode::collectLeafNodes(OctreeNodes& leavesVector, int& paletteIndex)
     }
   }
 }
-
-// removeLeaves(): remove leaves from a common parent
-// auxParentVector: i/o addreess of an auxiliary parent leaf Vector from outside this function.
-// rootLeavesVector: i/o address of the m_root->m_leavesVector
+ removeLeaves(): remove leaves from a common parent
+ auxParentVector: i/o addreess of an auxiliary parent leaf Vector from outside this function.
+ rootLeavesVector: i/o address of the m_root->m_leavesVector
 int OctreeNode::removeLeaves(OctreeNodes& auxParentVector, OctreeNodes& rootLeavesVector)
 {
   // Apply to OctreeNode which has children which are leaf nodes
   int result = 0;
   for (int i = 15; i >= 0; i--) {
     OctreeNode& child = (*m_children)[i];
-
     if (child.isLeaf()) {
       m_leafColor.add(child.leafColor());
       result++;
@@ -92,30 +83,25 @@ int OctreeNode::removeLeaves(OctreeNodes& auxParentVector, OctreeNodes& rootLeav
   auxParentVector.push_back(this);
   return result - 1;
 }
-
-// static
+ static
 int OctreeNode::getHextet(color_t c, int level)
 {
   return ((c & (0x00000080 >> level)) ? 1 : 0) | ((c & (0x00008000 >> level)) ? 2 : 0) |
          ((c & (0x00800000 >> level)) ? 4 : 0) | ((c & (0x80000000 >> level)) ? 8 : 0);
 }
-
 int OctreeNode::getHextet(int r, int g, int b, int a, int level)
 {
   return ((r & (0x80 >> level)) ? 1 : 0) | ((g & (0x80 >> level)) ? 2 : 0) |
          ((b & (0x80 >> level)) ? 4 : 0) | ((a & (0x80 >> level)) ? 8 : 0);
 }
-
-// static
+ static
 color_t OctreeNode::hextetToBranchColor(int hextet, int level)
 {
   return ((hextet & 1) ? 0x00000080 >> level : 0) | ((hextet & 2) ? 0x00008000 >> level : 0) |
          ((hextet & 4) ? 0x00800000 >> level : 0) | ((hextet & 8) ? 0x80000000 >> level : 0);
 }
-
-//////////////////////////////////////////////////////////////////////
-// OctreeMap
-
+// ////////////////////////////////////////////////////////////////////
+ OctreeMap
 bool OctreeMap::makePalette(Palette* palette, int colorCount, const int levelDeep)
 {
   if (m_root.hasChildren()) {
@@ -125,19 +111,15 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, const int levelDee
     int paletteIndex = 0;
     m_root.collectLeafNodes(m_leavesVector, paletteIndex);
   }
-
   if (m_maskColor != DOC_OCTREE_IS_OPAQUE)
     colorCount--;
-
   // If we can improve the octree accuracy, makePalette returns false, then
   // outside from this function we must re-construct the octreeMap all again with
   // deep level equal to 8.
   if (levelDeep == 7 && m_leavesVector.size() < colorCount)
     return false;
-
   OctreeNodes auxLeavesVector; // auxiliary collapsed node accumulator
   bool keepReducingMap = true;
-
   for (int level = levelDeep; level > -1; level--) {
     for (int i = m_leavesVector.size() - 1; i >= 0; i--) {
       if (m_leavesVector.size() + auxLeavesVector.size() <= colorCount) {
@@ -189,7 +171,6 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, const int levelDee
         else
           break;
       }
-
       m_leavesVector.back()->parent()->removeLeaves(auxLeavesVector, m_leavesVector);
     }
     if (keepReducingMap) {
@@ -211,13 +192,10 @@ bool OctreeMap::makePalette(Palette* palette, int colorCount, const int levelDee
     palette->setEntry(0, m_maskColor);
     aux = 1;
   }
-
   for (int i = 0; i < leafCount; i++)
     palette->setEntry(i + aux, m_leavesVector[i]->leafColor().rgbaColor());
-
   return true;
 }
-
 void OctreeMap::feedWithImage(const Image* image,
                               const bool withAlpha,
                               const color_t maskColor,
@@ -227,7 +205,6 @@ void OctreeMap::feedWithImage(const Image* image,
   ASSERT(image->pixelFormat() == IMAGE_RGB || image->pixelFormat() == IMAGE_GRAYSCALE);
   color_t forceFullOpacity;
   const bool imageIsRGBA = (image->pixelFormat() == IMAGE_RGB);
-
   auto add_color_to_octree = [this, &forceFullOpacity, levelDeep, imageIsRGBA](color_t color) {
     const int alpha = (imageIsRGBA ? rgba_geta(color) : graya_geta(color));
     if (alpha) {
@@ -237,7 +214,6 @@ void OctreeMap::feedWithImage(const Image* image,
       addColor(color, levelDeep);
     }
   };
-
   switch (image->pixelFormat()) {
     case IMAGE_RGB: {
       forceFullOpacity = (withAlpha ? 0 : rgba_a_mask);
@@ -252,7 +228,6 @@ void OctreeMap::feedWithImage(const Image* image,
   }
   m_maskColor = maskColor;
 }
-
 int OctreeMap::mapColor(color_t rgba) const
 {
   return m_root.mapColor(rgba_getr(rgba),
@@ -264,7 +239,6 @@ int OctreeMap::mapColor(color_t rgba) const
                          0,
                          this);
 }
-
 void OctreeMap::regenerateMap(const Palette* palette,
                               const int maskIndex,
                               const FitCriteria fitCriteria)
@@ -272,12 +246,10 @@ void OctreeMap::regenerateMap(const Palette* palette,
   ASSERT(palette);
   if (!palette)
     return;
-
   // Skip useless regenerations
   if (m_palette == palette && m_modifications == palette->getModifications() &&
       m_maskIndex == maskIndex && m_fitCriteria == fitCriteria)
     return;
-
   m_palette = palette;
   m_fitCriteria = fitCriteria;
   m_root = OctreeNode();
@@ -296,7 +268,6 @@ void OctreeMap::regenerateMap(const Palette* palette,
                                         rgba_geta(m_maskColor),
                                         maskIndex);
   }
-
   for (int i = 0; i < palette->size(); i++) {
     if (i == maskIndex) {
       m_root.addColor(palette->entry(i), 0, &m_root, maskColorBestFitIndex, 8);
@@ -304,8 +275,6 @@ void OctreeMap::regenerateMap(const Palette* palette,
     }
     m_root.addColor(palette->entry(i), 0, &m_root, i, 8);
   }
-
   m_modifications = palette->getModifications();
 }
-
 } // namespace doc

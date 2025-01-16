@@ -1,9 +1,13 @@
-// Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
+
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
 
 FOR_EACH_COMMAND(About)
 FOR_EACH_COMMAND(AddColor)
@@ -178,10 +182,9 @@ FOR_EACH_COMMAND(Undo)
 FOR_EACH_COMMAND(UndoHistory)
 FOR_EACH_COMMAND(UnlinkCel)
 FOR_EACH_COMMAND(Zoom)
-
-#ifdef ENABLE_SCRIPTING
+ ifdef ENABLE_SCRIPTING
 FOR_EACH_COMMAND(Debugger)
 FOR_EACH_COMMAND(DeveloperConsole)
 FOR_EACH_COMMAND(OpenScriptFolder)
 FOR_EACH_COMMAND(RunScript)
-#endif // ENABLE_SCRIPTING
+// endif // ENABLE_SCRIPTING

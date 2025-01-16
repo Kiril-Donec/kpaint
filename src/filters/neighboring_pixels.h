@@ -1,25 +1,26 @@
-// Aseprite
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef FILTERS_NEIGHBORING_PIXELS_H_INCLUDED
-#define FILTERS_NEIGHBORING_PIXELS_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "doc/image.h"
-#include "doc/image_traits.h"
-#include "filters/tiled_mode.h"
 
-#include <vector>
 
+ ifndef FILTERS_NEIGHBORING_PIXELS_H_INCLUDED
+ define FILTERS_NEIGHBORING_PIXELS_H_INCLUDED
+ pragma once
+ include "doc/image.h"
+ include "doc/image_traits.h"
+ include "filters/tiled_mode.h"
+ include <vector>
 namespace filters {
 using namespace doc;
-
-// Calls the specified "delegate" for all neighboring pixels in a 2D
-// (width*height) matrix located in (x,y) where its center is the
-// (centerX,centerY) element of the matrix.
+ Calls the specified "delegate" for all neighboring pixels in a 2D
+ (width*height) matrix located in (x,y) where its center is the
+ (centerX,centerY) element of the matrix.
 template<typename Traits, typename Delegate>
 inline void get_neighboring_pixels(const doc::Image* sourceImage,
                                    int x,
@@ -48,7 +49,6 @@ inline void get_neighboring_pixels(const doc::Image* sourceImage,
     else
       gety = sourceImage->height() - 1;
   }
-
   for (int dy = 0; dy < height; ++dy) {
     // X position to get pixel.
     getx = x - centerX;
@@ -67,14 +67,11 @@ inline void get_neighboring_pixels(const doc::Image* sourceImage,
       else
         getx = sourceImage->width() - 1;
     }
-
     typename Traits::const_address_t srcAddress =
       reinterpret_cast<typename Traits::const_address_t>(sourceImage->getPixelAddress(getx, gety));
-
     for (int dx = 0; dx < width; dx++) {
       // Call the delegate for each pixel value.
       delegate(*srcAddress);
-
       // Update X position to get pixel.
       if (getx < sourceImage->width() - 1) {
         ++getx;
@@ -89,7 +86,6 @@ inline void get_neighboring_pixels(const doc::Image* sourceImage,
           sourceImage->getPixelAddress(getx, gety));
       }
     }
-
     // Update Y position to get pixel
     if (gety < sourceImage->height() - 1) {
       if (addy == 0)
@@ -101,7 +97,5 @@ inline void get_neighboring_pixels(const doc::Image* sourceImage,
       gety = 0;
   }
 }
-
 } // namespace filters
-
-#endif
+ endif

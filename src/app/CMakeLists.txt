@@ -1,13 +1,12 @@
-# Aseprite
-# Copyright (C) 2018-2024  Igara Studio S.A.
-# Copyright (C) 2001-2018  David Capello
+# KPaint
+# Copyright (C) 2024-2025 KiriX Company
+# # This program is distributed under the terms of
+# the End-User License Agreement for KPaint.
 
-# Generate a ui::Widget for each widget in a XML file
 file(GLOB widget_files ${SOURCE_DATA_DIR}/widgets/*.xml)
 foreach(widget_file ${widget_files})
   get_filename_component(widget_name ${widget_file} NAME_WE)
   set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/${widget_name}.xml.h)
-
   add_custom_command(
     OUTPUT ${output_fn}
     COMMAND ${GEN_EXE} --input ${widget_file} --widgetid ${widget_name} > ${output_fn}.tmp
@@ -15,13 +14,11 @@ foreach(widget_file ${widget_files})
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     MAIN_DEPENDENCY ${widget_file}
     DEPENDS ${GEN_DEP})
-
   list(APPEND generated_files ${output_fn})
 endforeach()
 
 # Generate preference types from data/pref.xml
 set(pref_xml ${SOURCE_DATA_DIR}/pref.xml)
-
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/pref.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
@@ -42,8 +39,8 @@ add_custom_command(
   DEPENDS ${GEN_DEP})
 list(APPEND generated_files ${output_fn})
 
-# Generate theme.xml.h from data/extensions/aseprite-theme/theme.xml
-set(theme_xml ${SOURCE_DATA_DIR}/extensions/aseprite-theme/theme.xml)
+# Generate theme.xml.h from data/extensions/kpaint-theme/theme.xml
+set(theme_xml ${SOURCE_DATA_DIR}/extensions/kpaint-theme/theme.xml)
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/theme.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
@@ -87,16 +84,15 @@ add_custom_command(
   DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${SOURCE_DATA_DIR}/gui.xml")
 list(APPEND generated_files ${output_fn})
 
-# libarchive definitions
+# #####################################################################
+# Libarchive definitions
 add_definitions(-DLIBARCHIVE_STATIC)
 
-######################################################################
+# #####################################################################
 # app-lib target
-
 add_library(app-lib ${generated_files})
 
-# These specific-platform files should be in an external library
-# (e.g. "base" or "os").
+# These specific-platform files should be in an external library (e.g. "base" or "os")
 if(WIN32)
   target_sources(app-lib PRIVATE font_path_win.cpp)
 elseif(APPLE)
@@ -115,10 +111,6 @@ endif()
 # Data recovery
 if(NOT ENABLE_TRIAL_MODE OR ENABLE_DRM)
   set(ENABLE_DATA_RECOVERY on)
-else()
-  set(ENABLE_DATA_RECOVERY off)
-endif()
-if(ENABLE_DATA_RECOVERY)
   target_compile_definitions(app-lib PUBLIC -DENABLE_DATA_RECOVERY)
   target_sources(app-lib PRIVATE
     crash/backup_observer.cpp
@@ -143,11 +135,13 @@ target_sources(app-lib PRIVATE
   file/qoi_format.cpp
   file/svg_format.cpp
   file/tga_format.cpp)
+
 if(ENABLE_WEBP AND WEBP_FOUND)
   target_compile_definitions(app-lib PUBLIC -DENABLE_WEBP)
   target_sources(app-lib PRIVATE
     file/webp_format.cpp)
 endif()
+
 if(ENABLE_PSD)
   target_link_libraries(app-lib psd)
   target_compile_definitions(app-lib PUBLIC -DENABLE_PSD)
@@ -169,14 +163,12 @@ endif()
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib lua lauxlib lualib)
   target_compile_definitions(app-lib PUBLIC -DENABLE_SCRIPTING)
-
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)
     target_compile_definitions(app-lib PUBLIC -DENABLE_WEBSOCKET)
     target_sources(app-lib PRIVATE
       script/websocket_class.cpp)
   endif()
-
   target_sources(app-lib PRIVATE
     commands/cmd_developer_console.cpp
     commands/cmd_open_script_folder.cpp
@@ -476,9 +468,6 @@ target_sources(app-lib PRIVATE
   commands/cmd_toggle_preview.cpp
   commands/cmd_toggle_tiles_mode.cpp
   commands/cmd_toggle_timeline_thumbnails.cpp
-  commands/cmd_undo.cpp
-  commands/cmd_undo_history.cpp
-  commands/cmd_unlink_cel.cpp
   commands/cmd_zoom.cpp
   commands/command.cpp
   commands/commands.cpp
@@ -520,7 +509,6 @@ target_sources(app-lib PRIVATE
   doc_exporter.cpp
   doc_range.cpp
   doc_range_ops.cpp
-  doc_undo.cpp
   docs.cpp
   extensions.cpp
   extra_cel.cpp
@@ -735,8 +723,6 @@ target_link_libraries(app-lib
   dio-lib
   filters-lib
   fixmath-lib
-  flic-lib
-  tga-lib
   laf-gfx
   render-lib
   laf-ft
@@ -744,7 +730,6 @@ target_link_libraries(app-lib
   ui-lib
   ver-lib
   updater-lib
-  undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}
   ${TINYEXIF_LIBRARY}

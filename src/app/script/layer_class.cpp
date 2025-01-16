@@ -1,38 +1,37 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cmd/set_layer_blend_mode.h"
-#include "app/cmd/set_layer_name.h"
-#include "app/cmd/set_layer_opacity.h"
-#include "app/cmd/set_layer_tileset.h"
-#include "app/doc.h"
-#include "app/doc_api.h"
-#include "app/script/blend_mode.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/script/userdata.h"
-#include "app/tx.h"
-#include "doc/layer.h"
-#include "doc/layer_tilemap.h"
-#include "doc/sprite.h"
-#include "doc/tileset.h"
-#include "doc/tilesets.h"
-
+ endif
+ include "app/cmd/set_layer_blend_mode.h"
+ include "app/cmd/set_layer_name.h"
+ include "app/cmd/set_layer_opacity.h"
+ include "app/cmd/set_layer_tileset.h"
+ include "app/doc.h"
+ include "app/doc_api.h"
+ include "app/script/blend_mode.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/script/userdata.h"
+ include "app/tx.h"
+ include "doc/layer.h"
+ include "doc/layer_tilemap.h"
+ include "doc/sprite.h"
+ include "doc/tileset.h"
+ include "doc/tilesets.h"
 namespace app { namespace script {
-
 using namespace doc;
-
 namespace {
-
 int Layer_eq(lua_State* L)
 {
   const auto a = may_get_docobj<Layer>(L, 1);
@@ -40,7 +39,6 @@ int Layer_eq(lua_State* L)
   lua_pushboolean(L, (!a && !b) || (a && b && a->id() == b->id()));
   return 1;
 }
-
 int Layer_cel(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -51,21 +49,18 @@ int Layer_cel(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Layer_get_id(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushinteger(L, layer->id());
   return 1;
 }
-
 int Layer_get_sprite(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   push_docobj<Sprite>(L, layer->sprite());
   return 1;
 }
-
 int Layer_get_parent(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -75,7 +70,6 @@ int Layer_get_parent(lua_State* L)
     push_docobj<Layer>(L, layer->parent());
   return 1;
 }
-
 int Layer_get_layers(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -85,7 +79,6 @@ int Layer_get_layers(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Layer_get_stackIndex(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -98,7 +91,6 @@ int Layer_get_stackIndex(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Layer_get_previous(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -108,7 +100,6 @@ int Layer_get_previous(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Layer_get_next(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -118,14 +109,12 @@ int Layer_get_next(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Layer_get_name(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushstring(L, layer->name().c_str());
   return 1;
 }
-
 int Layer_get_opacity(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -136,7 +125,6 @@ int Layer_get_opacity(lua_State* L)
   else
     return 0;
 }
-
 int Layer_get_blendMode(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -149,91 +137,78 @@ int Layer_get_blendMode(lua_State* L)
   else
     return 0;
 }
-
 int Layer_get_isImage(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isImage());
   return 1;
 }
-
 int Layer_get_isGroup(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isGroup());
   return 1;
 }
-
 int Layer_get_isTilemap(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isTilemap());
   return 1;
 }
-
 int Layer_get_isTransparent(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isTransparent());
   return 1;
 }
-
 int Layer_get_isBackground(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isBackground());
   return 1;
 }
-
 int Layer_get_isEditable(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isEditable());
   return 1;
 }
-
 int Layer_get_isVisible(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isVisible());
   return 1;
 }
-
 int Layer_get_isContinuous(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isContinuous());
   return 1;
 }
-
 int Layer_get_isCollapsed(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isCollapsed());
   return 1;
 }
-
 int Layer_get_isExpanded(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isExpanded());
   return 1;
 }
-
 int Layer_get_isReference(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   lua_pushboolean(L, layer->isReference());
   return 1;
 }
-
 int Layer_get_cels(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   push_cels(L, layer);
   return 1;
 }
-
 int Layer_get_tileset(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -243,7 +218,6 @@ int Layer_get_tileset(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Layer_set_name(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -255,7 +229,6 @@ int Layer_set_name(lua_State* L)
   }
   return 0;
 }
-
 int Layer_set_opacity(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -267,7 +240,6 @@ int Layer_set_opacity(lua_State* L)
   }
   return 0;
 }
-
 int Layer_set_blendMode(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -280,7 +252,6 @@ int Layer_set_blendMode(lua_State* L)
   }
   return 0;
 }
-
 int Layer_set_stackIndex(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -288,43 +259,36 @@ int Layer_set_stackIndex(lua_State* L)
   int newStackIndex = lua_tointeger(L, 2);
   int stackIndex = 1;
   auto parent = layer->parent();
-
   // First we need to know this layer stackIndex because we'll use
   auto it = std::find(layers.begin(), layers.end(), layer);
   ASSERT(it != layers.end());
   if (it != layers.end())
     stackIndex = it - layers.begin() + 1;
-
   Layer* beforeThis = nullptr;
   if (newStackIndex > stackIndex) {
     ++newStackIndex;
   }
-
   if (newStackIndex - 1 < int(parent->layers().size())) {
     beforeThis = parent->layers()[std::clamp(newStackIndex - 1, 0, (int)parent->layers().size())];
   }
   else {
     beforeThis = nullptr;
   }
-
   // Do nothing
   if (beforeThis == layer)
     return 0;
-
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());
   Tx tx(doc);
   DocApi(doc, tx).restackLayerBefore(layer, parent, beforeThis);
   tx.commit();
   return 0;
 }
-
 int Layer_set_isEditable(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   layer->setEditable(lua_toboolean(L, 2));
   return 0;
 }
-
 int Layer_set_isVisible(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -333,28 +297,24 @@ int Layer_set_isVisible(lua_State* L)
   doc->setLayerVisibilityWithNotifications(layer, newState);
   return 0;
 }
-
 int Layer_set_isContinuous(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   layer->setContinuous(lua_toboolean(L, 2));
   return 0;
 }
-
 int Layer_set_isCollapsed(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   layer->setCollapsed(lua_toboolean(L, 2));
   return 0;
 }
-
 int Layer_set_isExpanded(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   layer->setCollapsed(!lua_toboolean(L, 2));
   return 0;
 }
-
 int Layer_set_parent(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -368,18 +328,15 @@ int Layer_set_parent(lua_State* L)
     else
       return luaL_error(L, "the given parent is not a layer group or sprite");
   }
-
   if (!parent)
     return luaL_error(L, "parent cannot be nil");
   else if (parent == layer)
     return luaL_error(L, "the parent of a layer cannot be the layer itself");
-
   // TODO Why? should we be able to do this? It would require some hard work:
   // 1. convert color modes
   // 2. multiple transactions for both modified sprites?
   if (parent->sprite() != layer->sprite())
     return luaL_error(L, "you cannot move layers between sprites");
-
   if (parent) {
     Doc* doc = static_cast<Doc*>(layer->sprite()->document());
     Tx tx(doc);
@@ -388,19 +345,16 @@ int Layer_set_parent(lua_State* L)
   }
   return 0;
 }
-
 int Layer_set_tileset(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   if (layer->isTilemap()) {
     auto tilemap = static_cast<doc::LayerTilemap*>(layer);
     doc::tileset_index tsi = tilemap->tilesetIndex();
-
     if (auto tileset = may_get_docobj<Tileset>(L, 2))
       tsi = layer->sprite()->tilesets()->getIndex(tileset);
     else if (lua_isinteger(L, 2))
       tsi = lua_tointeger(L, 2);
-
     if (tsi != tilemap->tilesetIndex()) {
       Tx tx(layer->sprite());
       tx(new cmd::SetLayerTileset(tilemap, tsi));
@@ -409,13 +363,11 @@ int Layer_set_tileset(lua_State* L)
   }
   return 0;
 }
-
 const luaL_Reg Layer_methods[] = {
   { "__eq",  Layer_eq  },
   { "cel",   Layer_cel },
   { nullptr, nullptr   }
 };
-
 const Property Layer_properties[] = {
   { "id",            Layer_get_id,                   nullptr                        },
   { "sprite",        Layer_get_sprite,               nullptr                        },
@@ -445,16 +397,12 @@ const Property Layer_properties[] = {
   { "tileset",       Layer_get_tileset,              Layer_set_tileset              },
   { nullptr,         nullptr,                        nullptr                        }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(Layer);
-
 void register_layer_class(lua_State* L)
 {
   using Layer = doc::Layer;
   REG_CLASS(L, Layer);
   REG_CLASS_PROPERTIES(L, Layer);
 }
-
 }} // namespace app::script

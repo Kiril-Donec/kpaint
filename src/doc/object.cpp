@@ -1,50 +1,42 @@
-// Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
-// Copyright (C) 2001-2016  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/object.h"
-
-#include "base/debug.h"
-
-#include <map>
-#include <mutex>
-
+ endif
+ include "base/debug.h"
+ include "doc/object.h"
+ include <map>
+ include <mutex>
 namespace doc {
-
 static std::mutex g_mutex;
 static ObjectId newId = 0;
-// TODO Profile this and see if an unordered_map is better
+ TODO Profile this and see if an unordered_map is better
 static std::map<ObjectId, Object*> objects;
-
 Object::Object(ObjectType type) : m_type(type), m_id(0), m_version(0)
 {
 }
-
 Object::Object(const Object& other)
   : m_type(other.m_type)
   , m_id(0)      // We don't copy the ID
   , m_version(0) // We don't copy the version
 {
 }
-
 Object::~Object()
 {
   if (m_id)
     setId(0);
 }
-
 int Object::getMemSize() const
 {
   return sizeof(Object);
 }
-
 const ObjectId Object::id() const
 {
   // The first time the ID is request, we store the object in the
@@ -56,11 +48,9 @@ const ObjectId Object::id() const
   }
   return m_id;
 }
-
 void Object::setId(ObjectId id)
 {
   const std::lock_guard lock(g_mutex);
-
   if (m_id) {
     auto it = objects.find(m_id);
     ASSERT(it != objects.end());
@@ -68,11 +58,9 @@ void Object::setId(ObjectId id)
     if (it != objects.end())
       objects.erase(it);
   }
-
   m_id = id;
-
   if (m_id) {
-#ifdef _DEBUG
+ ifdef _DEBUG
     if (objects.find(m_id) != objects.end()) {
       Object* obj = objects.find(m_id)->second;
       if (obj) {
@@ -89,16 +77,14 @@ void Object::setId(ObjectId id)
       }
     }
     ASSERT(objects.find(m_id) == objects.end());
-#endif
+ endif
     objects.insert(std::make_pair(m_id, this));
   }
 }
-
 void Object::setVersion(ObjectVersion version)
 {
   m_version = version;
 }
-
 Object* get_object(ObjectId id)
 {
   const std::lock_guard lock(g_mutex);
@@ -108,5 +94,4 @@ Object* get_object(ObjectId id)
   else
     return nullptr;
 }
-
 } // namespace doc

@@ -1,19 +1,21 @@
-// Aseprite
-// Copyright (C) 2001-2016  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED
-#define APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/ui/editor/editor_state.h"
-#include "gfx/point.h"
-#include "render/zoom.h"
 
+
+ ifndef APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED
+ define APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED
+ pragma once
+ include "app/ui/editor/editor_state.h"
+ include "gfx/point.h"
+ include "render/zoom.h"
 namespace app {
-
 class ZoomingState : public EditorState {
 public:
   ZoomingState();
@@ -31,7 +33,5 @@ private:
   render::Zoom m_startZoom;
   bool m_moved;
 };
-
 } // namespace app
-
-#endif // APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED
+// endif // APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED

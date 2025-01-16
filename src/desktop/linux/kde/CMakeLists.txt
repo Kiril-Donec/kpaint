@@ -1,8 +1,10 @@
-# Aseprite Desktop Integration Module
-# Copyright (C) 2016  Gabriel Rauter
-#
-# Licensed under the the MIT License (https://opensource.org/licenses/MIT).
+# KPaint
+# Copyright (C) 2024-2025 KiriX Company
+# # This program is distributed under the terms of
+# the End-User License Agreement for KPaint.
 
+# Gabriel Rauter # Licensed under the the MIT License
+# (https://opensource.org/licenses/MIT).
 cmake_minimum_required(VERSION 2.8.12)
 set(QT_MIN_VERSION "5.2.0")
 project(asepritethumbnail)
@@ -15,7 +17,11 @@ include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings)
 find_package(KF5 REQUIRED COMPONENTS KIO)
-add_definitions(${QT_DEFINITIONS} -DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
+add_definitions(
+    ${QT_DEFINITIONS}
+    -DQT_USE_FAST_CONCATENATION
+    -DQT_USE_FAST_OPERATOR_PLUS
+)
 set(KDE_INSTALL_USE_QT_SYS_PATHS)
 add_library(asepritethumbnail MODULE aseprite_thumb_creator.cpp)
 target_link_libraries(asepritethumbnail KF5::KIOWidgets)

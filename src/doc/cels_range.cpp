@@ -1,36 +1,32 @@
-// Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
-// Copyright (c) 2001-2016 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/cels_range.h"
-
-#include "doc/cel.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
-
+ endif
+ include "doc/cel.h"
+ include "doc/cels_range.h"
+ include "doc/layer.h"
+ include "doc/sprite.h"
 namespace doc {
-
 CelsRange::CelsRange(const Sprite* sprite, const SelectedFrames& selFrames, const Flags flags)
   : m_selFrames(selFrames)
   , m_begin(sprite, m_selFrames, flags)
   , m_end(m_selFrames)
 {
 }
-
 CelsRange::iterator::iterator(const SelectedFrames& selFrames)
   : m_cel(nullptr)
   , m_selFrames(selFrames)
   , m_frameIterator(selFrames.begin())
 {
 }
-
 CelsRange::iterator::iterator(const Sprite* sprite,
                               const SelectedFrames& selFrames,
                               const CelsRange::Flags flags)
@@ -51,24 +47,19 @@ CelsRange::iterator::iterator(const Sprite* sprite,
           break;
       }
     }
-
     if (!m_cel)
       layer = layer->getNextInWholeHierarchy();
   }
-
   if (m_cel && flags == CelsRange::UNIQUE)
     m_visited.insert(m_cel->data()->id());
 }
-
 CelsRange::iterator& CelsRange::iterator::operator++()
 {
   if (!m_cel)
     return *this;
-
   auto endFrame = m_selFrames.end();
   if (m_frameIterator != endFrame)
     ++m_frameIterator;
-
   Layer* layer = m_cel->layer();
   m_cel = nullptr;
   while (layer && !m_cel) {
@@ -89,7 +80,6 @@ CelsRange::iterator& CelsRange::iterator::operator++()
         }
       }
     }
-
     if (!m_cel) {
       layer = layer->getNextInWholeHierarchy();
       m_frameIterator = m_selFrames.begin();
@@ -97,5 +87,4 @@ CelsRange::iterator& CelsRange::iterator::operator++()
   }
   return *this;
 }
-
 } // namespace doc

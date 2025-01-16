@@ -1,21 +1,19 @@
-// Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A
-// Copyright (c) 2017 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef RENDER_ERROR_DIFFUSION_H_INCLUDED
-#define RENDER_ERROR_DIFFUSION_H_INCLUDED
-#pragma once
-
-#include "doc/image_ref.h"
-#include "render/ordered_dither.h"
-
-#include <vector>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Render Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifndef RENDER_ERROR_DIFFUSION_H_INCLUDED
+ define RENDER_ERROR_DIFFUSION_H_INCLUDED
+ pragma once
+ include "doc/image_ref.h"
+ include "render/ordered_dither.h"
+ include <vector>
 namespace render {
-
 class ErrorDiffusionDither : public DitheringAlgorithmBase {
 public:
   ErrorDiffusionDither(int transparentIndex = -1);
@@ -36,7 +34,5 @@ private:
   std::vector<int> m_err[kChannels];
   int m_factor;
 };
-
 } // namespace render
-
-#endif
+ endif

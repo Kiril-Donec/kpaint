@@ -1,79 +1,77 @@
-// Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
-// Copyright (C) 2015-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/cmd/add_layer.h"
-#include "app/cmd/add_slice.h"
-#include "app/cmd/add_tile.h"
-#include "app/cmd/add_tileset.h"
-#include "app/cmd/assign_color_profile.h"
-#include "app/cmd/clear_cel.h"
-#include "app/cmd/convert_color_profile.h"
-#include "app/cmd/copy_region.h"
-#include "app/cmd/flatten_layers.h"
-#include "app/cmd/remove_layer.h"
-#include "app/cmd/remove_slice.h"
-#include "app/cmd/remove_tag.h"
-#include "app/cmd/remove_tile.h"
-#include "app/cmd/remove_tileset.h"
-#include "app/cmd/set_grid_bounds.h"
-#include "app/cmd/set_layer_tileset.h"
-#include "app/cmd/set_mask.h"
-#include "app/cmd/set_pixel_ratio.h"
-#include "app/cmd/set_sprite_size.h"
-#include "app/cmd/set_sprite_tile_management_plugin.h"
-#include "app/cmd/set_transparent_color.h"
-#include "app/color_spaces.h"
-#include "app/commands/commands.h"
-#include "app/commands/params.h"
-#include "app/console.h"
-#include "app/context.h"
-#include "app/doc.h"
-#include "app/doc_access.h"
-#include "app/doc_api.h"
-#include "app/doc_range.h"
-#include "app/doc_undo.h"
-#include "app/doc_undo_observer.h"
-#include "app/file/palette_file.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/script/security.h"
-#include "app/script/userdata.h"
-#include "app/site.h"
-#include "app/transaction.h"
-#include "app/tx.h"
-#include "app/ui/doc_view.h"
-#include "base/convert_to.h"
-#include "base/fs.h"
-#include "doc/layer.h"
-#include "doc/layer_tilemap.h"
-#include "doc/mask.h"
-#include "doc/palette.h"
-#include "doc/slice.h"
-#include "doc/sprite.h"
-#include "doc/tag.h"
-#include "doc/tileset.h"
-#include "doc/tilesets.h"
-
-#include <algorithm>
-
+ endif
+ include "app/app.h"
+ include "app/cmd/add_layer.h"
+ include "app/cmd/add_slice.h"
+ include "app/cmd/add_tile.h"
+ include "app/cmd/add_tileset.h"
+ include "app/cmd/assign_color_profile.h"
+ include "app/cmd/clear_cel.h"
+ include "app/cmd/convert_color_profile.h"
+ include "app/cmd/copy_region.h"
+ include "app/cmd/flatten_layers.h"
+ include "app/cmd/remove_layer.h"
+ include "app/cmd/remove_slice.h"
+ include "app/cmd/remove_tag.h"
+ include "app/cmd/remove_tile.h"
+ include "app/cmd/remove_tileset.h"
+ include "app/cmd/set_grid_bounds.h"
+ include "app/cmd/set_layer_tileset.h"
+ include "app/cmd/set_mask.h"
+ include "app/cmd/set_pixel_ratio.h"
+ include "app/cmd/set_sprite_size.h"
+ include "app/cmd/set_sprite_tile_management_plugin.h"
+ include "app/cmd/set_transparent_color.h"
+ include "app/color_spaces.h"
+ include "app/commands/commands.h"
+ include "app/commands/params.h"
+ include "app/console.h"
+ include "app/context.h"
+ include "app/doc.h"
+ include "app/doc_access.h"
+ include "app/doc_api.h"
+ include "app/doc_range.h"
+ include "app/doc_undo.h"
+ include "app/doc_undo_observer.h"
+ include "app/file/palette_file.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/script/security.h"
+ include "app/script/userdata.h"
+ include "app/site.h"
+ include "app/transaction.h"
+ include "app/tx.h"
+ include "app/ui/doc_view.h"
+ include "base/convert_to.h"
+ include "base/fs.h"
+ include "doc/layer.h"
+ include "doc/layer_tilemap.h"
+ include "doc/mask.h"
+ include "doc/palette.h"
+ include "doc/slice.h"
+ include "doc/sprite.h"
+ include "doc/tag.h"
+ include "doc/tileset.h"
+ include "doc/tilesets.h"
+ include <algorithm>
 namespace app { namespace script {
-
 namespace {
-
 int Sprite_new(lua_State* L)
 {
   std::unique_ptr<Doc> doc;
-
   // Duplicate a sprite
   if (auto otherSpr = may_get_docobj<doc::Sprite>(L, 1)) {
     Doc* otherDoc = static_cast<Doc*>(otherSpr->document());
@@ -92,9 +90,7 @@ int Sprite_new(lua_State* L)
           if (const char* fromFile = lua_tostring(L, -1)) {
             std::string fn = fromFile;
             lua_pop(L, 1);
-
             bool oneFrame = (lua_is_key_true(L, -1, "oneFrame"));
-
             return load_sprite_from_file(L,
                                          fn.c_str(),
                                          (oneFrame ? LoadSpriteFromFileParam::OneFrameAsSprite :
@@ -102,7 +98,6 @@ int Sprite_new(lua_State* L)
           }
         }
         lua_pop(L, 1);
-
         // In case that there is no "fromFile" field
         if (type == LUA_TNIL) {
           // Sprite{ width, height, colorMode }
@@ -111,7 +106,6 @@ int Sprite_new(lua_State* L)
           spec.setWidth(lua_tointeger(L, -2));
           spec.setHeight(lua_tointeger(L, -1));
           lua_pop(L, 2);
-
           type = lua_getfield(L, 1, "colorMode");
           if (type != LUA_TNIL)
             spec.setColorMode((doc::ColorMode)lua_tointeger(L, -1));
@@ -128,25 +122,20 @@ int Sprite_new(lua_State* L)
       }
       spec.setColorSpace(get_working_rgb_space_from_preferences());
     }
-
     if (spec.width() < 1)
       return luaL_error(L, "invalid width value = %d in Sprite()", spec.width());
     if (spec.height() < 1)
       return luaL_error(L, "invalid height value = %d in Sprite()", spec.height());
-
     std::unique_ptr<Sprite> sprite(Sprite::MakeStdSprite(spec, 256));
     doc.reset(new Doc(sprite.get()));
     sprite.release();
   }
-
   app::Context* ctx = App::instance()->context();
   doc->setContext(ctx);
-
   push_docobj(L, doc->sprite());
   doc.release();
   return 1;
 }
-
 int Sprite_eq(lua_State* L)
 {
   const auto a = may_get_docobj<Sprite>(L, 1);
@@ -154,25 +143,20 @@ int Sprite_eq(lua_State* L)
   lua_pushboolean(L, (!a && !b) || (a && b && a->id() == b->id()));
   return 1;
 }
-
 int Sprite_resize(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   gfx::Size size = convert_args_into_size(L, 2);
-
   // Fix invalid sizes
   size.w = std::max(1, size.w);
   size.h = std::max(1, size.h);
-
   Command* resizeCommand = Commands::instance()->byId(CommandId::SpriteSize());
-
   // TODO use SpriteSizeParams directly instead of converting back and
   //      forth between strings.
   Params params;
   params.set("ui", "false");
   params.set("width", base::convert_to<std::string>(size.w).c_str());
   params.set("height", base::convert_to<std::string>(size.h).c_str());
-
   app::Context* appCtx = App::instance()->context();
   auto oldDoc = appCtx->activeDocument();
   appCtx->setActiveDocument(static_cast<Doc*>(sprite->document()));
@@ -180,13 +164,11 @@ int Sprite_resize(lua_State* L)
   appCtx->setActiveDocument(oldDoc);
   return 0;
 }
-
 int Sprite_crop(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   Doc* doc = static_cast<Doc*>(sprite->document());
   gfx::Rect bounds;
-
   // Use mask bounds
   if (lua_isnone(L, 2)) {
     if (doc->isMaskVisible())
@@ -197,7 +179,6 @@ int Sprite_crop(lua_State* L)
   else {
     bounds = convert_args_into_rect(L, 2);
   }
-
   if (!bounds.isEmpty()) {
     Tx tx(doc);
     DocApi(doc, tx).cropSprite(sprite, bounds);
@@ -205,7 +186,6 @@ int Sprite_crop(lua_State* L)
   }
   return 0;
 }
-
 int Sprite_saveAs_base(lua_State* L, std::string& absFn)
 {
   bool result = false;
@@ -215,24 +195,19 @@ int Sprite_saveAs_base(lua_State* L, std::string& absFn)
     Doc* doc = static_cast<Doc*>(sprite->document());
     app::Context* appCtx = App::instance()->context();
     appCtx->setActiveDocument(doc);
-
     absFn = base::get_absolute_path(fn);
     if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
       return luaL_error(L, "script doesn't have access to write file %s", absFn.c_str());
-
     Command* saveCommand = Commands::instance()->byId(CommandId::SaveFileCopyAs());
-
     Params params;
     params.set("filename", absFn.c_str());
     params.set("useUI", "false");
     appCtx->executeCommand(saveCommand, params);
-
     result = true;
   }
   lua_pushboolean(L, result);
   return 1;
 }
-
 int Sprite_saveAs(lua_State* L)
 {
   std::string fn;
@@ -247,13 +222,11 @@ int Sprite_saveAs(lua_State* L)
   }
   return res;
 }
-
 int Sprite_saveCopyAs(lua_State* L)
 {
   std::string fn;
   return Sprite_saveAs_base(L, fn);
 }
-
 int Sprite_close(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -267,7 +240,6 @@ int Sprite_close(lua_State* L)
     return luaL_error(L, "cannot lock document to close it\n%s", ex.what());
   }
 }
-
 int Sprite_loadPalette(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -276,7 +248,6 @@ int Sprite_loadPalette(lua_State* L)
     std::string absFn = base::get_absolute_path(fn);
     if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
       return luaL_error(L, "script doesn't have access to open file %s", absFn.c_str());
-
     Doc* doc = static_cast<Doc*>(sprite->document());
     std::unique_ptr<doc::Palette> palette(load_palette(absFn.c_str()));
     if (palette) {
@@ -288,21 +259,18 @@ int Sprite_loadPalette(lua_State* L)
   }
   return 0;
 }
-
 int Sprite_setPalette(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto pal = get_palette_from_arg(L, 2);
   if (sprite && pal) {
     Doc* doc = static_cast<Doc*>(sprite->document());
-
     Tx tx(doc);
     doc->getApi(tx).setPalette(sprite, 0, pal);
     tx.commit();
   }
   return 0;
 }
-
 int Sprite_assignColorSpace(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -312,7 +280,6 @@ int Sprite_assignColorSpace(lua_State* L)
   tx.commit();
   return 1;
 }
-
 int Sprite_convertColorSpace(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -322,15 +289,12 @@ int Sprite_convertColorSpace(lua_State* L)
   tx.commit();
   return 1;
 }
-
 int Sprite_flatten(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-
   DocRange range;
   for (auto layer : sprite->root()->layers())
     range.selectLayer(layer);
-
   Tx tx(sprite);
   cmd::FlattenLayers::Options options;
   options.newBlendMethod = true;
@@ -338,33 +302,26 @@ int Sprite_flatten(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Sprite_newLayer(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::Layer* newLayer = new doc::LayerImage(sprite);
-
   Tx tx(sprite);
   tx(new cmd::AddLayer(sprite->root(), newLayer, sprite->root()->lastLayer()));
   tx.commit();
-
   push_docobj(L, newLayer);
   return 1;
 }
-
 int Sprite_newGroup(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::Layer* newGroup = new doc::LayerGroup(sprite);
-
   Tx tx(sprite);
   tx(new cmd::AddLayer(sprite->root(), newGroup, sprite->root()->lastLayer()));
   tx.commit();
-
   push_docobj(L, newGroup);
   return 1;
 }
-
 int Sprite_deleteLayer(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -392,7 +349,6 @@ int Sprite_deleteLayer(lua_State* L)
     return luaL_error(L, "layer not found");
   }
 }
-
 int Sprite_newFrame(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -404,17 +360,13 @@ int Sprite_newFrame(lua_State* L)
       return luaL_error(L, "frame index out of bounds %d", frame + 1);
     copyThis = frame + 1; // addFrame() copies the previous frame of the given one.
   }
-
   Doc* doc = static_cast<Doc*>(sprite->document());
-
   Tx tx(doc);
   doc->getApi(tx).addFrame(sprite, copyThis);
   tx.commit();
-
   push_sprite_frame(L, sprite, frame);
   return 1;
 }
-
 int Sprite_newEmptyFrame(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -424,56 +376,44 @@ int Sprite_newEmptyFrame(lua_State* L)
     if (frame < 0)
       return luaL_error(L, "frame index out of bounds %d", frame + 1);
   }
-
   Doc* doc = static_cast<Doc*>(sprite->document());
-
   Tx tx(doc);
   DocApi(doc, tx).addEmptyFrame(sprite, frame);
   tx.commit();
-
   push_sprite_frame(L, sprite, frame);
   return 1;
 }
-
 int Sprite_deleteFrame(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::frame_t frame = get_frame_number_from_arg(L, 2);
   if (frame < 0 || frame > sprite->lastFrame())
     return luaL_error(L, "frame index out of bounds %d", frame + 1);
-
   Doc* doc = static_cast<Doc*>(sprite->document());
-
   Tx tx(doc);
   doc->getApi(tx).removeFrame(sprite, frame);
   tx.commit();
   return 0;
 }
-
 int Sprite_newCel(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto layerBase = get_docobj<Layer>(L, 2);
   if (!layerBase->isImage())
     return luaL_error(L, "unexpected kinf of layer in Sprite:newCel()");
-
   frame_t frame = get_frame_number_from_arg(L, 3);
   if (frame < 0 || frame > sprite->lastFrame())
     return luaL_error(L, "frame index out of bounds %d", frame + 1);
-
   Doc* doc = static_cast<Doc*>(sprite->document());
   LayerImage* layer = static_cast<LayerImage*>(layerBase);
   ImageRef image(nullptr);
-
   Image* srcImage = may_get_image_from_arg(L, 4);
   gfx::Point pos = convert_args_into_point(L, 5);
   Cel* cel = nullptr;
-
   // For background layers we just draw the image in the existent cel
   if (layer->isBackground()) {
     cel = layer->cel(frame);
     ASSERT(cel);
-
     Tx tx(doc);
     DocApi api = doc->getApi(tx);
     api.clearCel(layer, frame);
@@ -488,10 +428,8 @@ int Sprite_newCel(lua_State* L)
       image.reset(Image::createCopy(srcImage));
     else
       image.reset(Image::create(sprite->spec()));
-
     cel = new Cel(frame, image);
     cel->setPosition(pos);
-
     Tx tx(doc);
     DocApi api = doc->getApi(tx);
     if (layer->cel(frame))
@@ -499,11 +437,9 @@ int Sprite_newCel(lua_State* L)
     api.addCel(layer, cel);
     tx.commit();
   }
-
   push_docobj(L, cel);
   return 1;
 }
-
 int Sprite_deleteCel(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -517,7 +453,6 @@ int Sprite_deleteCel(lua_State* L)
         cel = static_cast<doc::LayerImage*>(layer)->cel(frame);
     }
   }
-
   if (cel) {
     Tx tx(sprite);
     tx(new cmd::ClearCel(cel));
@@ -528,22 +463,18 @@ int Sprite_deleteCel(lua_State* L)
     return luaL_error(L, "cel not found");
   }
 }
-
 int Sprite_newTag(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto from = get_frame_number_from_arg(L, 2);
   auto to = get_frame_number_from_arg(L, 3);
   auto tag = new doc::Tag(from, to);
-
   Tx tx(sprite);
   tx(new cmd::AddTag(sprite, tag));
   tx.commit();
-
   push_docobj(L, tag);
   return 1;
 }
-
 int Sprite_deleteTag(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -565,24 +496,19 @@ int Sprite_deleteTag(lua_State* L)
     return luaL_error(L, "tag not found");
   }
 }
-
 int Sprite_newSlice(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto slice = new doc::Slice();
-
   gfx::Rect bounds = convert_args_into_rect(L, 2);
   if (!bounds.isEmpty())
     slice->insert(0, doc::SliceKey(bounds));
-
   Tx tx(sprite);
   tx(new cmd::AddSlice(sprite, slice));
   tx.commit();
-
   push_docobj(L, slice);
   return 1;
 }
-
 int Sprite_deleteSlice(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -604,12 +530,10 @@ int Sprite_deleteSlice(lua_State* L)
     return luaL_error(L, "slice not found");
   }
 }
-
 int Sprite_newTileset(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   Tileset* tileset = nullptr;
-
   // Make this tileset a clone of the given tileset
   if (auto reference = may_get_docobj<Tileset>(L, 2)) {
     if (reference->sprite() != sprite) {
@@ -633,7 +557,6 @@ int Sprite_newTileset(lua_State* L)
       else {
         return luaL_error(L, "grid or table expected");
       }
-
       int type = lua_type(L, 3);
       if (type != LUA_TNONE) {
         if (type != LUA_TNUMBER) {
@@ -644,25 +567,20 @@ int Sprite_newTileset(lua_State* L)
         }
       }
     }
-
     // This a limitation in our code and doesn't make too much sense
     // to specify a different origin by default (because the origin is
     // specified on the tilemap cel).
     if (grid.origin() != gfx::Point(0, 0)) {
       return luaL_error(L, "a tileset with origin different than 0,0 cannot be created");
     }
-
     tileset = new Tileset(sprite, grid, ntiles);
   }
-
   Tx tx(sprite);
   tx(new cmd::AddTileset(sprite, tileset));
   tx.commit();
-
   push_docobj(L, tileset);
   return 1;
 }
-
 int Sprite_deleteTileset(lua_State* L)
 {
   int tsi = -1;
@@ -679,7 +597,6 @@ int Sprite_deleteTileset(lua_State* L)
     if (sprite != tileset->sprite())
       return luaL_error(L, "the tileset doesn't belong to the sprite");
     Tx tx(sprite);
-
     // Set the tileset from all layers that are using it
     for (auto layer : sprite->allLayers()) {
       if (layer->isTilemap()) {
@@ -692,7 +609,6 @@ int Sprite_deleteTileset(lua_State* L)
         }
       }
     }
-
     tx(new cmd::RemoveTileset(sprite, tsi));
     tx.commit();
     return 0;
@@ -701,7 +617,6 @@ int Sprite_deleteTileset(lua_State* L)
     return luaL_error(L, "tileset not found");
   }
 }
-
 int Sprite_newTile(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -723,7 +638,6 @@ int Sprite_newTile(lua_State* L)
   push_tile(L, ts, ti);
   return 1;
 }
-
 int Sprite_deleteTile(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -747,28 +661,24 @@ int Sprite_deleteTile(lua_State* L)
   push_tile(L, ts, ti);
   return 1;
 }
-
 int Sprite_get_events(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_events(L, sprite);
   return 1;
 }
-
 int Sprite_get_id(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->id());
   return 1;
 }
-
 int Sprite_get_filename(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushstring(L, sprite->document()->filename().c_str());
   return 1;
 }
-
 int Sprite_get_isModified(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -776,28 +686,24 @@ int Sprite_get_isModified(lua_State* L)
   lua_pushboolean(L, doc->isModified());
   return 1;
 }
-
 int Sprite_get_width(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->width());
   return 1;
 }
-
 int Sprite_get_height(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->height());
   return 1;
 }
-
 int Sprite_get_colorMode(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->pixelFormat());
   return 1;
 }
-
 int Sprite_get_colorSpace(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -808,70 +714,60 @@ int Sprite_get_colorSpace(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Sprite_get_spec(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj(L, sprite->spec());
   return 1;
 }
-
 int Sprite_get_selection(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_selection(L, sprite);
   return 1;
 }
-
 int Sprite_get_frames(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_frames(L, sprite);
   return 1;
 }
-
 int Sprite_get_palettes(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_palettes(L, sprite);
   return 1;
 }
-
 int Sprite_get_layers(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_layers(L, sprite);
   return 1;
 }
-
 int Sprite_get_cels(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_cels(L, sprite);
   return 1;
 }
-
 int Sprite_get_tags(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_tags(L, sprite);
   return 1;
 }
-
 int Sprite_get_slices(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_slices(L, sprite);
   return 1;
 }
-
 int Sprite_get_tilesets(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_tilesets(L, sprite->tilesets());
   return 1;
 }
-
 int Sprite_get_backgroundLayer(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -882,14 +778,12 @@ int Sprite_get_backgroundLayer(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Sprite_get_transparentColor(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->transparentColor());
   return 1;
 }
-
 int Sprite_set_transparentColor(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -899,7 +793,6 @@ int Sprite_set_transparentColor(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Sprite_set_filename(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -907,7 +800,6 @@ int Sprite_set_filename(lua_State* L)
   sprite->document()->setFilename(fn ? std::string(fn) : std::string());
   return 0;
 }
-
 int Sprite_set_width(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -917,7 +809,6 @@ int Sprite_set_width(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Sprite_set_height(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -927,7 +818,6 @@ int Sprite_set_height(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Sprite_set_selection(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -938,21 +828,18 @@ int Sprite_set_selection(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Sprite_get_bounds(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj<gfx::Rect>(L, sprite->bounds());
   return 1;
 }
-
 int Sprite_get_gridBounds(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj<gfx::Rect>(L, sprite->gridBounds());
   return 1;
 }
-
 int Sprite_set_gridBounds(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -962,14 +849,12 @@ int Sprite_set_gridBounds(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Sprite_get_pixelRatio(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj<gfx::Size>(L, sprite->pixelRatio());
   return 1;
 }
-
 int Sprite_set_pixelRatio(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -979,7 +864,6 @@ int Sprite_set_pixelRatio(lua_State* L)
   tx.commit();
   return 0;
 }
-
 int Sprite_get_tileManagementPlugin(lua_State* L)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
@@ -989,14 +873,12 @@ int Sprite_get_tileManagementPlugin(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Sprite_set_tileManagementPlugin(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   std::string value;
   if (const char* p = lua_tostring(L, 2))
     value = p;
-
   if (sprite->tileManagementPlugin() != value) {
     Tx tx(sprite);
     tx(new cmd::SetSpriteTileManagementPlugin(sprite, value));
@@ -1004,7 +886,6 @@ int Sprite_set_tileManagementPlugin(lua_State* L)
   }
   return 0;
 }
-
 const luaL_Reg Sprite_methods[] = {
   { "__eq",              Sprite_eq                },
   { "resize",            Sprite_resize            },
@@ -1041,7 +922,6 @@ const luaL_Reg Sprite_methods[] = {
   { "deleteTile",        Sprite_deleteTile        },
   { nullptr,             nullptr                  }
 };
-
 const Property Sprite_properties[] = {
   { "id",                   Sprite_get_id,                   nullptr                         },
   { "filename",             Sprite_get_filename,             Sprite_set_filename             },
@@ -1071,11 +951,8 @@ const Property Sprite_properties[] = {
   { "tileManagementPlugin", Sprite_get_tileManagementPlugin, Sprite_set_tileManagementPlugin },
   { nullptr,                nullptr,                         nullptr                         }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(doc::Sprite);
-
 void register_sprite_class(lua_State* L)
 {
   using doc::Sprite;
@@ -1083,5 +960,4 @@ void register_sprite_class(lua_State* L)
   REG_CLASS_NEW(L, Sprite);
   REG_CLASS_PROPERTIES(L, Sprite);
 }
-
 }} // namespace app::script

@@ -1,31 +1,30 @@
-// Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/commands/filters/filter_preview.h"
-
-#include "app/commands/filters/filter_manager_impl.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/editor/editor_render.h"
-#include "base/thread.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
-#include "ui/manager.h"
-#include "ui/message.h"
-#include "ui/widget.h"
-
+ endif
+ include "app/commands/filters/filter_manager_impl.h"
+ include "app/commands/filters/filter_preview.h"
+ include "app/ui/editor/editor.h"
+ include "app/ui/editor/editor_render.h"
+ include "base/thread.h"
+ include "doc/layer.h"
+ include "doc/sprite.h"
+ include "ui/manager.h"
+ include "ui/message.h"
+ include "ui/widget.h"
 namespace app {
-
 using namespace ui;
 using namespace filters;
-
 FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   : Widget(kGenericWidget)
   , m_filterMgr(filterMgr)
@@ -33,18 +32,15 @@ FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
   , m_restartPreviewTimer(10)
 {
   setVisible(false);
-
   m_restartPreviewTimer.Tick.connect([this] {
     onDelayedStartPreview();
     m_restartPreviewTimer.stop();
   });
 }
-
 FilterPreview::~FilterPreview()
 {
   stop();
 }
-
 void FilterPreview::setEnablePreview(bool state)
 {
   if (state) {
@@ -60,12 +56,10 @@ void FilterPreview::setEnablePreview(bool state)
     Editor::renderEngine().removePreviewImage();
   }
 }
-
 void FilterPreview::stop()
 {
   // Cancel the token (so the filter processing stops immediately)
   m_filterTask.cancel();
-
   // Stop the filter and timer to flush changes to the screen.
   {
     std::scoped_lock lock(m_filterMgrMutex);
@@ -75,16 +69,13 @@ void FilterPreview::stop()
     }
     m_timer.stop();
   }
-
   // Wait the filter task to end.
   if (m_filterTask.running())
     m_filterTask.wait();
 }
-
 void FilterPreview::restartPreview()
 {
   stop();
-
   // Start the timer to re-launch the filter preview in the next 10
   // milliseconds. This is necessary to avoid restarting the preview
   // immediately when a lot of mouse events are received at the same
@@ -96,14 +87,12 @@ void FilterPreview::restartPreview()
   // param events.
   m_restartPreviewTimer.start();
 }
-
 void FilterPreview::onDelayedStartPreview()
 {
   // Start the filter for preview purposes and the timer to flush the
   // preview to the editor/display.
   m_filterMgr->beginForPreview();
   m_timer.start();
-
   if (!m_filterTask.running()) {
     // Re-start the task to apply the filter step by step
     m_filterTask.run([this](base::task_token& token) {
@@ -117,22 +106,18 @@ void FilterPreview::onDelayedStartPreview()
     ASSERT(false);
   }
 }
-
 bool FilterPreview::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
     case kOpenMessage: setEnablePreview(true); break;
-
     case kCloseMessage:
       setEnablePreview(false);
-
       // Stop the preview timer.
       {
         std::scoped_lock lock(m_filterMgrMutex);
         m_timer.stop();
       }
       break;
-
     case kTimerMessage: {
       std::scoped_lock lock(m_filterMgrMutex);
       if (m_filterMgr) {
@@ -143,11 +128,9 @@ bool FilterPreview::onProcessMessage(Message* msg)
       break;
     }
   }
-
   return Widget::onProcessMessage(msg);
 }
-
-// This is executed in other thread.
+ This is executed in other thread.
 void FilterPreview::onFilterTask(base::task_token& token)
 {
   while (!token.canceled()) {
@@ -159,5 +142,4 @@ void FilterPreview::onFilterTask(base::task_token& token)
     base::this_thread::yield();
   }
 }
-
 } // namespace app

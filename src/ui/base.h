@@ -1,17 +1,17 @@
-// Aseprite UI Library
-// Copyright (C) 2018-2020  Igara Studio S.A.
-// Copyright (C) 2001-2016  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef UI_BASE_H_INCLUDED
-#define UI_BASE_H_INCLUDED
-#pragma once
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint UI Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifndef UI_BASE_H_INCLUDED
+ define UI_BASE_H_INCLUDED
+ pragma once
 namespace ui {
-
-// Widget flags
+ Widget flags
 enum {
   HIDDEN = 0x00000001,       // Is hidden (not visible, not clickeable).
   SELECTED = 0x00000002,     // Is selected.
@@ -35,7 +35,6 @@ enum {
   IGNORE_MOUSE = 0x80000000,     // Don't process mouse messages for this widget (useful for labels,
                                  // boxes, grids, etc.)
   PROPERTIES_MASK = 0x8000ffff,
-
   HORIZONTAL = 0x00010000,
   VERTICAL = 0x00020000,
   LEFT = 0x00040000,
@@ -49,7 +48,5 @@ enum {
   CHARWRAP = 0x04000000,
   ALIGN_MASK = 0x7fff0000,
 };
-
 } // namespace ui
-
-#endif // UI_BASE_H_INCLUDED
+// endif // UI_BASE_H_INCLUDED

@@ -1,20 +1,20 @@
-// Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/shade.h"
-
-#include "base/split_string.h"
-
+ endif
+ include "app/shade.h"
+ include "base/split_string.h"
 namespace app {
-
 Shade shade_from_string(const std::string& str)
 {
   Shade shade;
@@ -27,7 +27,6 @@ Shade shade_from_string(const std::string& str)
   }
   return shade;
 }
-
 std::string shade_to_string(const Shade& shade)
 {
   std::string res;
@@ -38,5 +37,4 @@ std::string shade_to_string(const Shade& shade)
   }
   return res;
 }
-
 } // namespace app

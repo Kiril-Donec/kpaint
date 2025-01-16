@@ -1,18 +1,20 @@
-// Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_DOC_EVENT_H_INCLUDED
-#define APP_DOC_EVENT_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "doc/frame.h"
-#include "doc/tile.h"
-#include "gfx/region.h"
 
+
+ ifndef APP_DOC_EVENT_H_INCLUDED
+ define APP_DOC_EVENT_H_INCLUDED
+ pragma once
+ include "doc/frame.h"
+ include "doc/tile.h"
+ include "gfx/region.h"
 namespace doc {
 class Cel;
 class Image;
@@ -23,10 +25,8 @@ class Sprite;
 class Tag;
 class Tileset;
 } // namespace doc
-
 namespace app {
 class Doc;
-
 class DocEvent {
 public:
   DocEvent(Doc* doc)
@@ -45,7 +45,6 @@ public:
     , m_targetFrame(0)
   {
   }
-
   // Source of the event.
   Doc* document() const { return m_doc; }
   doc::Sprite* sprite() const { return m_sprite; }
@@ -60,7 +59,6 @@ public:
   doc::tile_index tileIndex() const { return m_ti; }
   const gfx::Region& region() const { return m_region; }
   doc::WithUserData* withUserData() const { return m_withUserData; }
-
   void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
   void layer(doc::Layer* layer) { m_layer = layer; }
   void cel(doc::Cel* cel) { m_cel = cel; }
@@ -73,11 +71,9 @@ public:
   void tileIndex(doc::tile_index ti) { m_ti = ti; }
   void region(const gfx::Region& rgn) { m_region = rgn; }
   void withUserData(doc::WithUserData* withUserData) { m_withUserData = withUserData; }
-
   // Destination of the operation.
   doc::Layer* targetLayer() const { return m_targetLayer; }
   doc::frame_t targetFrame() const { return m_targetFrame; }
-
   void targetLayer(doc::Layer* layer) { m_targetLayer = layer; }
   void targetFrame(doc::frame_t frame) { m_targetFrame = frame; }
 
@@ -95,13 +91,10 @@ private:
   doc::tile_index m_ti = doc::notile;
   gfx::Region m_region;
   doc::WithUserData* m_withUserData;
-
   // For copy/move commands, the m_layer/m_frame are source of the
   // operation, and these are the destination of the operation.
   doc::Layer* m_targetLayer;
   doc::frame_t m_targetFrame;
 };
-
 } // namespace app
-
-#endif
+ endif

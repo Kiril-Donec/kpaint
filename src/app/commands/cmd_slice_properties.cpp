@@ -1,29 +1,29 @@
-// Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
-// Copyright (C) 2017-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cmd/set_slice_key.h"
-#include "app/cmd/set_slice_name.h"
-#include "app/cmd/set_user_data.h"
-#include "app/commands/command.h"
-#include "app/context_access.h"
-#include "app/tx.h"
-#include "app/ui/slice_window.h"
-#include "base/convert_to.h"
-#include "doc/slice.h"
-#include "doc/sprite.h"
-
+ endif
+ include "app/cmd/set_slice_key.h"
+ include "app/cmd/set_slice_name.h"
+ include "app/cmd/set_user_data.h"
+ include "app/commands/command.h"
+ include "app/context_access.h"
+ include "app/tx.h"
+ include "app/ui/slice_window.h"
+ include "base/convert_to.h"
+ include "doc/slice.h"
+ include "doc/sprite.h"
 namespace app {
-
 using namespace ui;
-
 class SlicePropertiesCommand : public Command {
 public:
   SlicePropertiesCommand();
@@ -37,62 +37,51 @@ private:
   std::string m_sliceName;
   ObjectId m_sliceId;
 };
-
 SlicePropertiesCommand::SlicePropertiesCommand()
   : Command(CommandId::SliceProperties(), CmdUIOnlyFlag)
   , m_sliceId(NullId)
 {
 }
-
 void SlicePropertiesCommand::onLoadParams(const Params& params)
 {
   m_sliceName = params.get("name");
-
   std::string id = params.get("id");
   if (!id.empty())
     m_sliceId = ObjectId(base::convert_to<doc::ObjectId>(id));
   else
     m_sliceId = NullId;
 }
-
 bool SlicePropertiesCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
-
 void SlicePropertiesCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
   frame_t frame = reader.frame();
   SelectedObjects slices;
-
   {
     Slice* slice = nullptr;
     if (!m_sliceName.empty())
       slice = sprite->slices().getByName(m_sliceName);
     else if (m_sliceId != NullId)
       slice = sprite->slices().getById(m_sliceId);
-
     if (slice)
       slices.insert(slice->id());
     else
       slices = reader.site()->selectedSlices();
   }
-
   // Nothing to delete
   if (slices.empty())
     return;
-
   SliceWindow window(sprite, slices, frame);
   if (!window.show())
     return;
-
   {
     const SliceWindow::Mods mods = window.modifiedFields();
     ContextWriter writer(reader);
     Tx tx(writer, "Slice Properties");
-
     for (Slice* slice : slices.iterateAs<Slice>()) {
       // Change name
       if (mods & SliceWindow::kName) {
@@ -100,19 +89,16 @@ void SlicePropertiesCommand::onExecute(Context* context)
         if (slice->name() != name)
           tx(new cmd::SetSliceName(slice, name));
       }
-
       // Change user data
       if ((mods & SliceWindow::kUserData) && slice->userData() != window.userDataValue()) {
         tx(new cmd::SetUserData(slice,
                                 window.userDataValue(),
                                 static_cast<Doc*>(sprite->document())));
       }
-
       // Change slice properties
       const doc::SliceKey* key = slice->getByFrame(frame);
       if (!key)
         continue;
-
       SliceKey newKey = *key;
       gfx::Rect newBounds = newKey.bounds();
       gfx::Rect newCenter = newKey.center();
@@ -140,21 +126,17 @@ void SlicePropertiesCommand::onExecute(Context* context)
       newKey.setBounds(newBounds);
       newKey.setCenter(newCenter);
       newKey.setPivot(newPivot);
-
       if (key->bounds() != newKey.bounds() || key->center() != newKey.center() ||
           key->pivot() != newKey.pivot()) {
         tx(new cmd::SetSliceKey(slice, frame, newKey));
       }
     }
-
     tx.commit();
     writer.document()->notifyGeneralUpdate();
   }
 }
-
 Command* CommandFactory::createSlicePropertiesCommand()
 {
   return new SlicePropertiesCommand;
 }
-
 } // namespace app

@@ -1,28 +1,28 @@
-// Aseprite
-// Copyright (C) 2001-2016  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_SELECT_ACCELERATOR_H_INCLUDED
-#define APP_UI_SELECT_ACCELERATOR_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/ui/key_context.h"
-#include "ui/accelerator.h"
-#include "ui/tooltips.h"
 
-#include "select_accelerator.xml.h"
 
+ ifndef APP_UI_SELECT_ACCELERATOR_H_INCLUDED
+ define APP_UI_SELECT_ACCELERATOR_H_INCLUDED
+ pragma once
+ include "app/ui/key_context.h"
+ include "select_accelerator.xml.h"
+ include "ui/accelerator.h"
+ include "ui/tooltips.h"
 namespace app {
 class KeyboardShortcuts;
-
 class SelectAccelerator : public app::gen::SelectAccelerator {
 public:
   SelectAccelerator(const ui::Accelerator& accelerator,
                     const KeyContext keyContext,
                     const KeyboardShortcuts& currentKeys);
-
   bool isOK() const { return m_ok; }
   bool isModified() const { return m_modified; }
   const ui::Accelerator& accel() const { return m_accel; }
@@ -35,9 +35,7 @@ private:
   void onCancel();
   void updateModifiers();
   void updateAssignedTo();
-
   class KeyField;
-
   ui::TooltipManager m_tooltipManager;
   KeyField* m_keyField;
   KeyContext m_keyContext;
@@ -47,7 +45,5 @@ private:
   bool m_ok;
   bool m_modified;
 };
-
 } // namespace app
-
-#endif
+ endif

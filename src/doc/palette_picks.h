@@ -1,22 +1,20 @@
-// Aseprite Document Library
-// Copyright (c) 2019-2022 Igara Studio S.A.
-// Copyright (c) 2001-2017 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef DOC_PALETTE_PICKS_H_INCLUDED
-#define DOC_PALETTE_PICKS_H_INCLUDED
-#pragma once
-
-#include "base/debug.h"
-#include "doc/color.h"
-
-#include <algorithm>
-#include <vector>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifndef DOC_PALETTE_PICKS_H_INCLUDED
+ define DOC_PALETTE_PICKS_H_INCLUDED
+ pragma once
+ include "base/debug.h"
+ include "doc/color.h"
+ include <algorithm>
+ include <vector>
 namespace doc {
-
 class PalettePicks {
 public:
   typedef std::vector<bool> list_type;
@@ -24,44 +22,33 @@ public:
   typedef list_type::const_iterator const_iterator;
   typedef list_type::reference reference;
   typedef list_type::const_reference const_reference;
-
   PalettePicks() {}
   PalettePicks(int n) : m_items(n, false) {}
-
   int size() const { return int(m_items.size()); }
   int picks() const { return (int)std::count(m_items.begin(), m_items.end(), true); }
-
   iterator begin() { return m_items.begin(); }
   iterator end() { return m_items.end(); }
-
   const_iterator begin() const { return m_items.begin(); }
   const_iterator end() const { return m_items.end(); }
-
   const_reference operator[](int idx) const
   {
     ASSERT(idx >= 0 && idx < int(m_items.size()));
     return m_items[idx];
   }
-
   reference operator[](int idx)
   {
     ASSERT(idx >= 0 && idx < int(m_items.size()));
     return m_items[idx];
   }
-
   void resize(int n) { m_items.resize(n, false); }
-
   void clear() { std::fill(m_items.begin(), m_items.end(), false); }
-
   void all() { std::fill(m_items.begin(), m_items.end(), true); }
-
   // If there is just one selected color (or none), we select them all.
   void pickAllIfNeeded()
   {
     if (picks() < 2)
       all();
   }
-
   int firstPick() const
   {
     for (int i = 0; i < size(); ++i)
@@ -69,7 +56,6 @@ public:
         return i;
     return -1;
   }
-
   int lastPick() const
   {
     for (int i = size() - 1; i >= 0; --i)
@@ -77,7 +63,6 @@ public:
         return i;
     return -1;
   }
-
   std::vector<color_t> toVectorOfIndexes() const
   {
     std::vector<color_t> result(picks());
@@ -87,7 +72,6 @@ public:
     }
     return result;
   }
-
   void invert()
   {
     for (int i = 0; i < size(); ++i)
@@ -97,7 +81,5 @@ public:
 private:
   list_type m_items;
 };
-
 } // namespace doc
-
-#endif
+ endif

@@ -1,34 +1,33 @@
-// Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/editor/select_box_state.h"
-
-#include "app/app.h"
-#include "app/tools/tool_box.h"
-#include "app/ui/context_bar.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/main_window.h"
-#include "app/ui/skin/skin_theme.h"
-#include "app/ui_context.h"
-#include "doc/image.h"
-#include "doc/sprite.h"
-#include "gfx/rect.h"
-#include "ui/message.h"
-#include "ui/system.h"
-#include "ui/view.h"
-
+ endif
+ include "app/app.h"
+ include "app/tools/tool_box.h"
+ include "app/ui/context_bar.h"
+ include "app/ui/editor/editor.h"
+ include "app/ui/editor/select_box_state.h"
+ include "app/ui/main_window.h"
+ include "app/ui/skin/skin_theme.h"
+ include "app/ui_context.h"
+ include "doc/image.h"
+ include "doc/sprite.h"
+ include "gfx/rect.h"
+ include "ui/message.h"
+ include "ui/system.h"
+ include "ui/view.h"
 namespace app {
-
 using namespace ui;
-
 SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc, Flags flags)
   : m_delegate(delegate)
   , m_rulers((int(flags) & int(Flags::PaddingRulers)) ? 6 : 4)
@@ -42,33 +41,27 @@ SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc,
     setPaddingBounds(padding);
   }
 }
-
 SelectBoxState::~SelectBoxState()
 {
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForActiveTool();
 }
-
 SelectBoxState::Flags SelectBoxState::getFlags()
 {
   return m_flags;
 }
-
 void SelectBoxState::setFlags(Flags flags)
 {
   m_flags = flags;
 }
-
 void SelectBoxState::setFlag(Flags flag)
 {
   m_flags = Flags(int(flag) | int(m_flags));
 }
-
 void SelectBoxState::clearFlag(Flags flag)
 {
   m_flags = Flags(~(int(flag)) & int(m_flags));
 }
-
 gfx::Rect SelectBoxState::getBoxBounds() const
 {
   int x1 = std::min(m_rulers[V1].position(), m_rulers[V2].position());
@@ -77,7 +70,6 @@ gfx::Rect SelectBoxState::getBoxBounds() const
   int y2 = std::max(m_rulers[H1].position(), m_rulers[H2].position());
   return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
 }
-
 void SelectBoxState::setBoxBounds(const gfx::Rect& box)
 {
   m_rulers[H1] = Ruler(HORIZONTAL | TOP, box.y);
@@ -90,8 +82,7 @@ void SelectBoxState::setBoxBounds(const gfx::Rect& box)
     setPaddingBounds(padding);
   }
 }
-
-// Get and Set Padding for Import Sprite Sheet box state
+ Get and Set Padding for Import Sprite Sheet box state
 gfx::Size SelectBoxState::getPaddingBounds() const
 {
   ASSERT(hasFlag(Flags::PaddingRulers));
@@ -103,65 +94,52 @@ gfx::Size SelectBoxState::getPaddingBounds() const
     h = 0;
   return gfx::Size(w, h);
 }
-
 void SelectBoxState::setPaddingBounds(const gfx::Size& padding)
 {
   ASSERT(hasFlag(Flags::PaddingRulers));
   m_rulers[PH] = Ruler(HORIZONTAL | BOTTOM, m_rulers[H2].position() + padding.h);
   m_rulers[PV] = Ruler(VERTICAL | RIGHT, m_rulers[V2].position() + padding.w);
 }
-
 void SelectBoxState::onEnterState(Editor* editor)
 {
   StandbyState::onEnterState(editor);
-
   updateContextBar();
-
   editor->setDecorator(this);
   editor->invalidate();
 }
-
 void SelectBoxState::onBeforePopState(Editor* editor)
 {
   editor->setDecorator(NULL);
   editor->invalidate();
 }
-
 bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   if (msg->left() || msg->right()) {
     m_startingPos = editor->screenToEditor(msg->position()) - editor->mainTilePosition();
-
     if (hasFlag(Flags::Rulers) && !hasFlag(Flags::QuickPoint)) {
       m_rulersDragAlign = hitTestRulers(editor, msg->position(), true);
       if (m_rulersDragAlign)
         m_startRulers = m_rulers; // Capture start positions
     }
-
     if (hasFlag(Flags::QuickBox) && m_movingRulers.empty()) {
       m_selectingBox = true;
       m_selectingButton = msg->button();
       setBoxBounds(gfx::Rect(m_startingPos, gfx::Size(1, 1)));
-
       // Redraw the editor so we can show the pixel where the mouse
       // button is pressed for first time.
       editor->invalidate();
     }
-
     editor->captureMouse();
     return true;
   }
   return StandbyState::onMouseDown(editor, msg);
 }
-
 bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   m_movingRulers.clear();
   m_rulersDragAlign = 0;
-
   if (m_selectingBox) {
     m_selectingBox = false;
-
     if (m_delegate) {
       if (m_selectingButton == msg->button())
         m_delegate->onQuickboxEnd(editor, getBoxBounds(), msg->button());
@@ -169,44 +147,34 @@ bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
         m_delegate->onQuickboxCancel(editor);
     }
   }
-
   return StandbyState::onMouseUp(editor, msg);
 }
-
 bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   bool used = false;
-
   updateContextBar();
-
   if (hasFlag(Flags::Rulers) && !m_movingRulers.empty()) {
     gfx::Point newPos = editor->screenToEditor(msg->position()) - editor->mainTilePosition();
-
     gfx::Point delta = newPos - m_startingPos;
-
     for (int i : m_movingRulers) {
       Ruler& ruler = m_rulers[i];
       const Ruler& start = m_startRulers[i];
       Ruler& oppRuler = oppositeRuler(i);
-
       switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
         case HORIZONTAL:
           if (hasFlag(Flags::PaddingRulers) && (i == H2)) {
             int pad = m_rulers[PH].position() - m_rulers[H2].position();
             m_rulers[PH].setPosition(start.position() + delta.y + pad);
           }
-
           ruler.setPosition(start.position() + delta.y);
           if (msg->modifiers() == os::kKeyShiftModifier)
             oppRuler.setPosition(m_startRulers[i ^ 1].position() - delta.y);
           break;
-
         case VERTICAL:
           if (hasFlag(Flags::PaddingRulers) && (i == V2)) {
             int pad = m_rulers[PV].position() - m_rulers[V2].position();
             m_rulers[PV].setPosition(start.position() + delta.x + pad);
           }
-
           ruler.setPosition(start.position() + delta.x);
           if (msg->modifiers() == os::kKeyShiftModifier)
             oppRuler.setPosition(m_startRulers[i ^ 1].position() - delta.x);
@@ -215,39 +183,32 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
     }
     used = true;
   }
-
   if (hasFlag(Flags::QuickBox) && m_selectingBox) {
     gfx::Point p1 = m_startingPos;
     gfx::Point p2 = editor->screenToEditor(msg->position()) - editor->mainTilePosition();
-
     if (hasFlag(Flags::QuickPoint))
       p1 = p2;
-
     if (p2.x < p1.x)
       std::swap(p1.x, p2.x);
     if (p2.y < p1.y)
       std::swap(p1.y, p2.y);
     ++p2.x;
     ++p2.y;
-
     setBoxBounds(gfx::Rect(p1, p2));
     used = true;
   }
-
   if (used) {
     if (m_delegate) {
       m_delegate->onChangeRectangle(getBoxBounds());
       if (hasFlag(Flags::PaddingRulers))
         m_delegate->onChangePadding(getPaddingBounds());
     }
-
     editor->invalidate();
     return true;
   }
   else
     return StandbyState::onMouseMove(editor, msg);
 }
-
 bool SelectBoxState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (hasFlag(Flags::Rulers) && !hasFlag(Flags::QuickPoint)) {
@@ -255,27 +216,22 @@ bool SelectBoxState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPo
       editor->showMouseCursor(cursorFromAlign(m_rulersDragAlign));
       return true;
     }
-
     int align = hitTestRulers(editor, mouseScreenPos, false);
     if (align != 0) {
       editor->showMouseCursor(cursorFromAlign(align));
       return true;
     }
   }
-
   if (!requireBrushPreview()) {
     editor->showMouseCursor(kArrowCursor);
     return true;
   }
-
   return StandbyState::onSetCursor(editor, mouseScreenPos);
 }
-
 bool SelectBoxState::onKeyDown(Editor* editor, ui::KeyMessage* msg)
 {
   if (editor != UIContext::instance()->activeEditor())
     return false;
-
   // Cancel
   if (msg->scancode() == kKeyEsc) {
     if (hasFlag(Flags::QuickBox)) {
@@ -284,26 +240,21 @@ bool SelectBoxState::onKeyDown(Editor* editor, ui::KeyMessage* msg)
       return true;
     }
   }
-
   // Use StandbyState implementation
   return StandbyState::onKeyDown(editor, msg);
 }
-
 bool SelectBoxState::acceptQuickTool(tools::Tool* tool)
 {
   return false;
 }
-
 bool SelectBoxState::requireBrushPreview()
 {
   if (hasFlag(Flags::QuickBox))
     return true;
-
   // Returns false as it overrides default standby state behavior &
   // look. This state uses normal arrow cursors.
   return false;
 }
-
 tools::Ink* SelectBoxState::getStateInk() const
 {
   if (hasFlag(Flags::QuickBox))
@@ -311,7 +262,6 @@ tools::Ink* SelectBoxState::getStateInk() const
   else
     return nullptr;
 }
-
 void SelectBoxState::postRenderDecorator(EditorPostRender* render)
 {
   Editor* editor = render->getEditor();
@@ -321,7 +271,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   vp.w += proj.applyX(1);
   vp.h += proj.applyY(1);
   vp = editor->screenToEditor(vp);
-
   // Paint a grid generated by the box
   auto theme = skin::SkinTheme::get(editor);
   const gfx::Color rulerColor = theme->colors.selectBoxRuler();
@@ -333,7 +282,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
     padding = getPaddingBounds();
   rc.offset(mainOffset);
   sp.offset(mainOffset);
-
   // With black shadow?
   if (hasFlag(Flags::DarkOutside)) {
     if (hasFlag(Flags::PaddingRulers)) {
@@ -371,7 +319,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
             render->fillRect(dark, gfx::Rect(sp.x2(), rc.y, vp.x2() - sp.x2(), rc.h));
         }
       }
-
       // Draw vertical dark padding big bands
       if (hasFlag(Flags::VGrid) && hasFlag(Flags::HGrid)) {
         std::vector<int> padXTips;
@@ -496,7 +443,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
         render->fillRect(dark, gfx::Rect(rc.x2(), rc.y, vp.x2() - rc.x2(), rc.h));
     }
   }
-
   // Draw the grid rulers when padding is posible (i.e. Flag::PaddingRulers=true)
   if (hasFlag(Flags::PaddingRulers)) {
     if (hasFlag(Flags::HGrid) && hasFlag(Flags::VGrid)) {
@@ -506,7 +452,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
         for (int x = rc.x + rc.w + padding.w; x <= sp.x + sp.w; x += rc.w + padding.w)
           render->drawLine(gridColor, x, rc.y, x, sp.y2());
       }
-
       if (rc.h > 0 && padding.h == 0) {
         for (int y = rc.y + rc.h * 2 + padding.h; y <= sp.y + sp.h; y += rc.h + padding.h)
           render->drawLine(gridColor, rc.x, y, sp.x2(), y);
@@ -538,7 +483,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
         for (int x = rc.x + rc.w * 2; x <= sp.x + sp.w; x += rc.w)
           render->drawLine(gridColor, x, rc.y, x, sp.y + sp.h);
       }
-
       if (rc.h > 0) {
         for (int y = rc.y + rc.h * 2; y <= sp.y + sp.h; y += rc.h)
           render->drawLine(gridColor, rc.x, y, sp.x + sp.w, y);
@@ -557,7 +501,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
       }
     }
   }
-
   // Draw the rulers enclosing the box
   if (hasFlag(Flags::Rulers)) {
     for (const Ruler& ruler : m_rulers) {
@@ -567,7 +510,6 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
           render->drawLine(rulerColor, vp.x, y, vp.x + vp.w - 1, y);
           break;
         }
-
         case VERTICAL: {
           const int x = ruler.position() + mainOffset.x;
           render->drawLine(rulerColor, x, vp.y, x, vp.y + vp.h - 1);
@@ -576,29 +518,24 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
       }
     }
   }
-
   if (hasFlag(Flags::QuickBox)) {
     render->drawRect(gfx::rgba(255, 255, 255), rc);
   }
 }
-
 void SelectBoxState::getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region)
 {
   // Do nothing
 }
-
 void SelectBoxState::updateContextBar()
 {
   ContextBar* contextBar = App::instance()->contextBar();
   contextBar->updateForSelectingBox(m_delegate->onGetContextBarHelp());
 }
-
 Ruler& SelectBoxState::oppositeRuler(const int rulerIndex)
 {
   // 0 and 1 are opposites, and 2 and 3
   return m_rulers[rulerIndex ^ 1];
 }
-
 int SelectBoxState::hitTestRulers(Editor* editor,
                                   const gfx::Point& mousePos,
                                   const bool updateMovingRulers)
@@ -608,14 +545,11 @@ int SelectBoxState::hitTestRulers(Editor* editor,
   ASSERT(V1 == 2);
   ASSERT(V2 == 3);
   int align = 0;
-
   if (updateMovingRulers)
     m_movingRulers.clear();
-
   for (int i = 0; i < int(m_rulers.size()); ++i) {
     const Ruler& ruler = m_rulers[i];
     const Ruler& oppRuler = oppositeRuler(i);
-
     if (hitTestRuler(editor, ruler, oppRuler, mousePos)) {
       if (!hasFlag(Flags::PaddingRulers) &&
           (((ruler.align() & (LEFT | TOP)) && ruler.position() > oppRuler.position()) ||
@@ -627,7 +561,6 @@ int SelectBoxState::hitTestRulers(Editor* editor,
         m_movingRulers.push_back(i);
     }
   }
-
   // Check moving all rulers at the same time
   if (align == 0 && !hasFlag(Flags::QuickBox)) {
     if (editor->editorToScreen(getBoxBounds().offset(editor->mainTilePosition()))
@@ -640,10 +573,8 @@ int SelectBoxState::hitTestRulers(Editor* editor,
       }
     }
   }
-
   return align;
 }
-
 int SelectBoxState::hitTestRuler(Editor* editor,
                                  const Ruler& ruler,
                                  const Ruler& oppRuler,
@@ -651,7 +582,6 @@ int SelectBoxState::hitTestRuler(Editor* editor,
 {
   gfx::Point pt = editor->mainTilePosition();
   pt = editor->editorToScreen(pt + gfx::Point(ruler.position(), ruler.position()));
-
   switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
     case HORIZONTAL:
       if (!hasFlag(Flags::PaddingRulers)) {
@@ -668,7 +598,6 @@ int SelectBoxState::hitTestRuler(Editor* editor,
         return ruler.align();
       }
       break;
-
     case VERTICAL:
       if (!hasFlag(Flags::PaddingRulers)) {
         if (ruler.position() <= oppRuler.position()) {
@@ -684,15 +613,12 @@ int SelectBoxState::hitTestRuler(Editor* editor,
         return ruler.align();
       break;
   }
-
   return 0;
 }
-
 bool SelectBoxState::hasFlag(Flags flag) const
 {
   return (int(m_flags) & int(flag)) == int(flag);
 }
-
 CursorType SelectBoxState::cursorFromAlign(const int align) const
 {
   switch (align & (LEFT | TOP | RIGHT | BOTTOM)) {
@@ -708,5 +634,4 @@ CursorType SelectBoxState::cursorFromAlign(const int align) const
   }
   return kArrowCursor;
 }
-
 } // namespace app

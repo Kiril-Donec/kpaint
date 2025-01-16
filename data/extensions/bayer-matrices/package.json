@@ -3,7 +3,7 @@
   "displayName": "Bayer Matrices for Dithering",
   "description": "Dithering matrices created by Bryce E. Bayer",
   "version": "1.0",
-  "publisher": "aseprite",
+  "publisher": "kpaint",
   "contributes": {
     "ditheringMatrices": [
       {

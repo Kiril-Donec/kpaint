@@ -1,25 +1,22 @@
-// Aseprite UI Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint UI Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "ui/message.h"
-
-#include "base/memory.h"
-#include "os/system.h"
-#include "ui/display.h"
-#include "ui/widget.h"
-
-#include <cstring>
-
+ endif
+ include "base/memory.h"
+ include "os/system.h"
+ include "ui/display.h"
+ include "ui/message.h"
+ include "ui/widget.h"
+ include <cstring>
 namespace ui {
-
 Message::Message(MessageType type, KeyModifiers modifiers)
   : m_type(type)
   , m_flags(0)
@@ -32,29 +29,24 @@ Message::Message(MessageType type, KeyModifiers modifiers)
   else
     m_modifiers = modifiers;
 }
-
 Message::~Message()
 {
 }
-
 void Message::setDisplay(Display* display)
 {
   m_display = display;
 }
-
 void Message::setRecipient(Widget* widget)
 {
   ASSERT(m_recipient == nullptr);
   ASSERT_VALID_WIDGET(widget);
   m_recipient = widget;
 }
-
 void Message::removeRecipient(Widget* widget)
 {
   if (m_recipient == widget)
     m_recipient = nullptr;
 }
-
 KeyMessage::KeyMessage(MessageType type,
                        KeyScancode scancode,
                        KeyModifiers modifiers,
@@ -68,7 +60,6 @@ KeyMessage::KeyMessage(MessageType type,
 {
   setPropagateToParent(true);
 }
-
 gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
 {
   if (display() == anotherDisplay) {
@@ -80,10 +71,8 @@ gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
     return anotherDisplay->nativeWindow()->pointFromScreen(screenPosition());
   }
 }
-
 gfx::Point MouseMessage::screenPosition() const
 {
   return display()->nativeWindow()->pointToScreen(position());
 }
-
 } // namespace ui

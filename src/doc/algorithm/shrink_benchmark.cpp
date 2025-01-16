@@ -1,29 +1,26 @@
-// Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/algorithm/shrink_bounds.h"
-
-#include "doc/color.h"
-#include "doc/image.h"
-
-#include <benchmark/benchmark.h>
-#include <memory>
-
+ endif
+ include "doc/algorithm/shrink_bounds.h"
+ include "doc/color.h"
+ include "doc/image.h"
+ include <benchmark/benchmark.h>
+ include <memory>
 using namespace doc;
-
 void BM_ShrinkBounds(benchmark::State& state)
 {
   const PixelFormat pixelFormat = (PixelFormat)state.range(0);
   const int w = state.range(1);
   const int h = state.range(2);
-
   std::unique_ptr<Image> img(Image::create(pixelFormat, w, h));
   img->putPixel(w / 2, h / 2, rgba(1, 2, 3, 4));
   gfx::Rect rc;
@@ -31,8 +28,7 @@ void BM_ShrinkBounds(benchmark::State& state)
     doc::algorithm::shrink_bounds(img.get(), 0, nullptr, rc);
   }
 }
-
-#define DEFARGS(MODE)                                                                              \
+ define DEFARGS(MODE)                                                                              \
   ->Args({ MODE, 100, 100 })                                                                       \
     ->Args({ MODE, 200, 200 })                                                                     \
     ->Args({ MODE, 300, 300 })                                                                     \
@@ -49,10 +45,8 @@ void BM_ShrinkBounds(benchmark::State& state)
     ->Args({ MODE, 2000, 2000 })                                                                   \
     ->Args({ MODE, 4000, 4000 })                                                                   \
     ->Args({ MODE, 8000, 8000 })
-
 BENCHMARK(BM_ShrinkBounds)
 DEFARGS(IMAGE_RGB)
 DEFARGS(IMAGE_GRAYSCALE)
 DEFARGS(IMAGE_INDEXED)->Unit(benchmark::kMicrosecond)->UseRealTime();
-
 BENCHMARK_MAIN();

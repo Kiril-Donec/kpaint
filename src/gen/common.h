@@ -1,16 +1,17 @@
-// Aseprite Code Generator
-// Copyright (C) 2014-2015  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef GEN_COMMON_H_INCLUDED
-#define GEN_COMMON_H_INCLUDED
-#pragma once
-
-#include <cctype>
-#include <string>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Code Generator
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifndef GEN_COMMON_H_INCLUDED
+ define GEN_COMMON_H_INCLUDED
+ pragma once
+ include <cctype>
+ include <string>
 inline std::string convert_xmlid_to_cppid(const std::string& xmlid, bool firstLetterUpperCase)
 {
   bool firstLetter = firstLetterUpperCase;
@@ -28,5 +29,4 @@ inline std::string convert_xmlid_to_cppid(const std::string& xmlid, bool firstLe
   }
   return cppid;
 }
-
-#endif
+ endif

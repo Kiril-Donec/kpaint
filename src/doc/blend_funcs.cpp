@@ -1,44 +1,36 @@
-// Aseprite Document Library
-// Copyright (c) 2019-2022 Igara Studio S.A.
-// Copyright (c) 2001-2017 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
-//
-// --
-//
-// Some references about alpha compositing and blend modes:
-//
-//   http://dev.w3.org/fxtf/compositing-1/
-//   http://www.adobe.com/devnet/pdf/pdf_reference.html
-//
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+// // --
+// // Some references about alpha compositing and blend modes:
+// //   http://dev.w3.org/fxtf/compositing-1/
+// http://www.adobe.com/devnet/pdf/pdf_reference.html
+ #ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/blend_funcs.h"
-
-#include "base/debug.h"
-#include "doc/blend_internals.h"
-
-#include <algorithm>
-#include <cmath>
-
+ endif
+ include "base/debug.h"
+ include "doc/blend_funcs.h"
+ include "doc/blend_internals.h"
+ include <algorithm>
+ include <cmath>
 namespace {
-
-#define blend_multiply(b, s, t) (MUL_UN8((b), (s), (t)))
-#define blend_screen(b, s, t)   ((b) + (s) - MUL_UN8((b), (s), (t)))
-#define blend_overlay(b, s, t)  (blend_hard_light(s, b, t))
-#define blend_darken(b, s)      (std::min((b), (s)))
-#define blend_lighten(b, s)     (std::max((b), (s)))
-#define blend_hard_light(b, s, t)                                                                  \
+ define blend_multiply(b, s, t) (MUL_UN8((b), (s), (t)))
+ define blend_screen(b, s, t)   ((b) + (s) - MUL_UN8((b), (s), (t)))
+ define blend_overlay(b, s, t)  (blend_hard_light(s, b, t))
+ define blend_darken(b, s)      (std::min((b), (s)))
+ define blend_lighten(b, s)     (std::max((b), (s)))
+ define blend_hard_light(b, s, t)                                                                  \
   ((s) < 128 ? blend_multiply((b), (s) << 1, (t)) : blend_screen((b), ((s) << 1) - 255, (t)))
-#define blend_difference(b, s)   (ABS((b) - (s)))
-#define blend_exclusion(b, s, t) ((t) = MUL_UN8((b), (s), (t)), ((b) + (s) - 2 * (t)))
-
-// New Blender Method macros
-#define RGBA_BLENDER_N(name)                                                                       \
+ define blend_difference(b, s)   (ABS((b) - (s)))
+ define blend_exclusion(b, s, t) ((t) = MUL_UN8((b), (s), (t)), ((b) + (s) - 2 * (t)))
+ New Blender Method macros
+ define RGBA_BLENDER_N(name)                                                                       \
   color_t rgba_blender_##name##_n(color_t backdrop, color_t src, int opacity)                      \
   {                                                                                                \
     if (backdrop & rgba_a_mask) {                                                                  \
@@ -54,8 +46,7 @@ namespace {
     else                                                                                           \
       return rgba_blender_normal(backdrop, src, opacity);                                          \
   }
-
-#define GRAYA_BLENDER_N(name)                                                                      \
+ define GRAYA_BLENDER_N(name)                                                                      \
   color_t graya_blender_##name##_n(color_t backdrop, color_t src, int opacity)                     \
   {                                                                                                \
     if (backdrop & graya_a_mask) {                                                                 \
@@ -71,7 +62,6 @@ namespace {
     else                                                                                           \
       return graya_blender_normal(backdrop, src, opacity);                                         \
   }
-
 inline uint32_t blend_divide(uint32_t b, uint32_t s)
 {
   if (b == 0)
@@ -81,79 +71,63 @@ inline uint32_t blend_divide(uint32_t b, uint32_t s)
   else
     return DIV_UN8(b, s); // return b / s
 }
-
 inline uint32_t blend_color_dodge(uint32_t b, uint32_t s)
 {
   if (b == 0)
     return 0;
-
   s = (255 - s);
   if (b >= s)
     return 255;
   else
     return DIV_UN8(b, s); // return b / (1-s)
 }
-
 inline uint32_t blend_color_burn(uint32_t b, uint32_t s)
 {
   if (b == 255)
     return 255;
-
   b = (255 - b);
   if (b >= s)
     return 0;
   else
     return 255 - DIV_UN8(b, s); // return 1 - ((1-b)/s)
 }
-
 inline uint32_t blend_soft_light(uint32_t _b, uint32_t _s)
 {
   double b = _b / 255.0;
   double s = _s / 255.0;
   double r, d;
-
   if (b <= 0.25)
     d = ((16 * b - 12) * b + 4) * b;
   else
     d = std::sqrt(b);
-
   if (s <= 0.5)
     r = b - (1.0 - 2.0 * s) * b * (1.0 - b);
   else
     r = b + (2.0 * s - 1.0) * (d - b);
-
   return (uint32_t)(r * 255 + 0.5);
 }
-
 } // namespace
-
 namespace doc {
-
-//////////////////////////////////////////////////////////////////////
-// RGB blenders
-
+// ////////////////////////////////////////////////////////////////////
+ RGB blenders
 color_t rgba_blender_src(color_t backdrop, color_t src, int opacity)
 {
   return src;
 }
-
 color_t rgba_blender_merge(color_t backdrop, color_t src, int opacity)
 {
   int Br, Bg, Bb, Ba;
   int Sr, Sg, Sb, Sa;
   int Rr, Rg, Rb, Ra;
   int t;
-
   Br = rgba_getr(backdrop);
   Bg = rgba_getg(backdrop);
   Bb = rgba_getb(backdrop);
   Ba = rgba_geta(backdrop);
-
   Sr = rgba_getr(src);
   Sg = rgba_getg(src);
   Sb = rgba_getb(src);
   Sa = rgba_geta(src);
-
   if (Ba == 0) {
     Rr = Sr;
     Rg = Sg;
@@ -172,10 +146,8 @@ color_t rgba_blender_merge(color_t backdrop, color_t src, int opacity)
   Ra = Ba + MUL_UN8((Sa - Ba), opacity, t);
   if (Ra == 0)
     Rr = Rg = Rb = 0;
-
   return rgba(Rr, Rg, Rb, Ra);
 }
-
 color_t rgba_blender_neg_bw(color_t backdrop, color_t src, int opacity)
 {
   if (!(backdrop & rgba_a_mask))
@@ -185,25 +157,21 @@ color_t rgba_blender_neg_bw(color_t backdrop, color_t src, int opacity)
   else
     return rgba(0, 0, 0, 255);
 }
-
 color_t rgba_blender_red_tint(color_t backdrop, color_t src, int opacity)
 {
   int v = rgba_luma(src);
   src = rgba((255 + v) / 2, v / 2, v / 2, rgba_geta(src));
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_blue_tint(color_t backdrop, color_t src, int opacity)
 {
   int v = rgba_luma(src);
   src = rgba(v / 2, v / 2, (255 + v) / 2, rgba_geta(src));
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity)
 {
   int t;
-
   if (!(backdrop & rgba_a_mask)) {
     int a = rgba_geta(src);
     a = MUL_UN8(a, opacity, t);
@@ -213,22 +181,18 @@ color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity)
   else if (!(src & rgba_a_mask)) {
     return backdrop;
   }
-
   const int Br = rgba_getr(backdrop);
   const int Bg = rgba_getg(backdrop);
   const int Bb = rgba_getb(backdrop);
   const int Ba = rgba_geta(backdrop);
-
   const int Sr = rgba_getr(src);
   const int Sg = rgba_getg(src);
   const int Sb = rgba_getb(src);
   int Sa = rgba_geta(src);
   Sa = MUL_UN8(Sa, opacity, t);
-
   // Ra = Sa + Ba*(1-Sa)
   //    = Sa + Ba - Ba*Sa
   const int Ra = Sa + Ba - MUL_UN8(Ba, Sa, t);
-
   // Ra = Sa + Ba*(1-Sa)
   // Ba = (Ra-Sa) / (1-Sa)
   // Rc = (Sc*Sa + Bc*Ba*(1-Sa)) / Ra                Replacing Ba with (Ra-Sa) / (1-Sa)...
@@ -240,10 +204,8 @@ color_t rgba_blender_normal(color_t backdrop, color_t src, int opacity)
   const int Rr = Br + (Sr - Br) * Sa / Ra;
   const int Rg = Bg + (Sg - Bg) * Sa / Ra;
   const int Rb = Bb + (Sb - Bb) * Sa / Ra;
-
   return rgba(Rr, Rg, Rb, Ra);
 }
-
 color_t rgba_blender_normal_dst_over(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -251,7 +213,6 @@ color_t rgba_blender_normal_dst_over(color_t backdrop, color_t src, int opacity)
   src = (src & rgba_rgb_mask) | (Sa << rgba_a_shift);
   return rgba_blender_normal(src, backdrop);
 }
-
 color_t rgba_blender_multiply(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -261,7 +222,6 @@ color_t rgba_blender_multiply(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_screen(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -271,7 +231,6 @@ color_t rgba_blender_screen(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_overlay(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -281,7 +240,6 @@ color_t rgba_blender_overlay(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_darken(color_t backdrop, color_t src, int opacity)
 {
   int r = blend_darken(rgba_getr(backdrop), rgba_getr(src));
@@ -290,7 +248,6 @@ color_t rgba_blender_darken(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_lighten(color_t backdrop, color_t src, int opacity)
 {
   int r = blend_lighten(rgba_getr(backdrop), rgba_getr(src));
@@ -299,7 +256,6 @@ color_t rgba_blender_lighten(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_color_dodge(color_t backdrop, color_t src, int opacity)
 {
   int r = blend_color_dodge(rgba_getr(backdrop), rgba_getr(src));
@@ -308,7 +264,6 @@ color_t rgba_blender_color_dodge(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_color_burn(color_t backdrop, color_t src, int opacity)
 {
   int r = blend_color_burn(rgba_getr(backdrop), rgba_getr(src));
@@ -317,7 +272,6 @@ color_t rgba_blender_color_burn(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_hard_light(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -327,7 +281,6 @@ color_t rgba_blender_hard_light(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_soft_light(color_t backdrop, color_t src, int opacity)
 {
   int r = blend_soft_light(rgba_getr(backdrop), rgba_getr(src));
@@ -336,7 +289,6 @@ color_t rgba_blender_soft_light(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_difference(color_t backdrop, color_t src, int opacity)
 {
   int r = blend_difference(rgba_getr(backdrop), rgba_getr(src));
@@ -345,7 +297,6 @@ color_t rgba_blender_difference(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_exclusion(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -355,39 +306,32 @@ color_t rgba_blender_exclusion(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
-//////////////////////////////////////////////////////////////////////
-// HSV blenders
-
+// ////////////////////////////////////////////////////////////////////
+ HSV blenders
 static double lum(double r, double g, double b)
 {
   return 0.3 * r + 0.59 * g + 0.11 * b;
 }
-
 static double sat(double r, double g, double b)
 {
   return std::max(r, std::max(g, b)) - std::min(r, std::min(g, b));
 }
-
 static void clip_color(double& r, double& g, double& b)
 {
   double l = lum(r, g, b);
   double n = std::min(r, std::min(g, b));
   double x = std::max(r, std::max(g, b));
-
   if (n < 0) {
     r = l + (((r - l) * l) / (l - n));
     g = l + (((g - l) * l) / (l - n));
     b = l + (((b - l) * l) / (l - n));
   }
-
   if (x > 1) {
     r = l + (((r - l) * (1 - l)) / (x - l));
     g = l + (((g - l) * (1 - l)) / (x - l));
     b = l + (((b - l) * (1 - l)) / (x - l));
   }
 }
-
 static void set_lum(double& r, double& g, double& b, double l)
 {
   double d = l - lum(r, g, b);
@@ -396,33 +340,28 @@ static void set_lum(double& r, double& g, double& b, double l)
   b += d;
   clip_color(r, g, b);
 }
-
-// TODO replace this with a better impl (and test this, not sure if it's correct)
+ TODO replace this with a better impl (and test this, not sure if it's correct)
 static void set_sat(double& r, double& g, double& b, double s)
 {
-#undef MIN
-#undef MAX
-#undef MID
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MID(x, y, z)                                                                               \
+ undef MIN
+ undef MAX
+ undef MID
+ define MIN(x, y) (((x) < (y)) ? (x) : (y))
+ define MAX(x, y) (((x) > (y)) ? (x) : (y))
+ define MID(x, y, z)                                                                               \
   ((x) > (y) ? ((y) > (z) ? (y) : ((x) > (z) ? (z) : (x))) :                                       \
                ((y) > (z) ? ((z) > (x) ? (z) : (x)) : (y)))
-
   double& min = MIN(r, MIN(g, b));
   double& mid = MID(r, g, b);
   double& max = MAX(r, MAX(g, b));
-
   if (max > min) {
     mid = ((mid - min) * s) / (max - min);
     max = s;
   }
   else
     mid = max = 0;
-
   min = 0;
 }
-
 color_t rgba_blender_hsl_hue(color_t backdrop, color_t src, int opacity)
 {
   double r = rgba_getr(backdrop) / 255.0;
@@ -430,71 +369,55 @@ color_t rgba_blender_hsl_hue(color_t backdrop, color_t src, int opacity)
   double b = rgba_getb(backdrop) / 255.0;
   double s = sat(r, g, b);
   double l = lum(r, g, b);
-
   r = rgba_getr(src) / 255.0;
   g = rgba_getg(src) / 255.0;
   b = rgba_getb(src) / 255.0;
-
   set_sat(r, g, b, s);
   set_lum(r, g, b, l);
-
   src = rgba(int(255.0 * r), int(255.0 * g), int(255.0 * b), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_hsl_saturation(color_t backdrop, color_t src, int opacity)
 {
   double r = rgba_getr(src) / 255.0;
   double g = rgba_getg(src) / 255.0;
   double b = rgba_getb(src) / 255.0;
   double s = sat(r, g, b);
-
   r = rgba_getr(backdrop) / 255.0;
   g = rgba_getg(backdrop) / 255.0;
   b = rgba_getb(backdrop) / 255.0;
   double l = lum(r, g, b);
-
   set_sat(r, g, b, s);
   set_lum(r, g, b, l);
-
   src = rgba(int(255.0 * r), int(255.0 * g), int(255.0 * b), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_hsl_color(color_t backdrop, color_t src, int opacity)
 {
   double r = rgba_getr(backdrop) / 255.0;
   double g = rgba_getg(backdrop) / 255.0;
   double b = rgba_getb(backdrop) / 255.0;
   double l = lum(r, g, b);
-
   r = rgba_getr(src) / 255.0;
   g = rgba_getg(src) / 255.0;
   b = rgba_getb(src) / 255.0;
-
   set_lum(r, g, b, l);
-
   src = rgba(int(255.0 * r), int(255.0 * g), int(255.0 * b), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_hsl_luminosity(color_t backdrop, color_t src, int opacity)
 {
   double r = rgba_getr(src) / 255.0;
   double g = rgba_getg(src) / 255.0;
   double b = rgba_getb(src) / 255.0;
   double l = lum(r, g, b);
-
   r = rgba_getr(backdrop) / 255.0;
   g = rgba_getg(backdrop) / 255.0;
   b = rgba_getb(backdrop) / 255.0;
-
   set_lum(r, g, b, l);
-
   src = rgba(int(255.0 * r), int(255.0 * g), int(255.0 * b), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_addition(color_t backdrop, color_t src, int opacity)
 {
   int r = rgba_getr(backdrop) + rgba_getr(src);
@@ -503,7 +426,6 @@ color_t rgba_blender_addition(color_t backdrop, color_t src, int opacity)
   src = rgba(std::min(r, 255), std::min(g, 255), std::min(b, 255), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_subtract(color_t backdrop, color_t src, int opacity)
 {
   int r = rgba_getr(backdrop) - rgba_getr(src);
@@ -512,7 +434,6 @@ color_t rgba_blender_subtract(color_t backdrop, color_t src, int opacity)
   src = rgba(MAX(r, 0), MAX(g, 0), MAX(b, 0), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
 color_t rgba_blender_divide(color_t backdrop, color_t src, int opacity)
 {
   int r = blend_divide(rgba_getr(backdrop), rgba_getr(src));
@@ -521,8 +442,7 @@ color_t rgba_blender_divide(color_t backdrop, color_t src, int opacity)
   src = rgba(r, g, b, 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
-
-// New Blender Methods:
+ New Blender Methods:
 RGBA_BLENDER_N(multiply)
 RGBA_BLENDER_N(screen)
 RGBA_BLENDER_N(overlay)
@@ -541,28 +461,22 @@ RGBA_BLENDER_N(hsl_luminosity)
 RGBA_BLENDER_N(addition)
 RGBA_BLENDER_N(subtract)
 RGBA_BLENDER_N(divide)
-
-//////////////////////////////////////////////////////////////////////
-// GRAY blenders
-
+// ////////////////////////////////////////////////////////////////////
+ GRAY blenders
 color_t graya_blender_src(color_t backdrop, color_t src, int opacity)
 {
   return src;
 }
-
 color_t graya_blender_merge(color_t backdrop, color_t src, int opacity)
 {
   int Bk, Ba;
   int Sk, Sa;
   int Rk, Ra;
   int t;
-
   Bk = graya_getv(backdrop);
   Ba = graya_geta(backdrop);
-
   Sk = graya_getv(src);
   Sa = graya_geta(src);
-
   if (Ba == 0) {
     Rk = Sk;
   }
@@ -575,10 +489,8 @@ color_t graya_blender_merge(color_t backdrop, color_t src, int opacity)
   Ra = Ba + MUL_UN8((Sa - Ba), opacity, t);
   if (Ra == 0)
     Rk = 0;
-
   return graya(Rk, Ra);
 }
-
 color_t graya_blender_neg_bw(color_t backdrop, color_t src, int opacity)
 {
   if (!(backdrop & graya_a_mask))
@@ -588,11 +500,9 @@ color_t graya_blender_neg_bw(color_t backdrop, color_t src, int opacity)
   else
     return graya(0, 255);
 }
-
 color_t graya_blender_normal(color_t backdrop, color_t src, int opacity)
 {
   int t;
-
   if (!(backdrop & graya_a_mask)) {
     int a = graya_geta(src);
     a = MUL_UN8(a, opacity, t);
@@ -601,24 +511,18 @@ color_t graya_blender_normal(color_t backdrop, color_t src, int opacity)
   }
   else if (!(src & graya_a_mask))
     return backdrop;
-
   int Bg, Ba;
   int Sg, Sa;
   int Rg, Ra;
-
   Bg = graya_getv(backdrop);
   Ba = graya_geta(backdrop);
-
   Sg = graya_getv(src);
   Sa = graya_geta(src);
   Sa = MUL_UN8(Sa, opacity, t);
-
   Ra = Ba + Sa - MUL_UN8(Ba, Sa, t);
   Rg = Bg + (Sg - Bg) * Sa / Ra;
-
   return graya(Rg, Ra);
 }
-
 color_t graya_blender_normal_dst_over(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -626,7 +530,6 @@ color_t graya_blender_normal_dst_over(color_t backdrop, color_t src, int opacity
   src = (src & graya_v_mask) | (Sa << graya_a_shift);
   return graya_blender_normal(src, backdrop);
 }
-
 color_t graya_blender_multiply(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -634,7 +537,6 @@ color_t graya_blender_multiply(color_t backdrop, color_t src, int opacity)
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_screen(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -642,7 +544,6 @@ color_t graya_blender_screen(color_t backdrop, color_t src, int opacity)
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_overlay(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -650,35 +551,30 @@ color_t graya_blender_overlay(color_t backdrop, color_t src, int opacity)
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_darken(color_t backdrop, color_t src, int opacity)
 {
   int v = blend_darken(graya_getv(backdrop), graya_getv(src));
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_lighten(color_t backdrop, color_t src, int opacity)
 {
   int v = blend_lighten(graya_getv(backdrop), graya_getv(src));
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_color_dodge(color_t backdrop, color_t src, int opacity)
 {
   int v = blend_color_dodge(graya_getv(backdrop), graya_getv(src));
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_color_burn(color_t backdrop, color_t src, int opacity)
 {
   int v = blend_color_burn(graya_getv(backdrop), graya_getv(src));
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_hard_light(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -686,21 +582,18 @@ color_t graya_blender_hard_light(color_t backdrop, color_t src, int opacity)
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_soft_light(color_t backdrop, color_t src, int opacity)
 {
   int v = blend_soft_light(graya_getv(backdrop), graya_getv(src));
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_difference(color_t backdrop, color_t src, int opacity)
 {
   int v = blend_difference(graya_getv(backdrop), graya_getv(src));
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_exclusion(color_t backdrop, color_t src, int opacity)
 {
   int t;
@@ -708,28 +601,24 @@ color_t graya_blender_exclusion(color_t backdrop, color_t src, int opacity)
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_addition(color_t backdrop, color_t src, int opacity)
 {
   int v = graya_getv(backdrop) + graya_getv(src);
   src = graya(std::min(v, 255), 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_subtract(color_t backdrop, color_t src, int opacity)
 {
   int v = graya_getv(backdrop) - graya_getv(src);
   src = graya(std::max(v, 0), 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 color_t graya_blender_divide(color_t backdrop, color_t src, int opacity)
 {
   int v = blend_divide(graya_getv(backdrop), graya_getv(src));
   src = graya(v, 0) | (src & graya_a_mask);
   return graya_blender_normal(backdrop, src, opacity);
 }
-
 GRAYA_BLENDER_N(multiply)
 GRAYA_BLENDER_N(screen)
 GRAYA_BLENDER_N(overlay)
@@ -744,18 +633,14 @@ GRAYA_BLENDER_N(exclusion)
 GRAYA_BLENDER_N(addition)
 GRAYA_BLENDER_N(subtract)
 GRAYA_BLENDER_N(divide)
-
-//////////////////////////////////////////////////////////////////////
-// indexed
-
+// ////////////////////////////////////////////////////////////////////
+ indexed
 color_t indexed_blender_src(color_t dst, color_t src, int opacity)
 {
   return src;
 }
-
-//////////////////////////////////////////////////////////////////////
-// getters
-
+// ////////////////////////////////////////////////////////////////////
+ getters
 BlendFunc get_rgba_blender(BlendMode blendmode, const bool newBlend)
 {
   switch (blendmode) {
@@ -765,7 +650,6 @@ BlendFunc get_rgba_blender(BlendMode blendmode, const bool newBlend)
     case BlendMode::RED_TINT:  return rgba_blender_red_tint;
     case BlendMode::BLUE_TINT: return rgba_blender_blue_tint;
     case BlendMode::DST_OVER:  return rgba_blender_normal_dst_over;
-
     case BlendMode::NORMAL:    return rgba_blender_normal;
     case BlendMode::MULTIPLY:  return newBlend ? rgba_blender_multiply_n : rgba_blender_multiply;
     case BlendMode::SCREEN:    return newBlend ? rgba_blender_screen_n : rgba_blender_screen;
@@ -796,7 +680,6 @@ BlendFunc get_rgba_blender(BlendMode blendmode, const bool newBlend)
   ASSERT(false);
   return rgba_blender_src;
 }
-
 BlendFunc get_graya_blender(BlendMode blendmode, const bool newBlend)
 {
   switch (blendmode) {
@@ -806,7 +689,6 @@ BlendFunc get_graya_blender(BlendMode blendmode, const bool newBlend)
     case BlendMode::RED_TINT:  return graya_blender_normal;
     case BlendMode::BLUE_TINT: return graya_blender_normal;
     case BlendMode::DST_OVER:  return graya_blender_normal_dst_over;
-
     case BlendMode::NORMAL:    return graya_blender_normal;
     case BlendMode::MULTIPLY:  return newBlend ? graya_blender_multiply_n : graya_blender_multiply;
     case BlendMode::SCREEN:    return newBlend ? graya_blender_screen_n : graya_blender_screen;
@@ -836,10 +718,8 @@ BlendFunc get_graya_blender(BlendMode blendmode, const bool newBlend)
   ASSERT(false);
   return graya_blender_src;
 }
-
 BlendFunc get_indexed_blender(BlendMode blendmode, const bool newBlend)
 {
   return indexed_blender_src;
 }
-
 } // namespace doc

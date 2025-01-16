@@ -1,37 +1,36 @@
-// Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/user_data_view.h"
-
-#include "app/color.h"
-#include "app/color_utils.h"
-#include "app/pref/preferences.h"
-#include "app/ui/color_button.h"
-#include "base/scoped_value.h"
-#include "doc/user_data.h"
-#include "ui/base.h"
-#include "ui/entry.h"
-#include "ui/grid.h"
-#include "ui/label.h"
-#include "ui/widget.h"
-
+ endif
+ include "app/color.h"
+ include "app/color_utils.h"
+ include "app/pref/preferences.h"
+ include "app/ui/color_button.h"
+ include "app/ui/user_data_view.h"
+ include "base/scoped_value.h"
+ include "doc/user_data.h"
+ include "ui/base.h"
+ include "ui/entry.h"
+ include "ui/grid.h"
+ include "ui/label.h"
+ include "ui/widget.h"
 namespace app {
-
 UserDataView::UserDataView(Option<bool>& visibility) : m_visibility(visibility)
 {
 }
-
 void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* parent)
 {
   base::ScopedValue switchSelf(m_selfUpdate, true);
-
   if (!m_isConfigured) {
     // Find the correct hspan to add to an arbitrary grid column count:
     // Example with grid columns count = 4:
@@ -68,12 +67,10 @@ void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* pare
   entry()->setText(m_userData.text());
   setVisible(isVisible());
 }
-
 void UserDataView::toggleVisibility()
 {
   setVisible(!isVisible());
 }
-
 void UserDataView::setVisible(bool state, bool saveAsDefault)
 {
   colorLabel()->setVisible(state);
@@ -83,7 +80,6 @@ void UserDataView::setVisible(bool state, bool saveAsDefault)
   if (saveAsDefault)
     m_visibility.setValue(state);
 }
-
 void UserDataView::onEntryChange()
 {
   if (entry()->text() != m_userData.text()) {
@@ -92,7 +88,6 @@ void UserDataView::onEntryChange()
       UserDataChange();
   }
 }
-
 void UserDataView::onColorChange()
 {
   app::Color oldColor = app::Color::fromImage(doc::IMAGE_RGB, m_userData.color());
@@ -103,5 +98,4 @@ void UserDataView::onColorChange()
       UserDataChange();
   }
 }
-
 } // namespace app

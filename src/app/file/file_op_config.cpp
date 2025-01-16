@@ -1,23 +1,23 @@
-// Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/file/file_op_config.h"
-
-#include "app/color_spaces.h"
-
+ endif
+ include "app/color_spaces.h"
+ include "app/file/file_op_config.h"
 namespace app {
-
 void FileOpConfig::fillFromPreferences()
 {
   auto& pref = Preferences::instance();
-
   preserveColorProfile = pref.color.manage();
   filesWithProfile = pref.color.filesWithProfile();
   missingProfile = pref.color.missingProfile();
@@ -28,5 +28,4 @@ void FileOpConfig::fillFromPreferences()
   fitCriteria = pref.quantization.fitCriteria();
   cacheCompressedTilesets = pref.tileset.cacheCompressedTilesets();
 }
-
 } // namespace app

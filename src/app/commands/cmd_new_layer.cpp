@@ -1,62 +1,60 @@
-// Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/cmd/add_tileset.h"
-#include "app/cmd/clear_mask.h"
-#include "app/cmd/move_layer.h"
-#include "app/cmd/trim_cel.h"
-#include "app/commands/command.h"
-#include "app/commands/commands.h"
-#include "app/commands/new_params.h"
-#include "app/commands/params.h"
-#include "app/console.h"
-#include "app/context_access.h"
-#include "app/doc_api.h"
-#include "app/find_widget.h"
-#include "app/i18n/strings.h"
-#include "app/load_widget.h"
-#include "app/modules/gui.h"
-#include "app/pref/preferences.h"
-#include "app/restore_visible_layers.h"
-#include "app/tx.h"
-#include "app/ui/main_window.h"
-#include "app/ui/status_bar.h"
-#include "app/ui/tileset_selector.h"
-#include "app/ui_context.h"
-#include "app/util/clipboard.h"
-#include "app/util/new_image_from_mask.h"
-#include "app/util/range_utils.h"
-#include "doc/layer.h"
-#include "doc/layer_tilemap.h"
-#include "doc/primitives.h"
-#include "doc/sprite.h"
-#include "fmt/format.h"
-#include "render/dithering.h"
-#include "render/ordered_dither.h"
-#include "render/quantization.h"
-#include "render/render.h"
-#include "ui/ui.h"
-
-#include "new_layer.xml.h"
-
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <string>
-
+ endif
+ include "app/app.h"
+ include "app/cmd/add_tileset.h"
+ include "app/cmd/clear_mask.h"
+ include "app/cmd/move_layer.h"
+ include "app/cmd/trim_cel.h"
+ include "app/commands/command.h"
+ include "app/commands/commands.h"
+ include "app/commands/new_params.h"
+ include "app/commands/params.h"
+ include "app/console.h"
+ include "app/context_access.h"
+ include "app/doc_api.h"
+ include "app/find_widget.h"
+ include "app/i18n/strings.h"
+ include "app/load_widget.h"
+ include "app/modules/gui.h"
+ include "app/pref/preferences.h"
+ include "app/restore_visible_layers.h"
+ include "app/tx.h"
+ include "app/ui/main_window.h"
+ include "app/ui/status_bar.h"
+ include "app/ui/tileset_selector.h"
+ include "app/ui_context.h"
+ include "app/util/clipboard.h"
+ include "app/util/new_image_from_mask.h"
+ include "app/util/range_utils.h"
+ include "doc/layer.h"
+ include "doc/layer_tilemap.h"
+ include "doc/primitives.h"
+ include "doc/sprite.h"
+ include "fmt/format.h"
+ include "new_layer.xml.h"
+ include "render/dithering.h"
+ include "render/ordered_dither.h"
+ include "render/quantization.h"
+ include "render/render.h"
+ include "ui/ui.h"
+ include <algorithm>
+ include <cstdlib>
+ include <cstring>
+ include <string>
 namespace app {
-
 using namespace ui;
-
 struct NewLayerParams : public NewParams {
   Param<std::string> name{ this, std::string(), "name" };
   Param<bool> group{ this, false, "group" };
@@ -75,12 +73,10 @@ struct NewLayerParams : public NewParams {
   Param<bool> top{ this, false, "top" };
   Param<bool> before{ this, false, "before" };
 };
-
 class NewLayerCommand : public CommandWithNewParams<NewLayerParams> {
 public:
   enum class Type { Layer, Group, ReferenceLayer, TilemapLayer };
   enum class Place { AfterActiveLayer, BeforeActiveLayer, Top };
-
   NewLayerCommand();
 
 protected:
@@ -95,19 +91,15 @@ private:
   std::string getUniqueTilesetName(const Sprite* sprite) const;
   int getMaxLayerNum(const Layer* layer) const;
   std::string layerPrefix() const;
-
   Type m_type;
   Place m_place;
 };
-
 NewLayerCommand::NewLayerCommand() : CommandWithNewParams(CommandId::NewLayer(), CmdRecordableFlag)
 {
 }
-
 void NewLayerCommand::onLoadParams(const Params& commandParams)
 {
   CommandWithNewParams<NewLayerParams>::onLoadParams(commandParams);
-
   m_type = Type::Layer;
   if (params().group())
     m_type = Type::Group;
@@ -117,28 +109,22 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
     m_type = Type::TilemapLayer;
   else
     m_type = Type::Layer;
-
   m_place = Place::AfterActiveLayer;
   if (params().top())
     m_place = Place::Top;
   else if (params().before())
     m_place = Place::BeforeActiveLayer;
 }
-
 bool NewLayerCommand::onEnabled(Context* ctx)
 {
   if (!ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite))
     return false;
-
   if (params().fromClipboard() && ctx->clipboard()->format() != ClipboardFormat::Image)
     return false;
-
   if ((params().viaCut() || params().viaCopy()) && !ctx->checkFlags(ContextFlags::HasVisibleMask))
     return false;
-
   return true;
 }
-
 namespace {
 class Scoped { // TODO move this to base library
 public:
@@ -149,7 +135,6 @@ private:
   std::function<void()> m_func;
 };
 } // namespace
-
 void NewLayerCommand::onExecute(Context* context)
 {
   ContextReader reader(context);
@@ -157,12 +142,10 @@ void NewLayerCommand::onExecute(Context* context)
   Doc* document(reader.document());
   Sprite* sprite(reader.sprite());
   std::string name;
-
   // Show the tooltip feedback only if we are not inside a transaction
   // (e.g. we can be already in a transaction if we are running in a
   // Lua script app.transaction()).
   const bool showTooltip = (document->transaction() == nullptr);
-
   Doc* pasteDoc = nullptr;
   Scoped destroyPasteDoc([&pasteDoc, context] {
     if (pasteDoc) {
@@ -176,13 +159,11 @@ void NewLayerCommand::onExecute(Context* context)
       }
     }
   });
-
   // Default name
   if (params().name.isSet())
     name = params().name();
   else
     name = getUniqueLayerName(sprite);
-
   // Select a file to copy its content
   if (params().fromFile()) {
     Doc* oldActiveDocument = context->activeDocument();
@@ -190,13 +171,11 @@ void NewLayerCommand::onExecute(Context* context)
     Params params;
     params.set("filename", "");
     context->executeCommand(openFile, params);
-
     // The user have selected another document.
     if (oldActiveDocument != context->activeDocument()) {
       pasteDoc = context->activeDocument();
       if (pasteDoc)
         pasteDoc->setInhibitBackup(true);
-
       static_cast<UIContext*>(context)->setActiveDocument(oldActiveDocument);
     }
     // If the user didn't selected a new document, it means that the
@@ -204,7 +183,6 @@ void NewLayerCommand::onExecute(Context* context)
     else
       return;
   }
-
   // Information about the tileset to be used for new tilemaps
   TilesetSelector::Info tilesetInfo;
   tilesetInfo.newTileset = true;
@@ -212,18 +190,15 @@ void NewLayerCommand::onExecute(Context* context)
                                                         doc::Grid(params().gridBounds()));
   tilesetInfo.baseIndex = 1;
   tilesetInfo.matchFlags = 0; // TODO default flags?
-
   // If params specify to ask the user about the name...
   if (params().ask() && context->isUIAvailable()) {
     auto& pref = Preferences::instance();
     tilesetInfo.baseIndex = pref.tileset.baseIndex();
-
     // We open the window to ask the name
     app::gen::NewLayer window;
     TilesetSelector* tilesetSelector = nullptr;
     window.name()->setText(name.c_str());
     window.name()->setMinSize(gfx::Size(128, 0));
-
     // Tileset selector for new tilemaps
     const bool isTilemap = (m_type == Type::TilemapLayer);
     window.tilesetLabel()->setVisible(isTilemap);
@@ -232,21 +207,17 @@ void NewLayerCommand::onExecute(Context* context)
       tilesetSelector = new TilesetSelector(sprite, tilesetInfo);
       window.tilesetOptions()->addChild(tilesetSelector);
     }
-
     window.openWindowInForeground();
     if (window.closer() != window.ok())
       return;
-
     name = window.name()->text();
     if (tilesetSelector) {
       tilesetInfo = tilesetSelector->getInfo();
-
       // Save information for next new tilemap layers
       pref.tileset.baseIndex(tilesetInfo.baseIndex);
       tilesetSelector->saveAdvancedPreferences();
     }
   }
-
   LayerGroup* parent = sprite->root();
   Layer* activeLayer = reader.layer();
   SelectedLayers selLayers = site.selectedLayers();
@@ -259,14 +230,12 @@ void NewLayerCommand::onExecute(Context* context)
       parent = activeLayer->parent();
     }
   }
-
   Layer* layer = nullptr;
   {
     ContextWriter writer(reader);
     Tx tx(writer, Strings::commands_NewLayer(layerPrefix()));
     DocApi api = document->getApi(tx);
     bool afterBackground = false;
-
     switch (m_type) {
       case Type::Layer:
         layer = api.newLayer(parent, name);
@@ -287,29 +256,23 @@ void NewLayerCommand::onExecute(Context* context)
           tileset->setBaseIndex(tilesetInfo.baseIndex);
           tileset->setMatchFlags(tilesetInfo.matchFlags);
           tileset->setName(tilesetInfo.name);
-
           auto addTileset = new cmd::AddTileset(sprite, tileset);
           tx(addTileset);
-
           tsi = addTileset->tilesetIndex();
         }
         else {
           tsi = tilesetInfo.tsi;
         }
-
         layer = new LayerTilemap(sprite, tsi);
         layer->setName(name);
         api.addLayer(parent, layer, parent->lastLayer());
         break;
       }
     }
-
     ASSERT(layer);
     if (!layer)
       return;
-
     ASSERT(layer->parent());
-
     // Put new layer as an overlay of the background or in the first
     // layer in case the sprite is transparent.
     if (afterBackground) {
@@ -325,7 +288,6 @@ void NewLayerCommand::onExecute(Context* context)
     else if (activeLayer && m_place == Place::AfterActiveLayer) {
       api.restackLayerAfter(layer, activeLayer->parent(), activeLayer);
     }
-
     // Put all selected layers inside the group
     if (m_type == Type::Group && site.inTimeline()) {
       LayerGroup* commonParent = nullptr;
@@ -336,34 +298,28 @@ void NewLayerCommand::onExecute(Context* context)
           ++sameParents;
         }
       }
-
       if (sameParents == selLayers.size()) {
         for (Layer* newChild : selLayers.toBrowsableLayerList()) {
           tx(new cmd::MoveLayer(newChild, layer, static_cast<LayerGroup*>(layer)->lastLayer()));
         }
       }
     }
-
     // Paste sprite content
     if (pasteDoc && layer->isImage()) {
       Sprite* pasteSpr = pasteDoc->sprite();
       render::Render render;
       render.setNewBlend(true);
       render.setBgOptions(render::BgOptions::MakeNone());
-
       // Add more frames at the end
       if (writer.frame() + pasteSpr->lastFrame() > sprite->lastFrame())
         api.addEmptyFramesTo(sprite, writer.frame() + pasteSpr->lastFrame());
-
       // Paste the given sprite as flatten
       for (frame_t fr = 0; fr <= pasteSpr->lastFrame(); ++fr) {
         ImageRef pasteImage(
           Image::create(pasteSpr->pixelFormat(), pasteSpr->width(), pasteSpr->height()));
         clear_image(pasteImage.get(), pasteSpr->transparentColor());
         render.renderSprite(pasteImage.get(), pasteSpr, fr);
-
         frame_t dstFrame = writer.frame() + fr;
-
         if (sprite->pixelFormat() != pasteSpr->pixelFormat() ||
             sprite->pixelFormat() == IMAGE_INDEXED) {
           ImageRef pasteImageConv(
@@ -378,7 +334,6 @@ void NewLayerCommand::onExecute(Context* context)
           if (pasteImageConv)
             pasteImage = pasteImageConv;
         }
-
         Cel* cel = layer->cel(dstFrame);
         if (cel) {
           api.replaceImage(sprite, cel->imageRef(), pasteImage);
@@ -386,7 +341,6 @@ void NewLayerCommand::onExecute(Context* context)
         else {
           cel = api.addCel(static_cast<LayerImage*>(layer), dstFrame, pasteImage);
         }
-
         if (cel) {
           if (layer->isReference()) {
             adjustRefCelBounds(cel, gfx::RectF(0, 0, pasteSpr->width(), pasteSpr->height()));
@@ -401,7 +355,6 @@ void NewLayerCommand::onExecute(Context* context)
     // Paste new layer from clipboard
     else if (params().fromClipboard() && layer->isImage()) {
       context->clipboard()->paste(context, false);
-
       if (layer->isReference()) {
         if (Cel* cel = layer->cel(site.frame())) {
           adjustRefCelBounds(cel, cel->boundsF());
@@ -412,7 +365,6 @@ void NewLayerCommand::onExecute(Context* context)
     else if ((params().viaCut() || params().viaCopy()) && document->isMaskVisible()) {
       const doc::Mask* mask = document->mask();
       ASSERT(mask);
-
       RestoreVisibleLayers restore;
       SelectedLayers layers;
       SelectedFrames frames;
@@ -428,26 +380,21 @@ void NewLayerCommand::onExecute(Context* context)
         layers.insert(site.layer());
         frames.insert(site.frame());
       }
-
       for (frame_t frame : frames) {
         ImageRef newImage(new_image_from_mask(site, mask, true, merged));
         if (!newImage)
           continue;
-
         Cel* newCel = api.addCel(static_cast<LayerImage*>(layer), frame, newImage);
         if (newCel) {
           gfx::Point pos = mask->bounds().origin();
           newCel->setPosition(pos.x, pos.y);
         }
-
         for (Layer* layer : layers) {
           if (!layer->isImage() || !layer->isEditable()) // Locked layers will not be modified
             continue;
-
           Cel* origCel = layer->cel(site.frame());
           if (origCel && params().viaCut()) {
             tx(new cmd::ClearMask(origCel));
-
             if (layer->isTransparent()) {
               // If the cel wasn't deleted by cmd::ClearMask, we trim it.
               origCel = layer->cel(frame);
@@ -458,19 +405,14 @@ void NewLayerCommand::onExecute(Context* context)
         }
       }
     }
-
     tx.commit();
   }
-
   if (context->isUIAvailable() && showTooltip) {
     update_screen_for_document(document);
-
     StatusBar::instance()->showTip(1000, fmt::format("{} '{}' created", layerPrefix(), name));
-
     App::instance()->mainWindow()->popTimeline();
   }
 }
-
 std::string NewLayerCommand::onGetFriendlyName() const
 {
   std::string text;
@@ -488,7 +430,6 @@ std::string NewLayerCommand::onGetFriendlyName() const
     text = Strings::commands_NewLayer_WithDialog(text);
   return text;
 }
-
 void NewLayerCommand::adjustRefCelBounds(Cel* cel, gfx::RectF bounds)
 {
   Sprite* sprite = cel->sprite();
@@ -499,38 +440,31 @@ void NewLayerCommand::adjustRefCelBounds(Cel* cel, gfx::RectF bounds)
   bounds.y = sprite->height() / 2 - bounds.h / 2;
   cel->setBoundsF(bounds);
 }
-
 std::string NewLayerCommand::getUniqueLayerName(const Sprite* sprite) const
 {
   return fmt::format("{} {}", layerPrefix(), getMaxLayerNum(sprite->root()) + 1);
 }
-
 std::string NewLayerCommand::getUniqueTilesetName(const Sprite* sprite) const
 {
   return fmt::format("{} {}",
                      Strings::instance()->tileset_selector_default_name(),
                      sprite->tilesets()->size() + 1);
 }
-
 int NewLayerCommand::getMaxLayerNum(const Layer* layer) const
 {
   std::string prefix = layerPrefix();
   prefix += " ";
-
   int max = 0;
   if (std::strncmp(layer->name().c_str(), prefix.c_str(), prefix.size()) == 0)
     max = std::strtol(layer->name().c_str() + prefix.size(), NULL, 10);
-
   if (layer->isGroup()) {
     for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
       int tmp = getMaxLayerNum(child);
       max = std::max(tmp, max);
     }
   }
-
   return max;
 }
-
 std::string NewLayerCommand::layerPrefix() const
 {
   switch (m_type) {
@@ -541,10 +475,8 @@ std::string NewLayerCommand::layerPrefix() const
   }
   return "Unknown";
 }
-
 Command* CommandFactory::createNewLayerCommand()
 {
   return new NewLayerCommand;
 }
-
 } // namespace app

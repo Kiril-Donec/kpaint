@@ -1,33 +1,32 @@
-// Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_DOC_VIEW_H_INCLUDED
-#define APP_UI_DOC_VIEW_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/doc_observer.h"
-#include "app/ui/input_chain_element.h"
-#include "app/ui/tabs.h"
-#include "app/ui/workspace_view.h"
-#include "ui/box.h"
 
+
+ ifndef APP_UI_DOC_VIEW_H_INCLUDED
+ define APP_UI_DOC_VIEW_H_INCLUDED
+ pragma once
+ include "app/doc_observer.h"
+ include "app/ui/input_chain_element.h"
+ include "app/ui/tabs.h"
+ include "app/ui/workspace_view.h"
+ include "ui/box.h"
 namespace doc {
 class Layer;
 }
-
 namespace ui {
 class View;
 }
-
 namespace app {
 class Doc;
 class Editor;
 class Site;
-
 class DocViewPreviewDelegate {
 public:
   virtual ~DocViewPreviewDelegate() {}
@@ -36,7 +35,6 @@ public:
   virtual void onPreviewOtherEditor(Editor* editor) = 0;
   virtual void onTagChangeEditor(Editor* editor, DocEvent& ev) = 0;
 };
-
 class DocView : public ui::Box,
                 public TabView,
                 public app::DocObserver,
@@ -44,26 +42,20 @@ class DocView : public ui::Box,
                 public app::InputChainElement {
 public:
   enum Type { Normal, Preview };
-
   DocView(Doc* document, Type type, DocViewPreviewDelegate* previewDelegate);
   ~DocView();
-
   Doc* document() const { return m_document; }
   Editor* editor() { return m_editor; }
   ui::View* viewWidget() const { return m_view; }
   void getSite(Site* site) const;
-
   bool isPreview() { return m_type == Preview; }
-
   // Preferred timeline scroll
   const gfx::Point& timelineScroll() { return m_timelineScroll; }
   void setTimelineScroll(const gfx::Point& pt) { m_timelineScroll = pt; }
-
   // TabView implementation
   std::string getTabText() override;
   TabIcon getTabIcon() override;
   gfx::Color getTabColor() override;
-
   // WorkspaceView implementation
   ui::Widget* getContentWidget() override { return this; }
   bool canCloneWorkspaceView() override { return true; }
@@ -73,7 +65,6 @@ public:
   bool onCloseView(Workspace* workspace, bool quitting) override;
   void onTabPopup(Workspace* workspace) override;
   InputChainElement* onGetInputChainElement() override { return this; }
-
   // DocObserver implementation
   void onGeneralUpdate(DocEvent& ev) override;
   void onSpritePixelsModified(DocEvent& ev) override;
@@ -88,7 +79,6 @@ public:
   void onLayerRestacked(DocEvent& ev) override;
   void onAfterLayerVisibilityChange(DocEvent& ev) override;
   void onTilesetChanged(DocEvent& ev) override;
-
   // InputChainElement impl
   void onNewInputPriority(InputChainElement* element, const ui::Message* msg) override;
   bool onCanCut(Context* ctx) override;
@@ -106,7 +96,6 @@ protected:
 
 private:
   bool hasContentInActiveFrame(const doc::Layer* layer) const;
-
   Type m_type;
   Doc* m_document;
   ui::View* m_view;
@@ -114,7 +103,5 @@ private:
   Editor* m_editor;
   gfx::Point m_timelineScroll;
 };
-
 } // namespace app
-
-#endif
+ endif

@@ -1,4 +1,4 @@
-# Aseprite Steam Wrapper
+# KPaint Steam Wrapper
 *Copyright (C) 2016 David Capello*
 
 > Distributed under [MIT license](LICENSE.txt)

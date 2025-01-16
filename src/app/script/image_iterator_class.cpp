@@ -1,29 +1,29 @@
-// Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cmd/copy_region.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/tx.h"
-#include "doc/algorithm/shrink_bounds.h"
-#include "doc/cel.h"
-#include "doc/image.h"
-#include "doc/image_impl.h"
-#include "doc/image_ref.h"
-#include "doc/primitives.h"
-
+ endif
+ include "app/cmd/copy_region.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/tx.h"
+ include "doc/algorithm/shrink_bounds.h"
+ include "doc/cel.h"
+ include "doc/image.h"
+ include "doc/image_impl.h"
+ include "doc/image_ref.h"
+ include "doc/primitives.h"
 namespace app { namespace script {
-
 namespace {
-
 template<typename ImageTraits>
 struct ImageIteratorObj {
   typename doc::LockImageBits<ImageTraits> bits;
@@ -38,19 +38,16 @@ struct ImageIteratorObj {
   ImageIteratorObj(const ImageIteratorObj&) = delete;
   ImageIteratorObj& operator=(const ImageIteratorObj&) = delete;
 };
-
 using RgbImageIterator = ImageIteratorObj<RgbTraits>;
 using GrayscaleImageIterator = ImageIteratorObj<GrayscaleTraits>;
 using IndexedImageIterator = ImageIteratorObj<IndexedTraits>;
 using TilemapImageIterator = ImageIteratorObj<TilemapTraits>;
-
 template<typename ImageTraits>
 int ImageIterator_gc(lua_State* L)
 {
   get_obj<ImageIteratorObj<ImageTraits>>(L, 1)->~ImageIteratorObj<ImageTraits>();
   return 0;
 }
-
 template<typename ImageTraits>
 int ImageIterator_call(lua_State* L)
 {
@@ -66,7 +63,6 @@ int ImageIterator_call(lua_State* L)
     return 1;
   }
 }
-
 template<typename ImageTraits>
 int ImageIterator_index(lua_State* L)
 {
@@ -84,27 +80,22 @@ int ImageIterator_index(lua_State* L)
   }
   return 0;
 }
-
-#define DEFINE_METHODS(Prefix)                                                                     \
+ define DEFINE_METHODS(Prefix)                                                                     \
   const luaL_Reg Prefix##ImageIterator_methods[] = {                                               \
     { "__index", ImageIterator_index<Prefix##Traits> },                                            \
     { "__call",  ImageIterator_call<Prefix##Traits>  },                                              \
     { "__gc",    ImageIterator_gc<Prefix##Traits>    },                                                  \
     { nullptr,   nullptr                             }                                                                           \
   }
-
 DEFINE_METHODS(Rgb);
 DEFINE_METHODS(Grayscale);
 DEFINE_METHODS(Indexed);
 DEFINE_METHODS(Tilemap);
-
 } // anonymous namespace
-
 DEF_MTNAME(ImageIteratorObj<RgbTraits>);
 DEF_MTNAME(ImageIteratorObj<GrayscaleTraits>);
 DEF_MTNAME(ImageIteratorObj<IndexedTraits>);
 DEF_MTNAME(ImageIteratorObj<TilemapTraits>);
-
 void register_image_iterator_class(lua_State* L)
 {
   REG_CLASS(L, RgbImageIterator);
@@ -112,7 +103,6 @@ void register_image_iterator_class(lua_State* L)
   REG_CLASS(L, IndexedImageIterator);
   REG_CLASS(L, TilemapImageIterator);
 }
-
 template<typename ImageTrais>
 static int image_iterator_step_closure(lua_State* L)
 {
@@ -128,30 +118,25 @@ static int image_iterator_step_closure(lua_State* L)
   }
   return 1;
 }
-
-// Used to when an area outside the image canvas is specified, so
-// there is pixel to be iterated.
+ Used to when an area outside the image canvas is specified, so
+ there is pixel to be iterated.
 static int image_iterator_do_nothing(lua_State* L)
 {
   lua_pushnil(L);
   return 1;
 }
-
 int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex)
 {
   gfx::Rect bounds = image->bounds();
-
   if (!lua_isnone(L, extraArgIndex)) {
     auto specificBounds = convert_args_into_rect(L, extraArgIndex);
     if (!specificBounds.isEmpty())
       bounds &= specificBounds;
   }
-
   if (bounds.isEmpty()) {
     lua_pushcclosure(L, image_iterator_do_nothing, 0);
     return 1;
   }
-
   switch (image->pixelFormat()) {
     case IMAGE_RGB:
       push_new<RgbImageIterator>(L, image, bounds);
@@ -172,5 +157,4 @@ int push_image_iterator_function(lua_State* L, const doc::Image* image, int extr
     default: return 0;
   }
 }
-
 }} // namespace app::script

@@ -1,22 +1,21 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cli/app_options.h"
-
-#include "base/fs.h"
-
-#include <iostream>
-
+ endif
+ include "app/cli/app_options.h"
+ include "base/fs.h"
+ include <iostream>
 namespace app {
-
 AppOptions::AppOptions(int argc, const char* argv[])
   : m_exeName(base::get_file_name(argv[0]))
   , m_startUI(true)
@@ -25,9 +24,9 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_showHelp(false)
   , m_showVersion(false)
   , m_verboseLevel(kNoVerbose)
-#ifdef ENABLE_SCRIPTING
+ ifdef ENABLE_SCRIPTING
   , m_shell(m_po.add("shell").description("Start an interactive console to execute scripts"))
-#endif
+ endif
   , m_batch(m_po.add("batch").mnemonic('b').description("Do not start the UI"))
   , m_preview(m_po.add("preview").mnemonic('p').description(
       "Do not execute actions, just print what will be\ndone"))
@@ -138,7 +137,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
   , m_tagnameFormat(m_po.add("tagname-format")
                       .requiresValue("<fmt>")
                       .description("Special format to generate tagnames in JSON data"))
-#ifdef ENABLE_SCRIPTING
+ ifdef ENABLE_SCRIPTING
   , m_script(
       m_po.add("script").requiresValue("<filename>").description("Execute a specific script"))
   , m_scriptParam(
@@ -146,7 +145,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
         .requiresValue("name=value")
         .description(
           "Parameter for a script executed from the\nCLI that you can access with app.params"))
-#endif
+ endif
   , m_listLayers(
       m_po.add("list-layers")
         .description("List layers of the next given sprite\nor include layers in JSON data"))
@@ -165,31 +164,28 @@ AppOptions::AppOptions(int argc, const char* argv[])
       m_po.add("export-tileset").description("Export only tilesets from visible tilemap layers"))
   , m_verbose(m_po.add("verbose").mnemonic('v').description("Explain what is being done"))
   , m_debug(m_po.add("debug").description("Extreme verbose mode and\ncopy log to desktop"))
-#ifdef ENABLE_STEAM
+ ifdef ENABLE_STEAM
   , m_noInApp(m_po.add("noinapp").description(
       "Disable \"in game\" visibility on Steam\nDoesn't count playtime"))
-#endif
-#ifdef _WIN32
+ endif
+ ifdef _WIN32
   , m_disableWintab(m_po.add("disable-wintab").description("Don't load wintab32.dll library"))
-#endif
+ endif
   , m_help(m_po.add("help").mnemonic('?').description("Display this help and exits"))
   , m_version(m_po.add("version").description("Output version information and exit"))
 {
   try {
     m_po.parse(argc, argv);
-
     if (m_po.enabled(m_debug))
       m_verboseLevel = kHighlyVerbose;
     else if (m_po.enabled(m_verbose))
       m_verboseLevel = kVerbose;
-
-#ifdef ENABLE_SCRIPTING
+ ifdef ENABLE_SCRIPTING
     m_startShell = m_po.enabled(m_shell);
-#endif
+ endif
     m_previewCLI = m_po.enabled(m_preview);
     m_showHelp = m_po.enabled(m_help);
     m_showVersion = m_po.enabled(m_version);
-
     if (m_startShell || m_showHelp || m_showVersion || m_po.enabled(m_batch)) {
       m_startUI = false;
     }
@@ -200,24 +196,20 @@ AppOptions::AppOptions(int argc, const char* argv[])
     m_startUI = false;
   }
 }
-
 bool AppOptions::hasExporterParams() const
 {
   return m_po.enabled(m_data) || m_po.enabled(m_sheet);
 }
-
-#ifdef ENABLE_STEAM
+ ifdef ENABLE_STEAM
 bool AppOptions::noInApp() const
 {
   return m_po.enabled(m_noInApp);
 }
-#endif
-
-#ifdef _WIN32
+ endif
+ ifdef _WIN32
 bool AppOptions::disableWintab() const
 {
   return m_po.enabled(m_disableWintab);
 }
-#endif
-
+ endif
 } // namespace app

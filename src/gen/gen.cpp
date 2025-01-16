@@ -1,27 +1,26 @@
-// Aseprite Code Generator
-// Copyright (c) 2021-2024 Igara Studio S.A.
-// Copyright (c) 2014-2017 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#include "base/file_handle.h"
-#include "base/fs.h"
-#include "base/program_options.h"
-#include "base/string.h"
-#include "gen/check_strings.h"
-#include "gen/pref_types.h"
-#include "gen/strings_class.h"
-#include "gen/theme_class.h"
-#include "gen/ui_class.h"
-#include "tinyxml2.h"
-
-#include <iostream>
-#include <memory>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Code Generator
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ include "base/file_handle.h"
+ include "base/fs.h"
+ include "base/program_options.h"
+ include "base/string.h"
+ include "gen/check_strings.h"
+ include "gen/pref_types.h"
+ include "gen/strings_class.h"
+ include "gen/theme_class.h"
+ include "gen/ui_class.h"
+ include "tinyxml2.h"
+ include <iostream>
+ include <memory>
 using PO = base::ProgramOptions;
 using namespace tinyxml2;
-
 static void run(int argc, const char* argv[])
 {
   PO po;
@@ -36,10 +35,8 @@ static void run(int argc, const char* argv[])
   PO::Option& stringsDir = po.add("strings-dir").requiresValue("<dir>");
   PO::Option& guiFile = po.add("gui-file").requiresValue("<filename>");
   po.parse(argc, argv);
-
   // Try to load the XML file
   std::unique_ptr<XMLDocument> doc;
-
   std::string inputFilename = po.value_of(inputOpt);
   if (!inputFilename.empty() && base::get_file_extension(inputFilename) == "xml") {
     base::FileHandle inputFile(base::open_file(inputFilename, "rb"));
@@ -50,7 +47,6 @@ static void run(int argc, const char* argv[])
       throw std::runtime_error("invalid input file");
     }
   }
-
   if (doc) {
     // Generate widget class
     if (po.enabled(widgetId))
@@ -78,7 +74,6 @@ static void run(int argc, const char* argv[])
     check_strings(po.value_of(widgetsDir), po.value_of(stringsDir), po.value_of(guiFile));
   }
 }
-
 int main(int argc, const char* argv[])
 {
   try {

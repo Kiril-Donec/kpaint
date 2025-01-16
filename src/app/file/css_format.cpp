@@ -1,34 +1,33 @@
-// Aseprite
-// Copyright (c) 2018-2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
-//
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ #ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/console.h"
-#include "app/context.h"
-#include "app/doc.h"
-#include "app/file/file.h"
-#include "app/file/file_format.h"
-#include "app/file/format_options.h"
-#include "app/pref/preferences.h"
-#include "base/cfile.h"
-#include "base/convert_to.h"
-#include "base/file_handle.h"
-#include "base/string.h"
-#include "doc/doc.h"
-#include "ui/window.h"
-
-#include "css_options.xml.h"
-
+ endif
+ include "app/console.h"
+ include "app/context.h"
+ include "app/doc.h"
+ include "app/file/file.h"
+ include "app/file/file_format.h"
+ include "app/file/format_options.h"
+ include "app/pref/preferences.h"
+ include "base/cfile.h"
+ include "base/convert_to.h"
+ include "base/file_handle.h"
+ include "base/string.h"
+ include "css_options.xml.h"
+ include "doc/doc.h"
+ include "ui/window.h"
 namespace app {
-
 using namespace base;
-
 class CssFormat : public FileFormat {
   class CssOptions : public FormatOptions {
   public:
@@ -38,39 +37,30 @@ class CssFormat : public FileFormat {
     bool generateHtml;
     bool withVars;
   };
-
   const char* onGetName() const override { return "css"; }
-
   void onGetExtensions(base::paths& exts) const override { exts.push_back("css"); }
-
   dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::CSS_STYLE; }
-
   int onGetFlags() const override
   {
     return FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA | FILE_SUPPORT_GRAY |
            FILE_SUPPORT_GRAYA | FILE_SUPPORT_INDEXED | FILE_SUPPORT_SEQUENCES |
            FILE_SUPPORT_GET_FORMAT_OPTIONS | FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
-
   bool onLoad(FileOp* fop) override;
-#ifdef ENABLE_SAVE
+ ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
-#endif
+ endif
   FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
-
 FileFormat* CreateCssFormat()
 {
   return new CssFormat;
 }
-
 bool CssFormat::onLoad(FileOp* fop)
 {
   return false;
 }
-
-#ifdef ENABLE_SAVE
-
+ ifdef ENABLE_SAVE
 bool CssFormat::onSave(FileOp* fop)
 {
   const ImageRef image = fop->sequenceImageToSave();
@@ -133,7 +123,6 @@ bool CssFormat::onSave(FileOp* fop)
     }
     fprintf(f, "}\n\n");
   }
-
   fprintf(f, ".pixel-art {\n");
   fprintf(f, "\tposition: relative;\n");
   fprintf(f, "\ttop: 0;\n");
@@ -244,40 +233,31 @@ bool CssFormat::onSave(FileOp* fop)
   }
   return true;
 }
-
-#endif
-
-// Shows the CSS configuration dialog.
+ endif
+ Shows the CSS configuration dialog.
 FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<CssOptions>();
-
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
-
       if (pref.isSet(pref.css.pixelScale))
         opts->pixelScale = pref.css.pixelScale();
-
       if (pref.isSet(pref.css.withVars))
         opts->withVars = pref.css.withVars();
-
       if (pref.isSet(pref.css.generateHtml))
         opts->generateHtml = pref.css.generateHtml();
-
       if (pref.css.showAlert()) {
         app::gen::CssOptions win;
         win.pixelScale()->setTextf("%d", opts->pixelScale);
         win.withVars()->setSelected(opts->withVars);
         win.generateHtml()->setSelected(opts->generateHtml);
         win.openWindowInForeground();
-
         if (win.closer() == win.ok()) {
           pref.css.showAlert(!win.dontShow()->isSelected());
           pref.css.pixelScale((int)win.pixelScale()->textInt());
           pref.css.withVars(win.withVars()->isSelected());
           pref.css.generateHtml(win.generateHtml()->isSelected());
-
           opts->generateHtml = pref.css.generateHtml();
           opts->withVars = pref.css.withVars();
           opts->pixelScale = pref.css.pixelScale();
@@ -292,8 +272,6 @@ FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp* fop)
       return std::shared_ptr<CssOptions>(nullptr);
     }
   }
-
   return opts;
 }
-
 } // namespace app

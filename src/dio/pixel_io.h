@@ -1,21 +1,19 @@
-// Aseprite Document IO Library
-// Copyright (c) 2019 Igara Studio S.A.
-// Copyright (c) 2017-2018 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef DIO_PIXEL_IO_H_INCLUDED
-#define DIO_PIXEL_IO_H_INCLUDED
-#pragma once
-
-#include "dio/file_interface.h"
-#include "doc/image_traits.h"
-
-#include <cstring>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document IO Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifndef DIO_PIXEL_IO_H_INCLUDED
+ define DIO_PIXEL_IO_H_INCLUDED
+ pragma once
+ include "dio/file_interface.h"
+ include "doc/image_traits.h"
+ include <cstring>
 namespace dio {
-
 template<typename ImageTraits>
 class PixelIO {
 public:
@@ -24,7 +22,6 @@ public:
   void read_scanline(typename ImageTraits::address_t address, int w, uint8_t* buffer);
   void write_scanline(typename ImageTraits::address_t address, int w, uint8_t* buffer);
 };
-
 template<>
 class PixelIO<doc::RgbTraits> {
   int r, g, b, a;
@@ -65,7 +62,6 @@ public:
     }
   }
 };
-
 template<>
 class PixelIO<doc::GrayscaleTraits> {
   int k, a;
@@ -98,7 +94,6 @@ public:
     }
   }
 };
-
 template<>
 class PixelIO<doc::IndexedTraits> {
 public:
@@ -113,7 +108,6 @@ public:
     std::memcpy(buffer, address, w);
   }
 };
-
 template<>
 class PixelIO<doc::TilemapTraits> {
   int b1, b2, b3, b4;
@@ -125,7 +119,6 @@ public:
     int b2 = f->read8();
     int b3 = f->read8();
     int b4 = f->read8();
-
     if (f->ok()) {
       // Little endian
       return ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
@@ -144,7 +137,5 @@ public:
     }
   }
 };
-
 } // namespace dio
-
-#endif
+ endif

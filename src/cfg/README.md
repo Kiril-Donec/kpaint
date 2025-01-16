@@ -1,3 +1,3 @@
-# Aseprite Config Library
+# KPaint Config Library
 
 > Distributed under [MIT license](LICENSE.txt)

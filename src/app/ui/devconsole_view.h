@@ -1,25 +1,27 @@
-// Aseprite
-// Copyright (C) 2001-2016  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
-#define APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#ifndef ENABLE_SCRIPTING
+
+
+ ifndef APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
+ define APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
+ pragma once
+ ifndef ENABLE_SCRIPTING
   #error ENABLE_SCRIPTING must be defined
-#endif
-
-#include "app/script/engine.h"
-#include "app/ui/tabs.h"
-#include "app/ui/workspace_view.h"
-#include "ui/box.h"
-#include "ui/label.h"
-#include "ui/textbox.h"
-#include "ui/view.h"
-
+ endif
+ include "app/script/engine.h"
+ include "app/ui/tabs.h"
+ include "app/ui/workspace_view.h"
+ include "ui/box.h"
+ include "ui/label.h"
+ include "ui/textbox.h"
+ include "ui/view.h"
 namespace app {
 class DevConsoleView : public ui::Box,
                        public TabView,
@@ -28,12 +30,10 @@ class DevConsoleView : public ui::Box,
 public:
   DevConsoleView();
   ~DevConsoleView();
-
   // TabView implementation
   std::string getTabText() override;
   TabIcon getTabIcon() override;
   gfx::Color getTabColor() override;
-
   // WorkspaceView implementation
   ui::Widget* getContentWidget() override { return this; }
   bool canCloneWorkspaceView() override { return true; }
@@ -41,7 +41,6 @@ public:
   void onWorkspaceViewSelected() override;
   bool onCloseView(Workspace* workspace, bool quitting) override;
   void onTabPopup(Workspace* workspace) override;
-
   // EngineDelegate impl
   virtual void onConsoleError(const char* text) override;
   virtual void onConsolePrint(const char* text) override;
@@ -52,7 +51,6 @@ protected:
 
 private:
   class CommmandEntry;
-
   ui::View m_view;
   ui::TextBox m_textBox;
   ui::HBox m_bottomBox;
@@ -60,7 +58,5 @@ private:
   CommmandEntry* m_entry;
   script::Engine* m_engine;
 };
-
 } // namespace app
-
-#endif
+ endif

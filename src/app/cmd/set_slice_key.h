@@ -1,21 +1,23 @@
-// Aseprite
-// Copyright (C) 2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_SET_SLICE_KEY_H_INCLUDED
-#define APP_CMD_SET_SLICE_KEY_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd.h"
-#include "app/cmd/with_slice.h"
-#include "doc/frame.h"
-#include "doc/slice.h"
 
+
+ ifndef APP_CMD_SET_SLICE_KEY_H_INCLUDED
+ define APP_CMD_SET_SLICE_KEY_H_INCLUDED
+ pragma once
+ include "app/cmd.h"
+ include "app/cmd/with_slice.h"
+ include "doc/frame.h"
+ include "doc/slice.h"
 namespace app { namespace cmd {
 using namespace doc;
-
 class SetSliceKey : public Cmd,
                     public WithSlice {
 public:
@@ -31,7 +33,5 @@ private:
   doc::SliceKey m_oldSliceKey;
   doc::SliceKey m_newSliceKey;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

@@ -1,5 +1,11 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2001-2016 by David Capello -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui>
   <window id="select_accelerator" text="@.title">
     <vbox expansive="true">
@@ -7,7 +13,6 @@
         <label text="@.key" />
         <hbox id="key_placeholder" cell_align="horizontal" />
         <button text="@.clear" id="clear_button" minwidth="60" />
-
         <label text="@.modifiers" />
         <hbox cell_hspan="2" cell_align="horizontal">
           <check text="@.ctrl" id="ctrl" />
@@ -17,14 +22,11 @@
           <check text="@.space" id="space" />
           <check text="@.win" id="win" />
         </hbox>
-
         <label text="@.assigned_to" />
         <label text="" id="assigned_to" cell_hspan="2" />
       </grid>
-
       <boxfiller />
       <separator horizontal="true" />
-
       <box horizontal="true">
         <boxfiller />
         <box horizontal="true" homogeneous="true">
@@ -32,7 +34,6 @@
           <button text="@.cancel" id="cancel_button" />
         </box>
       </box>
-
     </vbox>
   </window>
 </gui>

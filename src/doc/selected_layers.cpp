@@ -1,50 +1,42 @@
-// Aseprite Document Library
-// Copyright (C) 2020  Igara Studio S.A.
-// Copyright (C) 2016-2018  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/selected_layers.h"
-
-#include "base/base.h"
-#include "base/debug.h"
-#include "base/serialization.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
-
-#include <iostream>
-
+ endif
+ include "base/base.h"
+ include "base/debug.h"
+ include "base/serialization.h"
+ include "doc/layer.h"
+ include "doc/selected_layers.h"
+ include "doc/sprite.h"
+ include <iostream>
 namespace doc {
-
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
-
 void SelectedLayers::clear()
 {
   m_set.clear();
 }
-
 void SelectedLayers::insert(Layer* layer)
 {
   ASSERT(layer);
   m_set.insert(layer);
 }
-
 void SelectedLayers::erase(const Layer* layer)
 {
   m_set.erase(const_cast<Layer*>(layer));
 }
-
 bool SelectedLayers::contains(const Layer* layer) const
 {
   return m_set.find(const_cast<Layer*>(layer)) != m_set.end();
 }
-
 bool SelectedLayers::hasSameParent() const
 {
   Layer* parent = nullptr;
@@ -58,52 +50,39 @@ bool SelectedLayers::hasSameParent() const
   }
   return true;
 }
-
 LayerList SelectedLayers::toAllLayersList() const
 {
   LayerList output;
-
   if (empty())
     return output;
-
   ASSERT(*begin());
   ASSERT((*begin())->sprite());
-
   for (Layer* layer = (*begin())->sprite()->firstLayer(); layer != nullptr;
        layer = layer->getNextInWholeHierarchy()) {
     if (contains(layer))
       output.push_back(layer);
   }
-
   return output;
 }
-
 LayerList SelectedLayers::toBrowsableLayerList() const
 {
   LayerList output;
-
   if (empty())
     return output;
-
   ASSERT(*begin());
   ASSERT((*begin())->sprite());
-
   for (Layer* layer = (*begin())->sprite()->firstBrowsableLayer(); layer != nullptr;
        layer = layer->getNextBrowsable()) {
     if (contains(layer))
       output.push_back(layer);
   }
-
   return output;
 }
-
 LayerList SelectedLayers::toAllTilemaps() const
 {
   LayerList output;
-
   if (empty())
     return output;
-
   for (Layer* layer : *this) {
     if (layer->isGroup()) {
       auto group = static_cast<LayerGroup*>(layer);
@@ -112,14 +91,11 @@ LayerList SelectedLayers::toAllTilemaps() const
     else if (layer->isTilemap())
       output.push_back(layer);
   }
-
   return output;
 }
-
 void SelectedLayers::removeChildrenIfParentIsSelected()
 {
   SelectedLayers removeThese;
-
   for (Layer* child : *this) {
     Layer* parent = child->parent();
     while (parent) {
@@ -130,11 +106,9 @@ void SelectedLayers::removeChildrenIfParentIsSelected()
       parent = parent->parent();
     }
   }
-
   for (Layer* child : removeThese)
     erase(child);
 }
-
 void SelectedLayers::selectAllLayers(LayerGroup* group)
 {
   for (Layer* layer : group->layers()) {
@@ -143,7 +117,6 @@ void SelectedLayers::selectAllLayers(LayerGroup* group)
     insert(layer);
   }
 }
-
 void SelectedLayers::expandCollapsedGroups()
 {
   auto copy = m_set;
@@ -152,21 +125,16 @@ void SelectedLayers::expandCollapsedGroups()
       selectAllLayers(static_cast<LayerGroup*>(layer));
   }
 }
-
 void SelectedLayers::displace(layer_t layerDelta)
 {
   // Do nothing case
   if (layerDelta == 0)
     return;
-
   const SelectedLayers original = *this;
-
 retry:;
   clear();
-
   for (auto it : original) {
     Layer* layer = it;
-
     if (layerDelta > 0) {
       for (layer_t i = 0; layer && i < layerDelta; ++i)
         layer = layer->getNextBrowsable();
@@ -176,7 +144,6 @@ retry:;
         layer = layer->getPreviousBrowsable();
       }
     }
-
     if (layer) {
       insert(layer);
     }
@@ -193,22 +160,18 @@ retry:;
     }
   }
 }
-
-// This will select:
-// 1. all visible children in case the parent is selected and none of
-//    its children is selected.
-// 2. all parent if one children is selected
+ This will select:
+ 1. all visible children in case the parent is selected and none of
+ its children is selected.
+ 2. all parent if one children is selected
 void SelectedLayers::propagateSelection()
 {
   SelectedLayers newSel;
-
   for (Layer* layer : *this) {
     if (!layer->isGroup())
       continue;
-
     LayerList children;
     static_cast<LayerGroup*>(layer)->allLayers(children);
-
     bool allDeselected = true;
     for (Layer* child : children) {
       if (contains(child)) {
@@ -223,7 +186,6 @@ void SelectedLayers::propagateSelection()
       }
     }
   }
-
   for (Layer* layer : *this) {
     Layer* parent = layer->parent();
     while (parent != layer->sprite()->root() && !contains(parent)) {
@@ -231,11 +193,9 @@ void SelectedLayers::propagateSelection()
       parent = parent->parent();
     }
   }
-
   for (Layer* layer : newSel)
     insert(layer);
 }
-
 bool SelectedLayers::write(std::ostream& os) const
 {
   write32(os, size());
@@ -243,27 +203,21 @@ bool SelectedLayers::write(std::ostream& os) const
     write32(os, layer->id());
   return os.good();
 }
-
 bool SelectedLayers::read(std::istream& is)
 {
   clear();
-
   int nlayers = read32(is);
   for (int i = 0; i < nlayers && is; ++i) {
     ObjectId id = read32(is);
     Layer* layer = doc::get<Layer>(id);
-
     // Check that the layer does exist. You will see a little trick in
     // UndoCommand::onExecute() deserializing the DocumentRange stream
     // after the undo/redo is executed so layers exist at this point.
-
     // TODO This should be an assert, but there is a bug that make this fail
     // ASSERT(layer);
-
     if (layer)
       insert(layer);
   }
   return is.good();
 }
-
 } // namespace doc

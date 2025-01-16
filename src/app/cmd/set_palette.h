@@ -1,29 +1,28 @@
-// Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_SET_PALETTE_H_INCLUDED
-#define APP_CMD_SET_PALETTE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd.h"
-#include "app/cmd/with_sprite.h"
-#include "doc/color.h"
-#include "doc/frame.h"
 
-#include <vector>
 
+ ifndef APP_CMD_SET_PALETTE_H_INCLUDED
+ define APP_CMD_SET_PALETTE_H_INCLUDED
+ pragma once
+ include "app/cmd.h"
+ include "app/cmd/with_sprite.h"
+ include "doc/color.h"
+ include "doc/frame.h"
+ include <vector>
 namespace doc {
 class Palette;
 class Sprite;
 } // namespace doc
-
 namespace app { namespace cmd {
 using namespace doc;
-
 class SetPalette : public Cmd,
                    public WithSprite {
 public:
@@ -48,7 +47,5 @@ private:
   std::vector<color_t> m_oldColors;
   std::vector<color_t> m_newColors;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

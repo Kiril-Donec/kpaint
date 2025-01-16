@@ -1,32 +1,30 @@
-// Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/tools/intertwine.h"
-
-#include "app/tools/controller.h"
-#include "app/tools/point_shape.h"
-#include "app/tools/stroke.h"
-#include "app/tools/symmetry.h"
-#include "app/tools/tool_loop.h"
-#include "base/pi.h"
-#include "doc/algo.h"
-#include "doc/layer.h"
-
-#include <cmath>
-
+ endif
+ include "app/tools/controller.h"
+ include "app/tools/intertwine.h"
+ include "app/tools/point_shape.h"
+ include "app/tools/stroke.h"
+ include "app/tools/symmetry.h"
+ include "app/tools/tool_loop.h"
+ include "base/pi.h"
+ include "doc/algo.h"
+ include "doc/layer.h"
+ include <cmath>
 namespace app { namespace tools {
-
 using namespace gfx;
 using namespace doc;
-
 Intertwine::LineData::LineData(ToolLoop* loop, const Stroke::Pt& a, const Stroke::Pt& b)
   : loop(loop)
   , a(a)
@@ -37,29 +35,24 @@ Intertwine::LineData::LineData(ToolLoop* loop, const Stroke::Pt& a, const Stroke
   t = 0.0f;
   step = 1.0f / steps;
 }
-
 void Intertwine::LineData::doStep(int x, int y)
 {
   t += step;
   const float ti = 1.0f - t;
-
   pt.x = x;
   pt.y = y;
   pt.size = ti * a.size + t * b.size;
   pt.angle = ti * a.angle + t * b.angle;
   pt.gradient = ti * a.gradient + t * b.gradient;
 }
-
 gfx::Rect Intertwine::getStrokeBounds(ToolLoop* loop, const Stroke& stroke)
 {
   return stroke.bounds();
 }
-
 void Intertwine::doTransformPoint(const Stroke::Pt& pt, ToolLoop* loop)
 {
   loop->getPointShape()->transformPoint(loop, pt);
 }
-
 void Intertwine::doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop)
 {
   Symmetry* symmetry = loop->getSymmetry();
@@ -68,7 +61,6 @@ void Intertwine::doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop)
     // symmetry transformation.
     Stroke main_stroke;
     main_stroke.addPoint(pt);
-
     Strokes strokes;
     symmetry->generateStrokes(main_stroke, strokes, loop);
     for (const auto& stroke : strokes) {
@@ -81,8 +73,7 @@ void Intertwine::doPointshapeStrokePt(const Stroke::Pt& pt, ToolLoop* loop)
     doTransformPoint(pt, loop);
   }
 }
-
-// static
+ static
 void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
 {
   Stroke::Pt pt(x, y);
@@ -90,21 +81,18 @@ void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
   pt.angle = loop->getBrush()->angle();
   loop->getIntertwine()->doPointshapeStrokePt(pt, loop);
 }
-
-// static
+ static
 void Intertwine::doPointshapePointDynamics(int x, int y, Intertwine::LineData* data)
 {
   data->doStep(x, y);
   data->loop->getIntertwine()->doPointshapeStrokePt(data->pt, data->loop);
 }
-
-// static
+ static
 void Intertwine::doPointshapeHline(int x1, int y, int x2, ToolLoop* loop)
 {
   algo_line_perfect(x1, y, x2, y, loop, (AlgoPixel)doPointshapePoint);
 }
-
-// static
+ static
 void Intertwine::doPointshapeLineWithoutDynamics(int x1, int y1, int x2, int y2, ToolLoop* loop)
 {
   Stroke::Pt a(x1, y1);
@@ -113,15 +101,13 @@ void Intertwine::doPointshapeLineWithoutDynamics(int x1, int y1, int x2, int y2,
   a.angle = b.angle = loop->getBrush()->angle();
   doPointshapeLine(a, b, loop);
 }
-
 void Intertwine::doPointshapeLine(const Stroke::Pt& a, const Stroke::Pt& b, ToolLoop* loop)
 {
   doc::AlgoLineWithAlgoPixel algo = getLineAlgo(loop, a, b);
   LineData lineData(loop, a, b);
   algo(a.x, a.y, b.x, b.y, (void*)&lineData, (AlgoPixel)doPointshapePointDynamics);
 }
-
-// static
+ static
 doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
                                                    const Stroke::Pt& a,
                                                    const Stroke::Pt& b)
@@ -142,7 +128,6 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
       needsFixForLineBrush = ((p == q && r != s) || (p != q && r == s));
     }
   }
-
   if ( // When "Snap Angle" in being used or...
     (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) ||
     // "Snap to Grid" is enabled
@@ -157,5 +142,4 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
                                    algo_line_continuous);
   }
 }
-
 }} // namespace app::tools

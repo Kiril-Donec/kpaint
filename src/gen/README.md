@@ -1,4 +1,4 @@
-# Aseprite Code Generator
+# KPaint Code Generator
 
 > Distributed under [MIT license](LICENSE.txt)
 

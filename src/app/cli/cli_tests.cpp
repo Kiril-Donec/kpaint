@@ -1,20 +1,20 @@
-// Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
-// Copyright (C) 2016-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#include "tests/app_test.h"
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cli/app_options.h"
-#include "app/cli/cli_processor.h"
-#include "app/doc_exporter.h"
 
-#include <initializer_list>
 
+ include "app/cli/app_options.h"
+ include "app/cli/cli_processor.h"
+ include "app/doc_exporter.h"
+ include "tests/app_test.h"
+ include <initializer_list>
 using namespace app;
-
 class CliTestDelegate : public CliDelegate {
 public:
   CliTestDelegate()
@@ -25,7 +25,6 @@ public:
     m_shellMode = false;
     m_batchMode = false;
   }
-
   void showHelp(const AppOptions& options) override { m_helpWasShown = true; }
   void showVersion() override { m_versionWasShown = true; }
   void uiMode() override { m_uiMode = true; }
@@ -35,10 +34,9 @@ public:
   void afterOpenFile(const CliOpenFile& cof) override {}
   void saveFile(Context* ctx, const CliOpenFile& cof) override {}
   void exportFiles(Context* ctx, DocExporter& exporter) override {}
-#ifdef ENABLE_SCRIPTING
+ ifdef ENABLE_SCRIPTING
   int execScript(const std::string& filename, const Params& params) override { return 0; }
-#endif
-
+ endif
   bool helpWasShown() const { return m_helpWasShown; }
   bool versionWasShown() const { return m_versionWasShown; }
 
@@ -49,12 +47,11 @@ private:
   bool m_shellMode;
   bool m_batchMode;
 };
-
 std::unique_ptr<AppOptions> args(std::initializer_list<const char*> l)
 {
   int argc = l.size() + 1;
   const char** argv = new const char*[argc];
-  argv[0] = "aseprite.exe";
+  argv[0] = "kpaint.exe";
   auto it = l.begin();
   for (int i = 1; i < argc; ++i, ++it) {
     argv[i] = *it;
@@ -64,7 +61,6 @@ std::unique_ptr<AppOptions> args(std::initializer_list<const char*> l)
   delete[] argv;
   return opts;
 }
-
 TEST(Cli, None)
 {
   CliTestDelegate d;
@@ -74,7 +70,6 @@ TEST(Cli, None)
   EXPECT_TRUE(!d.helpWasShown());
   EXPECT_TRUE(!d.versionWasShown());
 }
-
 TEST(Cli, Help)
 {
   CliTestDelegate d;
@@ -83,7 +78,6 @@ TEST(Cli, Help)
   p.process(nullptr);
   EXPECT_TRUE(d.helpWasShown());
 }
-
 TEST(Cli, Version)
 {
   CliTestDelegate d;

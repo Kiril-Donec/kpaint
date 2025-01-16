@@ -1,31 +1,30 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/workspace.h"
-
-#include "app/app.h"
-#include "app/ui/input_chain.h"
-#include "app/ui/skin/skin_theme.h"
-#include "app/ui/workspace_tabs.h"
-#include "app/ui/workspace_view.h"
-#include "base/remove_from_container.h"
-#include "ui/paint_event.h"
-#include "ui/resize_event.h"
-
+ endif
+ include "app/app.h"
+ include "app/ui/input_chain.h"
+ include "app/ui/skin/skin_theme.h"
+ include "app/ui/workspace.h"
+ include "app/ui/workspace_tabs.h"
+ include "app/ui/workspace_view.h"
+ include "base/remove_from_container.h"
+ include "ui/paint_event.h"
+ include "ui/resize_event.h"
 namespace app {
-
 using namespace app::skin;
 using namespace ui;
-
-// static
+ static
 WidgetType Workspace::Type()
 {
   static WidgetType type = kGenericWidget;
@@ -33,7 +32,6 @@ WidgetType Workspace::Type()
     type = register_widget_type();
   return type;
 }
-
 Workspace::Workspace()
   : Widget(Workspace::Type())
   , m_mainPanel(WorkspacePanel::MAIN_PANEL)
@@ -44,137 +42,109 @@ Workspace::Workspace()
 {
   enableFlags(IGNORE_MOUSE);
   addChild(&m_mainPanel);
-
   InitTheme.connect([this] {
     auto theme = SkinTheme::get(this);
     setBgColor(theme->colors.workspace());
   });
   initTheme();
 }
-
 Workspace::~Workspace()
 {
   // No views at this point.
   ASSERT(m_views.empty());
 }
-
 void Workspace::setTabsBar(WorkspaceTabs* tabs)
 {
   m_tabs = tabs;
   m_mainPanel.setTabsBar(tabs);
 }
-
 void Workspace::addView(WorkspaceView* view, int pos)
 {
   addViewToPanel(&m_mainPanel, view, false, pos);
 }
-
 void Workspace::removeView(WorkspaceView* view)
 {
   ASSERT(view);
   base::remove_from_container(m_views, view);
-
   WorkspacePanel* panel = getViewPanel(view);
   ASSERT(panel);
   if (panel)
     panel->removeView(view);
-
   view->onAfterRemoveView(this);
 }
-
 bool Workspace::closeView(WorkspaceView* view, bool quitting)
 {
   return view->onCloseView(this, quitting);
 }
-
 WorkspaceView* Workspace::activeView()
 {
   return (m_activePanel ? m_activePanel->activeView() : nullptr);
 }
-
 void Workspace::setActiveView(WorkspaceView* view)
 {
   m_activePanel = getViewPanel(view);
   ASSERT(m_activePanel);
   if (!m_activePanel)
     return;
-
   m_activePanel->setActiveView(view);
-
   ActiveViewChanged(); // Fire ActiveViewChanged event
 }
-
 void Workspace::setMainPanelAsActive()
 {
   m_activePanel = &m_mainPanel;
-
   removeDropViewPreview();
   m_dropPreviewPanel = nullptr;
   m_dropPreviewTabs = nullptr;
-
   ActiveViewChanged(); // Fire ActiveViewChanged event
 }
-
 bool Workspace::canSelectOtherTab() const
 {
   return m_activePanel->tabs()->canSelectOtherTab();
 }
-
 void Workspace::selectNextTab()
 {
   m_activePanel->tabs()->selectNextTab();
 }
-
 void Workspace::selectPreviousTab()
 {
   m_activePanel->tabs()->selectPreviousTab();
 }
-
 void Workspace::duplicateActiveView()
 {
   WorkspaceView* view = activeView();
   if (!view)
     return;
-
   WorkspaceView* clone = view->cloneWorkspaceView();
   if (!clone)
     return;
-
   WorkspacePanel* panel = getViewPanel(view);
   addViewToPanel(panel, clone, false, -1);
   clone->onClonedFrom(view);
   setActiveView(clone);
 }
-
 void Workspace::updateTabs()
 {
   WidgetsList children = this->children();
   while (!children.empty()) {
     Widget* child = children.back();
     children.erase(--children.end());
-
     if (child->type() == WorkspacePanel::Type())
       static_cast<WorkspacePanel*>(child)->tabs()->updateTabs();
-
     for (auto subchild : child->children())
       children.push_back(subchild);
   }
 }
-
 void Workspace::onPaint(PaintEvent& ev)
 {
   ev.graphics()->fillRect(bgColor(), clientBounds());
 }
-
 void Workspace::onResize(ui::ResizeEvent& ev)
 {
   setBoundsQuietly(ev.bounds());
-
   gfx::Rect rc = childrenBounds();
   for (auto child : children())
     child->setBounds(rc);
 }
-
 DropViewPreviewResult Workspace::setDropViewPreview(const gfx::Point& screenPos,
                                                     WorkspaceView* view,
                                                     WorkspaceTabs* tabs)
@@ -188,20 +158,16 @@ DropViewPreviewResult Workspace::setDropViewPreview(const gfx::Point& screenPos,
     if (newTabs == tabs)
       newTabs = nullptr;
   }
-
   if (m_dropPreviewPanel && m_dropPreviewPanel != panel)
     m_dropPreviewPanel->removeDropViewPreview();
   if (m_dropPreviewTabs && m_dropPreviewTabs != newTabs)
     m_dropPreviewTabs->removeDropViewPreview();
-
   m_dropPreviewPanel = panel;
   m_dropPreviewTabs = newTabs;
-
   if (m_dropPreviewPanel)
     m_dropPreviewPanel->setDropViewPreview(screenPos, view);
   if (m_dropPreviewTabs)
     m_dropPreviewTabs->setDropViewPreview(screenPos, tabView);
-
   if (panel)
     return DropViewPreviewResult::DROP_IN_PANEL;
   else if (newTabs)
@@ -209,27 +175,23 @@ DropViewPreviewResult Workspace::setDropViewPreview(const gfx::Point& screenPos,
   else
     return DropViewPreviewResult::FLOATING;
 }
-
 void Workspace::removeDropViewPreview()
 {
   if (m_dropPreviewPanel) {
     m_dropPreviewPanel->removeDropViewPreview();
     m_dropPreviewPanel = nullptr;
   }
-
   if (m_dropPreviewTabs) {
     m_dropPreviewTabs->removeDropViewPreview();
     m_dropPreviewTabs = nullptr;
   }
 }
-
 DropViewAtResult Workspace::dropViewAt(const gfx::Point& screenPos,
                                        WorkspaceView* view,
                                        const bool clone)
 {
   WorkspaceTabs* tabs = getTabsAt(screenPos);
   WorkspacePanel* panel = getPanelAt(screenPos);
-
   if (panel) {
     // Create new panel
     return panel->dropViewAt(screenPos, getViewPanel(view), view, clone);
@@ -238,10 +200,8 @@ DropViewAtResult Workspace::dropViewAt(const gfx::Point& screenPos,
     // Dock tab in other tabs
     WorkspacePanel* dropPanel = tabs->panel();
     ASSERT(dropPanel);
-
     int pos = tabs->getDropTabIndex();
     DropViewAtResult result;
-
     WorkspaceView* originalView = view;
     if (clone) {
       view = view->cloneWorkspaceView();
@@ -251,65 +211,52 @@ DropViewAtResult Workspace::dropViewAt(const gfx::Point& screenPos,
       removeView(view);
       result = DropViewAtResult::MOVED_TO_OTHER_PANEL;
     }
-
     addViewToPanel(dropPanel, view, true, pos);
-
     if (result == DropViewAtResult::CLONED_VIEW)
       view->onClonedFrom(originalView);
-
     return result;
   }
   else
     return DropViewAtResult::NOTHING;
 }
-
 void Workspace::addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, bool from_drop, int pos)
 {
   panel->addView(view, from_drop, pos);
-
   m_activePanel = panel;
   m_views.push_back(view);
-
   setActiveView(view);
   layout();
 }
-
 WorkspacePanel* Workspace::getViewPanel(WorkspaceView* view)
 {
   Widget* widget = view->getContentWidget();
   while (widget) {
     if (widget->type() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
-
     widget = widget->parent();
   }
   return nullptr;
 }
-
 WorkspacePanel* Workspace::getPanelAt(const gfx::Point& screenPos)
 {
   Widget* widget = manager()->pickFromScreenPos(screenPos);
   while (widget) {
     if (widget->type() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
-
     widget = widget->parent();
   }
   return nullptr;
 }
-
 WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& screenPos)
 {
   Widget* widget = manager()->pickFromScreenPos(screenPos);
   while (widget) {
     if (widget->type() == Tabs::Type())
       return static_cast<WorkspaceTabs*>(widget);
-
     widget = widget->parent();
   }
   return nullptr;
 }
-
 void Workspace::onNewInputPriority(InputChainElement* newElement, const ui::Message* msg)
 {
   WorkspaceView* view = activeView();
@@ -317,7 +264,6 @@ void Workspace::onNewInputPriority(InputChainElement* newElement, const ui::Mess
   if (activeElement)
     activeElement->onNewInputPriority(newElement, msg);
 }
-
 bool Workspace::onCanCut(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -327,7 +273,6 @@ bool Workspace::onCanCut(Context* ctx)
   else
     return false;
 }
-
 bool Workspace::onCanCopy(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -337,7 +282,6 @@ bool Workspace::onCanCopy(Context* ctx)
   else
     return false;
 }
-
 bool Workspace::onCanPaste(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -347,7 +291,6 @@ bool Workspace::onCanPaste(Context* ctx)
   else
     return false;
 }
-
 bool Workspace::onCanClear(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -357,7 +300,6 @@ bool Workspace::onCanClear(Context* ctx)
   else
     return false;
 }
-
 bool Workspace::onCut(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -367,7 +309,6 @@ bool Workspace::onCut(Context* ctx)
   else
     return false;
 }
-
 bool Workspace::onCopy(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -377,7 +318,6 @@ bool Workspace::onCopy(Context* ctx)
   else
     return false;
 }
-
 bool Workspace::onPaste(Context* ctx, const gfx::Point* position)
 {
   WorkspaceView* view = activeView();
@@ -387,7 +327,6 @@ bool Workspace::onPaste(Context* ctx, const gfx::Point* position)
   else
     return false;
 }
-
 bool Workspace::onClear(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -397,7 +336,6 @@ bool Workspace::onClear(Context* ctx)
   else
     return false;
 }
-
 void Workspace::onCancel(Context* ctx)
 {
   WorkspaceView* view = activeView();
@@ -405,5 +343,4 @@ void Workspace::onCancel(Context* ctx)
   if (activeElement)
     activeElement->onCancel(ctx);
 }
-
 } // namespace app

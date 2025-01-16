@@ -1,20 +1,21 @@
-// Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/tools/symmetry.h"
-
-#include "app/tools/point_shape.h"
-#include "app/tools/tool_loop.h"
-
+ endif
+ include "app/tools/point_shape.h"
+ include "app/tools/symmetry.h"
+ include "app/tools/tool_loop.h"
 namespace app { namespace tools {
-
 void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop)
 {
   Stroke stroke2;
@@ -22,21 +23,17 @@ void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop*
   gen::SymmetryMode symmetryMode = loop->getSymmetry()->mode();
   switch (symmetryMode) {
     case gen::SymmetryMode::NONE: ASSERT(false); break;
-
     case gen::SymmetryMode::HORIZONTAL:
     case gen::SymmetryMode::VERTICAL:
       calculateSymmetricalStroke(stroke, stroke2, loop, symmetryMode);
       strokes.push_back(stroke2);
       break;
-
     case gen::SymmetryMode::BOTH: {
       calculateSymmetricalStroke(stroke, stroke2, loop, gen::SymmetryMode::HORIZONTAL);
       strokes.push_back(stroke2);
-
       Stroke stroke3;
       calculateSymmetricalStroke(stroke, stroke3, loop, gen::SymmetryMode::VERTICAL);
       strokes.push_back(stroke3);
-
       Stroke stroke4;
       calculateSymmetricalStroke(stroke3, stroke4, loop, gen::SymmetryMode::BOTH);
       strokes.push_back(stroke4);
@@ -44,7 +41,6 @@ void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop*
     }
   }
 }
-
 void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
                                           Stroke& stroke,
                                           ToolLoop* loop,
@@ -68,7 +64,6 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
       brushCenter = brush->center().y;
     }
   }
-
   const bool isDynamic = loop->getDynamics().isDynamic();
   for (const auto& pt : refStroke) {
     if (isDynamic) {
@@ -84,5 +79,4 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
     stroke.addPoint(pt2);
   }
 }
-
 }} // namespace app::tools

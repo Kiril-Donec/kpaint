@@ -1,23 +1,24 @@
-// Aseprite
-// Copyright (C) 2023-2024  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/commands/command.h"
-#include "app/commands/params.h"
-#include "app/i18n/strings.h"
-#include "app/ui/color_bar.h"
-#include "base/replace_string.h"
-#include "base/trim_string.h"
-
+ endif
+ include "app/commands/command.h"
+ include "app/commands/params.h"
+ include "app/i18n/strings.h"
+ include "app/ui/color_bar.h"
+ include "base/replace_string.h"
+ include "base/trim_string.h"
 namespace app {
-
 class PaletteEditorCommand : public Command {
 public:
   PaletteEditorCommand();
@@ -33,7 +34,6 @@ private:
   bool m_popup;
   bool m_background;
 };
-
 PaletteEditorCommand::PaletteEditorCommand()
   : Command(CommandId::PaletteEditor(), CmdRecordableFlag)
 {
@@ -41,7 +41,6 @@ PaletteEditorCommand::PaletteEditorCommand()
   m_popup = false;
   m_background = false;
 }
-
 void PaletteEditorCommand::onLoadParams(const Params& params)
 {
   m_edit = (params.empty() || params.get("edit") == "switch" ||
@@ -49,18 +48,15 @@ void PaletteEditorCommand::onLoadParams(const Params& params)
   m_popup = (!params.get("popup").empty());
   m_background = (params.get("popup") == "background");
 }
-
 bool PaletteEditorCommand::onChecked(Context* context)
 {
   return ColorBar::instance()->inEditMode();
 }
-
 void PaletteEditorCommand::onExecute(Context* context)
 {
   auto colorBar = ColorBar::instance();
   bool editMode = colorBar->inEditMode();
   ColorButton* button = (m_background ? colorBar->bgColorButton() : colorBar->fgColorButton());
-
   // Switch edit mode
   if (m_edit && !m_popup) {
     colorBar->setEditMode(!editMode);
@@ -84,7 +80,6 @@ void PaletteEditorCommand::onExecute(Context* context)
     }
   }
 }
-
 std::string PaletteEditorCommand::onGetFriendlyName() const
 {
   std::string edit, plus, popup;
@@ -100,7 +95,6 @@ std::string PaletteEditorCommand::onGetFriendlyName() const
     else
       popup = Strings::commands_PaletteEditor_FgPopup();
   }
-
   std::string result = Strings::commands_PaletteEditor(edit, plus, popup);
   // TODO create a new function to remove duplicate whitespaces
   base::replace_string(result, "  ", " ");
@@ -108,10 +102,8 @@ std::string PaletteEditorCommand::onGetFriendlyName() const
   base::trim_string(result, result);
   return result;
 }
-
 Command* CommandFactory::createPaletteEditorCommand()
 {
   return new PaletteEditorCommand;
 }
-
 } // namespace app

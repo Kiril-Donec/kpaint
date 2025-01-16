@@ -1,19 +1,21 @@
-// Aseprite
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_SET_SPRITE_SIZE_H_INCLUDED
-#define APP_CMD_SET_SPRITE_SIZE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd.h"
-#include "app/cmd/with_sprite.h"
 
+
+ ifndef APP_CMD_SET_SPRITE_SIZE_H_INCLUDED
+ define APP_CMD_SET_SPRITE_SIZE_H_INCLUDED
+ pragma once
+ include "app/cmd.h"
+ include "app/cmd/with_sprite.h"
 namespace app { namespace cmd {
 using namespace doc;
-
 class SetSpriteSize : public Cmd,
                       public WithSprite {
 public:
@@ -31,7 +33,5 @@ private:
   uint32_t m_newWidth;
   uint32_t m_newHeight;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

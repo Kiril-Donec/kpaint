@@ -1,20 +1,22 @@
-// Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_ASEPRITE_UPDATE_H_INCLUDED
-#define APP_UI_ASEPRITE_UPDATE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "aseprite_update.xml.h"
-#include "drm/download_thread.h"
-#include "drm/installation_thread.h"
-#include "ui/timer.h"
 
+
+ ifndef APP_UI_ASEPRITE_UPDATE_H_INCLUDED
+ define APP_UI_ASEPRITE_UPDATE_H_INCLUDED
+ pragma once
+ include "aseprite_update.xml.h"
+ include "drm/download_thread.h"
+ include "drm/installation_thread.h"
+ include "ui/timer.h"
 namespace app {
-
 class AsepriteUpdate : public app::gen::AsepriteUpdate {
 public:
   AsepriteUpdate(std::string version);
@@ -41,10 +43,7 @@ private:
   std::unique_ptr<drm::InstallationThread> m_installation;
   ui::Timer m_timer;
   bool m_closing = false;
-
   void log(std::string text);
 };
-
 } // namespace app
-
-#endif
+ endif

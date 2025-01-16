@@ -1,45 +1,42 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_SCRIPTING_H_INCLUDED
-#define APP_SCRIPTING_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#ifndef ENABLE_SCRIPTING
+
+
+ ifndef APP_SCRIPTING_H_INCLUDED
+ define APP_SCRIPTING_H_INCLUDED
+ pragma once
+ ifndef ENABLE_SCRIPTING
   #error ENABLE_SCRIPTING must be defined
-#endif
-
-#include "app/color.h"
-#include "app/commands/params.h"
-#include "app/extensions.h"
-#include "base/uuid.h"
-#include "doc/brush.h"
-#include "doc/frame.h"
-#include "doc/object_ids.h"
-#include "doc/pixel_format.h"
-#include "doc/tile.h"
-#include "gfx/fwd.h"
-
-#include <cstdio>
-#include <functional>
-#include <map>
-#include <string>
-
+ endif
+ include "app/color.h"
+ include "app/commands/params.h"
+ include "app/extensions.h"
+ include "base/uuid.h"
+ include "doc/brush.h"
+ include "doc/frame.h"
+ include "doc/object_ids.h"
+ include "doc/pixel_format.h"
+ include "doc/tile.h"
+ include "gfx/fwd.h"
+ include <cstdio>
+ include <functional>
+ include <map>
+ include <string>
 struct lua_State;
 struct lua_Debug;
-
 namespace base {
 class Version;
 }
-
 namespace gfx {
 class ColorSpace;
 }
-
 namespace doc {
 class Cel;
 class Image;
@@ -53,29 +50,22 @@ class Tileset;
 class Tilesets;
 class WithUserData;
 } // namespace doc
-
 namespace ui {
 class Window;
 }
-
 namespace app {
-
 class Editor;
 class Site;
-
 namespace tools {
 class Tool;
 }
-
 namespace script {
-
 class EngineDelegate {
 public:
   virtual ~EngineDelegate() {}
   virtual void onConsoleError(const char* text) = 0;
   virtual void onConsolePrint(const char* text) = 0;
 };
-
 class DebuggerDelegate {
 public:
   virtual ~DebuggerDelegate() {}
@@ -83,46 +73,34 @@ public:
   virtual void startFile(const std::string& file, const std::string& content) = 0;
   virtual void endFile(const std::string& file) = 0;
 };
-
 class Engine {
 public:
   Engine();
   ~Engine();
-
   void destroy();
-
   EngineDelegate* delegate() { return m_delegate; }
   void setDelegate(EngineDelegate* delegate) { m_delegate = delegate; }
-
   // Called if the GUI is going to be started.
   void notifyRunningGui();
-
   void printLastResult();
   bool evalCode(const std::string& code, const std::string& filename = std::string());
   bool evalFile(const std::string& filename, const Params& params = Params());
   bool evalUserFile(const std::string& filename, const Params& params = Params());
-
   void handleException(const std::exception& ex);
-
   void consolePrint(const char* text) { onConsolePrint(text); }
-
   int returnCode() const { return m_returnCode; }
-
   lua_State* luaState() { return L; }
-
   void startDebugger(DebuggerDelegate* debuggerDelegate);
   void stopDebugger();
 
 private:
   void onConsoleError(const char* text);
   void onConsolePrint(const char* text);
-
   lua_State* L;
   EngineDelegate* m_delegate;
   bool m_printLastResult;
   int m_returnCode;
 };
-
 class ScopedEngineDelegate {
 public:
   ScopedEngineDelegate(Engine* engine, EngineDelegate* delegate)
@@ -137,7 +115,6 @@ private:
   Engine* m_engine;
   EngineDelegate* m_oldDelegate;
 };
-
 void push_app_events(lua_State* L);
 void push_app_theme(lua_State* L, int uiscale = 1);
 int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex);
@@ -179,7 +156,6 @@ void push_tilesets(lua_State* L, doc::Tilesets* tilesets);
 void push_tool(lua_State* L, app::tools::Tool* tool);
 void push_version(lua_State* L, const base::Version& ver);
 void push_window_events(lua_State* L, ui::Window* window);
-
 gfx::Point convert_args_into_point(lua_State* L, int index);
 gfx::Rect convert_args_into_rect(lua_State* L, int index);
 gfx::Size convert_args_into_size(lua_State* L, int index);
@@ -198,15 +174,11 @@ const doc::Mask* get_mask_from_arg(lua_State* L, int index);
 app::tools::Tool* get_tool_from_arg(lua_State* L, int index);
 doc::BrushRef get_brush_from_arg(lua_State* L, int index);
 doc::Tileset* get_tile_index_from_arg(lua_State* L, int index, doc::tile_index& ts);
-
-// Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
+ Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
 enum class LoadSpriteFromFileParam { FullAniAsSprite, OneFrameAsSprite, OneFrameAsImage };
 int load_sprite_from_file(lua_State* L, const char* filename, const LoadSpriteFromFileParam param);
-
-// close all opened Dialogs before closing the UI
+ close all opened Dialogs before closing the UI
 void close_all_dialogs();
-
 } // namespace script
 } // namespace app
-
-#endif
+ endif

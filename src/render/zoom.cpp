@@ -1,21 +1,19 @@
-// Aseprite Render Library
-// Copyright (c) 2020-2022  Igara Studio S.A.
-// Copyright (c) 2001-2016 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Render Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "base/debug.h"
-#include "render/zoom.h"
-
-#include <algorithm>
-
+ endif
+ include "base/debug.h"
+ include "render/zoom.h"
+ include <algorithm>
 namespace render {
-
 static int scales[][2] = {
   { 1,  64 },
   { 1,  48 },
@@ -43,16 +41,13 @@ static int scales[][2] = {
   { 48, 1  },
   { 64, 1  },
 };
-
 static int scales_size = sizeof(scales) / sizeof(scales[0]);
-
 Zoom::Zoom(int num, int den) : m_num(num), m_den(den)
 {
   ASSERT(m_num > 0);
   ASSERT(m_den > 0);
   m_internalScale = scale();
 }
-
 bool Zoom::in()
 {
   int i = linearScale();
@@ -66,7 +61,6 @@ bool Zoom::in()
   else
     return false;
 }
-
 bool Zoom::out()
 {
   int i = linearScale();
@@ -80,7 +74,6 @@ bool Zoom::out()
   else
     return false;
 }
-
 int Zoom::linearScale() const
 {
   for (int i = 0; i < scales_size; ++i) {
@@ -91,30 +84,26 @@ int Zoom::linearScale() const
   }
   return findClosestLinearScale(scale());
 }
-
-// static
+ static
 Zoom Zoom::fromScale(double scale)
 {
   Zoom zoom = fromLinearScale(findClosestLinearScale(scale));
   zoom.m_internalScale = scale;
   return zoom;
 }
-
-// static
+ static
 Zoom Zoom::fromLinearScale(int i)
 {
   i = std::clamp(i, 0, scales_size - 1);
   return Zoom(scales[i][0], scales[i][1]);
 }
-
-// static
+ static
 int Zoom::findClosestLinearScale(double scale)
 {
   for (int i = 1; i < scales_size - 1; ++i) {
     double min = double(scales[i - 1][0]) / double(scales[i - 1][1]);
     double mid = double(scales[i][0]) / double(scales[i][1]);
     double max = double(scales[i + 1][0]) / double(scales[i + 1][1]);
-
     if (scale >= (min + mid) / 2.0 && scale <= (mid + max) / 2.0)
       return i;
   }
@@ -123,10 +112,8 @@ int Zoom::findClosestLinearScale(double scale)
   else
     return scales_size - 1;
 }
-
 int Zoom::linearValues()
 {
   return scales_size;
 }
-
 } // namespace render

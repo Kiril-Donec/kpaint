@@ -1,29 +1,28 @@
-// Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
-// Copyright (C) 2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_SLICE_WINDOW_H_INCLUDED
-#define APP_UI_SLICE_WINDOW_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/ui/user_data_view.h"
-#include "doc/anidir.h"
-#include "doc/frame.h"
-#include "doc/selected_objects.h"
-#include "doc/user_data.h"
 
-#include "slice_properties.xml.h"
 
+ ifndef APP_UI_SLICE_WINDOW_H_INCLUDED
+ define APP_UI_SLICE_WINDOW_H_INCLUDED
+ pragma once
+ include "app/ui/user_data_view.h"
+ include "doc/anidir.h"
+ include "doc/frame.h"
+ include "doc/selected_objects.h"
+ include "doc/user_data.h"
+ include "slice_properties.xml.h"
 namespace doc {
 class Slice;
 class Sprite;
 } // namespace doc
-
 namespace app {
-
 class SliceWindow : protected app::gen::SliceProperties {
 public:
   enum Mods {
@@ -42,19 +41,15 @@ public:
     kUserData = 0x0800,
     kAll = 0xffff,
   };
-
   SliceWindow(const doc::Sprite* sprite,
               const doc::SelectedObjects& slices,
               const doc::frame_t frame);
-
   bool show();
-
   std::string nameValue() const;
   gfx::Rect boundsValue() const;
   gfx::Rect centerValue() const;
   gfx::Point pivotValue() const;
   const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
-
   Mods modifiedFields() const { return m_mods; }
 
 private:
@@ -63,7 +58,6 @@ private:
   void onToggleUserData();
   void onModifyField(ui::Entry* entry, const Mods mods);
   void onPossibleColorChange();
-
   // Flags used to know what specific entry/checkbox was modified
   // when we edit multiple-slices in the same property dialog. In
   // this way we know what field modify of each slice in
@@ -71,7 +65,5 @@ private:
   Mods m_mods;
   UserDataView m_userDataView;
 };
-
 } // namespace app
-
-#endif
+ endif

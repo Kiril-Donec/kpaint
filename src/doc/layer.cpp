@@ -1,27 +1,24 @@
-// Aseprite Document Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/layer.h"
-
-#include "doc/cel.h"
-#include "doc/grid.h"
-#include "doc/image.h"
-#include "doc/primitives.h"
-#include "doc/sprite.h"
-
-#include <algorithm>
-#include <cstring>
-
+ endif
+ include "doc/cel.h"
+ include "doc/grid.h"
+ include "doc/image.h"
+ include "doc/layer.h"
+ include "doc/primitives.h"
+ include "doc/sprite.h"
+ include <algorithm>
+ include <cstring>
 namespace doc {
-
 Layer::Layer(ObjectType type, Sprite* sprite)
   : WithUserData(type)
   , m_sprite(sprite)
@@ -30,24 +27,19 @@ Layer::Layer(ObjectType type, Sprite* sprite)
 {
   ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup ||
          type == ObjectType::LayerTilemap);
-
   setName("Layer");
 }
-
 Layer::~Layer()
 {
 }
-
 int Layer::getMemSize() const
 {
   return sizeof(Layer);
 }
-
 Layer* Layer::getPrevious() const
 {
   if (m_parent) {
     auto it = std::find(m_parent->layers().begin(), m_parent->layers().end(), this);
-
     if (it != m_parent->layers().end() && it != m_parent->layers().begin()) {
       it--;
       return *it;
@@ -55,12 +47,10 @@ Layer* Layer::getPrevious() const
   }
   return nullptr;
 }
-
 Layer* Layer::getNext() const
 {
   if (m_parent) {
     auto it = std::find(m_parent->layers().begin(), m_parent->layers().end(), this);
-
     if (it != m_parent->layers().end()) {
       it++;
       if (it != m_parent->layers().end())
@@ -69,17 +59,14 @@ Layer* Layer::getNext() const
   }
   return nullptr;
 }
-
 Layer* Layer::getPreviousBrowsable() const
 {
   // Go to children
   if (isBrowsable())
     return static_cast<const LayerGroup*>(this)->lastLayer();
-
   // Go to previous layer
   if (Layer* prev = getPrevious())
     return prev;
-
   // Go to previous layer in the parent
   LayerGroup* parent = this->parent();
   while (parent != sprite()->root() && !parent->getPrevious()) {
@@ -87,7 +74,6 @@ Layer* Layer::getPreviousBrowsable() const
   }
   return parent->getPrevious();
 }
-
 Layer* Layer::getNextBrowsable() const
 {
   // Go to next layer
@@ -101,24 +87,19 @@ Layer* Layer::getNextBrowsable() const
     }
     return next;
   }
-
   // Go to parent
   if (m_sprite && parent() != m_sprite->root())
     return m_parent;
-
   return nullptr;
 }
-
 Layer* Layer::getPreviousInWholeHierarchy() const
 {
   // Go to children
   if (isGroup() && static_cast<const LayerGroup*>(this)->layersCount() > 0)
     return static_cast<const LayerGroup*>(this)->lastLayer();
-
   // Go to previous layer
   if (Layer* prev = getPrevious())
     return prev;
-
   // Go to previous layer in the parent
   LayerGroup* parent = this->parent();
   while (parent != sprite()->root() && !parent->getPrevious()) {
@@ -126,7 +107,6 @@ Layer* Layer::getPreviousInWholeHierarchy() const
   }
   return parent->getPrevious();
 }
-
 Layer* Layer::getNextInWholeHierarchy() const
 {
   // Go to next layer
@@ -140,14 +120,11 @@ Layer* Layer::getNextInWholeHierarchy() const
     }
     return next;
   }
-
   // Go to parent
   if (m_sprite && parent() != m_sprite->root())
     return m_parent;
-
   return nullptr;
 }
-
 bool Layer::isVisibleHierarchy() const
 {
   const Layer* layer = this;
@@ -158,7 +135,6 @@ bool Layer::isVisibleHierarchy() const
   }
   return true;
 }
-
 bool Layer::isEditableHierarchy() const
 {
   const Layer* layer = this;
@@ -169,11 +145,10 @@ bool Layer::isEditableHierarchy() const
   }
   return true;
 }
-
-// It's like isVisibleHierarchy + isEditableHierarchy. Returns true if
-// the whole layer hierarchy is unlocked and visible, so the user can
-// edit its pixels without unexpected side-effects (e.g. editing
-// hidden layers).
+ It's like isVisibleHierarchy + isEditableHierarchy. Returns true if
+ the whole layer hierarchy is unlocked and visible, so the user can
+ edit its pixels without unexpected side-effects (e.g. editing
+ hidden layers).
 bool Layer::canEditPixels() const
 {
   const Layer* layer = this;
@@ -186,7 +161,6 @@ bool Layer::canEditPixels() const
   }
   return true;
 }
-
 bool Layer::hasAncestor(const Layer* ancestor) const
 {
   Layer* it = parent();
@@ -197,7 +171,6 @@ bool Layer::hasAncestor(const Layer* ancestor) const
   }
   return false;
 }
-
 Grid Layer::grid() const
 {
   gfx::Rect rc = (m_sprite ? m_sprite->gridBounds() : doc::Sprite::DefaultGridBounds());
@@ -205,60 +178,48 @@ Grid Layer::grid() const
   grid.origin(gfx::Point(rc.x % rc.w, rc.y % rc.h));
   return grid;
 }
-
 Cel* Layer::cel(frame_t frame) const
 {
   return nullptr;
 }
-
-//////////////////////////////////////////////////////////////////////
-// LayerImage class
-
+// ////////////////////////////////////////////////////////////////////
+ LayerImage class
 LayerImage::LayerImage(ObjectType type, Sprite* sprite)
   : Layer(type, sprite)
   , m_blendmode(BlendMode::NORMAL)
   , m_opacity(255)
 {
 }
-
 LayerImage::LayerImage(Sprite* sprite) : LayerImage(ObjectType::LayerImage, sprite)
 {
 }
-
 LayerImage::~LayerImage()
 {
   destroyAllCels();
 }
-
 int LayerImage::getMemSize() const
 {
   int size = sizeof(LayerImage);
   CelConstIterator it = getCelBegin();
   CelConstIterator end = getCelEnd();
-
   for (; it != end; ++it) {
     const Cel* cel = *it;
     size += cel->getMemSize();
-
     const Image* image = cel->image();
     size += image->getMemSize();
   }
-
   return size;
 }
-
 void LayerImage::destroyAllCels()
 {
   CelIterator it = getCelBegin();
   CelIterator end = getCelEnd();
-
   for (; it != end; ++it) {
     Cel* cel = *it;
     delete cel;
   }
   m_cels.clear();
 }
-
 Cel* LayerImage::cel(frame_t frame) const
 {
   CelConstIterator it = findCelIterator(frame);
@@ -267,16 +228,13 @@ Cel* LayerImage::cel(frame_t frame) const
   else
     return nullptr;
 }
-
 void LayerImage::getCels(CelList& cels) const
 {
   CelConstIterator it = getCelBegin();
   CelConstIterator end = getCelEnd();
-
   for (; it != end; ++it)
     cels.push_back(*it);
 }
-
 Cel* LayerImage::getLastCel() const
 {
   if (!m_cels.empty())
@@ -284,43 +242,35 @@ Cel* LayerImage::getLastCel() const
   else
     return NULL;
 }
-
 CelConstIterator LayerImage::findCelIterator(frame_t frame) const
 {
   CelIterator it = const_cast<LayerImage*>(this)->findCelIterator(frame);
   return CelConstIterator(it);
 }
-
 CelIterator LayerImage::findCelIterator(frame_t frame)
 {
   auto first = getCelBegin();
   auto end = getCelEnd();
-
   // Here we use a binary search to find the first cel equal to "frame" (or after frame)
   first = std::lower_bound(first, end, nullptr, [frame](Cel* cel, Cel*) -> bool {
     return cel->frame() < frame;
   });
-
   // We return the iterator only if it's an exact match
   if (first != end && (*first)->frame() == frame)
     return first;
   else
     return end;
 }
-
 CelIterator LayerImage::findFirstCelIteratorAfter(frame_t firstAfterFrame)
 {
   auto first = getCelBegin();
   auto end = getCelEnd();
-
   // Here we use a binary search to find the first cel after the given frame
   first = std::lower_bound(first, end, nullptr, [firstAfterFrame](Cel* cel, Cel*) -> bool {
     return cel->frame() <= firstAfterFrame;
   });
-
   return first;
 }
-
 void LayerImage::addCel(Cel* cel)
 {
   ASSERT(cel);
@@ -329,13 +279,10 @@ void LayerImage::addCel(Cel* cel)
   ASSERT(sprite());
   ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat() ||
          cel->image()->pixelFormat() == IMAGE_TILEMAP);
-
   CelIterator it = findFirstCelIteratorAfter(cel->frame());
   m_cels.insert(it, cel);
-
   cel->setParentLayer(this);
 }
-
 /**
  * Removes the cel from the layer.
  *
@@ -347,12 +294,9 @@ void LayerImage::removeCel(Cel* cel)
   ASSERT(cel);
   CelIterator it = findCelIterator(cel->frame());
   ASSERT(it != m_cels.end());
-
   m_cels.erase(it);
-
   cel->setParentLayer(NULL);
 }
-
 void LayerImage::moveCel(Cel* cel, frame_t frame)
 {
   removeCel(cel);
@@ -360,7 +304,6 @@ void LayerImage::moveCel(Cel* cel, frame_t frame)
   cel->incrementVersion(); // TODO this should be in app::cmd module
   addCel(cel);
 }
-
 /**
  * Configures some properties of the specified layer to make it as the
  * "Background" of the sprite.
@@ -372,17 +315,13 @@ void LayerImage::configureAsBackground()
 {
   ASSERT(sprite() != NULL);
   ASSERT(sprite()->backgroundLayer() == NULL);
-
   switchFlags(LayerFlags::BackgroundLayerFlags, true);
   setName("Background");
-
   sprite()->root()->stackLayer(this, NULL);
 }
-
 void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
 {
   Sprite* sprite = this->sprite();
-
   if (delta > 0) {
     for (frame_t c = sprite->lastFrame(); c >= fromThis; --c) {
       if (Cel* cel = this->cel(c))
@@ -396,38 +335,30 @@ void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
     }
   }
 }
-
-//////////////////////////////////////////////////////////////////////
-// LayerGroup class
-
+// ////////////////////////////////////////////////////////////////////
+ LayerGroup class
 LayerGroup::LayerGroup(Sprite* sprite) : Layer(ObjectType::LayerGroup, sprite)
 {
   setName("Group");
 }
-
 LayerGroup::~LayerGroup()
 {
   destroyAllLayers();
 }
-
 void LayerGroup::destroyAllLayers()
 {
   for (Layer* layer : m_layers)
     delete layer;
   m_layers.clear();
 }
-
 int LayerGroup::getMemSize() const
 {
   int size = sizeof(LayerGroup);
-
   for (const Layer* layer : m_layers) {
     size += layer->getMemSize();
   }
-
   return size;
 }
-
 Layer* LayerGroup::firstLayerInWholeHierarchy() const
 {
   Layer* layer = firstLayer();
@@ -438,17 +369,14 @@ Layer* LayerGroup::firstLayerInWholeHierarchy() const
   }
   return layer;
 }
-
 void LayerGroup::allLayers(LayerList& list) const
 {
   for (Layer* child : m_layers) {
     if (child->isGroup())
       static_cast<LayerGroup*>(child)->allLayers(list);
-
     list.push_back(child);
   }
 }
-
 layer_t LayerGroup::allLayersCount() const
 {
   layer_t count = 0;
@@ -459,7 +387,6 @@ layer_t LayerGroup::allLayersCount() const
   }
   return count;
 }
-
 bool LayerGroup::hasVisibleReferenceLayers() const
 {
   for (Layer* child : m_layers) {
@@ -469,92 +396,74 @@ bool LayerGroup::hasVisibleReferenceLayers() const
   }
   return false;
 }
-
 void LayerGroup::allVisibleLayers(LayerList& list) const
 {
   for (Layer* child : m_layers) {
     if (!child->isVisible())
       continue;
-
     if (child->isGroup())
       static_cast<LayerGroup*>(child)->allVisibleLayers(list);
-
     list.push_back(child);
   }
 }
-
 void LayerGroup::allVisibleReferenceLayers(LayerList& list) const
 {
   for (Layer* child : m_layers) {
     if (!child->isVisible())
       continue;
-
     if (child->isGroup())
       static_cast<LayerGroup*>(child)->allVisibleReferenceLayers(list);
-
     if (!child->isReference())
       continue;
-
     list.push_back(child);
   }
 }
-
 void LayerGroup::allBrowsableLayers(LayerList& list) const
 {
   for (Layer* child : m_layers) {
     if (child->isBrowsable())
       static_cast<LayerGroup*>(child)->allBrowsableLayers(list);
-
     list.push_back(child);
   }
 }
-
 void LayerGroup::allTilemaps(LayerList& list) const
 {
   for (Layer* child : m_layers) {
     if (child->isGroup())
       static_cast<LayerGroup*>(child)->allTilemaps(list);
-
     if (child->isTilemap())
       list.push_back(child);
   }
 }
-
 std::string LayerGroup::visibleLayerHierarchyAsString(const std::string& indent) const
 {
   std::string str;
   for (Layer* child : m_layers) {
     if (!child->isVisible())
       continue;
-
     str += indent + child->name() + (child->isGroup() ? "/" : "") + "\n";
     if (child->isGroup())
       str += static_cast<LayerGroup*>(child)->visibleLayerHierarchyAsString(indent + "  ");
   }
   return str;
 }
-
 void LayerGroup::getCels(CelList& cels) const
 {
   for (const Layer* layer : m_layers)
     layer->getCels(cels);
 }
-
 void LayerGroup::addLayer(Layer* layer)
 {
   m_layers.push_back(layer);
   layer->setParent(this);
 }
-
 void LayerGroup::removeLayer(Layer* layer)
 {
   auto it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());
   m_layers.erase(it);
-
   layer->setParent(nullptr);
 }
-
 void LayerGroup::insertLayer(Layer* layer, Layer* after)
 {
   auto after_it = m_layers.begin();
@@ -564,24 +473,19 @@ void LayerGroup::insertLayer(Layer* layer, Layer* after)
       ++after_it;
   }
   m_layers.insert(after_it, layer);
-
   layer->setParent(this);
 }
-
 void LayerGroup::stackLayer(Layer* layer, Layer* after)
 {
   ASSERT(layer != after);
   if (layer == after)
     return;
-
   removeLayer(layer);
   insertLayer(layer, after);
 }
-
 void LayerGroup::displaceFrames(frame_t fromThis, frame_t delta)
 {
   for (Layer* layer : m_layers)
     layer->displaceFrames(fromThis, delta);
 }
-
 } // namespace doc

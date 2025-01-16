@@ -1,68 +1,62 @@
-// Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_CONTEXT_BAR_H_INCLUDED
-#define APP_UI_CONTEXT_BAR_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/pref/preferences.h"
-#include "app/shade.h"
-#include "app/tools/active_tool_observer.h"
-#include "app/tools/dynamics.h"
-#include "app/tools/ink_type.h"
-#include "app/tools/tool_loop_modifiers.h"
-#include "app/ui/context_bar_observer.h"
-#include "app/ui/doc_observer_widget.h"
-#include "doc/brush.h"
-#include "obs/connection.h"
-#include "obs/observable.h"
-#include "obs/signal.h"
-#include "render/gradient.h"
-#include "ui/box.h"
 
-#include <vector>
 
+ ifndef APP_UI_CONTEXT_BAR_H_INCLUDED
+ define APP_UI_CONTEXT_BAR_H_INCLUDED
+ pragma once
+ include "app/pref/preferences.h"
+ include "app/shade.h"
+ include "app/tools/active_tool_observer.h"
+ include "app/tools/dynamics.h"
+ include "app/tools/ink_type.h"
+ include "app/tools/tool_loop_modifiers.h"
+ include "app/ui/context_bar_observer.h"
+ include "app/ui/doc_observer_widget.h"
+ include "doc/brush.h"
+ include "obs/connection.h"
+ include "obs/observable.h"
+ include "obs/signal.h"
+ include "render/gradient.h"
+ include "ui/box.h"
+ include <vector>
 namespace doc {
 class Remap;
 }
-
 namespace render {
 class DitheringAlgorithmBase;
 class DitheringMatrix;
 } // namespace render
-
 namespace ui {
 class Box;
 class Button;
 class Label;
 class TooltipManager;
 } // namespace ui
-
 namespace app {
-
 namespace tools {
 class Ink;
 class Tool;
 } // namespace tools
-
 class BrushSlot;
 class ColorBar;
 class DitheringSelector;
 class GradientTypeSelector;
 class SamplingSelector;
 class Transformation;
-
 class ContextBar : public DocObserverWidget<ui::HBox>,
                    public obs::observable<ContextBarObserver>,
                    public tools::ActiveToolObserver {
 public:
   ContextBar(ui::TooltipManager* tooltipManager, ColorBar* colorBar);
   ~ContextBar();
-
   void updateForActiveTool();
   void updateForTool(tools::Tool* tool);
   void updateForMovingPixels(const Transformation& t);
@@ -71,29 +65,22 @@ public:
   bool updateSamplingVisibility(tools::Tool* tool = nullptr);
   void updateAutoSelectLayer(bool state);
   bool isAutoSelectLayer() const;
-
   void setActiveBrush(const doc::BrushRef& brush);
   void setActiveBrushBySlot(tools::Tool* tool, int slot);
   doc::BrushRef activeBrush(tools::Tool* tool = nullptr, tools::Ink* ink = nullptr) const;
   void discardActiveBrush();
-
   BrushSlot createBrushSlotFromPreferences();
   static doc::BrushRef createBrushFromPreferences(ToolPreferences::Brush* brushPref = nullptr);
-
   doc::Remap* createShadeRemap(bool left);
   void reverseShadeColors();
   Shade getShade() const;
-
   void setInkType(tools::InkType type);
-
   // For gradients
   render::DitheringMatrix ditheringMatrix();
   render::DitheringAlgorithmBase* ditheringAlgorithm();
   render::GradientType gradientType();
-
   // For freehand with dynamics
   const tools::DynamicsOptions& getDynamics() const;
-
   // Signals
   obs::signal<void()> BrushChange;
 
@@ -103,13 +90,10 @@ protected:
   void onToolSetOpacity(const int& newOpacity);
   void onToolSetFreehandAlgorithm();
   void onToolSetContiguous();
-
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override;
-
   // DocObserverWidget overrides
   void onDocChange(Doc* doc) override;
-
   // DocObserver impl
   void onAddSlice(DocEvent& ev) override;
   void onRemoveSlice(DocEvent& ev) override;
@@ -123,16 +107,13 @@ private:
   void onOpacityRangeChange();
   void onDropPixels(ContextBarObserver::DropAction action);
   void updateSliceFields(const Site& site);
-
   // ActiveToolObserver impl
   void onActiveToolChange(tools::Tool* tool) override;
-
   void setupTooltips(ui::TooltipManager* tooltipManager);
   void registerCommands();
   void showBrushes();
   void showDynamics();
   bool needZoomButtons(tools::Tool* tool) const;
-
   class ZoomButtons;
   class BrushBackField;
   class BrushTypeField;
@@ -160,7 +141,6 @@ private:
   class AutoSelectLayerField;
   class SymmetryField;
   class SliceFields;
-
   ZoomButtons* m_zoomButtons;
   SamplingSelector* m_samplingSelector;
   BrushBackField* m_brushBack;
@@ -210,7 +190,5 @@ private:
   obs::scoped_connection m_freehandAlgoConn;
   obs::scoped_connection m_contiguousConn;
 };
-
 } // namespace app
-
-#endif
+ endif

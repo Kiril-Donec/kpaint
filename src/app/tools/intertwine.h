@@ -1,43 +1,40 @@
-// Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_TOOLS_INTERTWINE_H_INCLUDED
-#define APP_TOOLS_INTERTWINE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/tools/stroke.h"
-#include "doc/algo.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 
+
+ ifndef APP_TOOLS_INTERTWINE_H_INCLUDED
+ define APP_TOOLS_INTERTWINE_H_INCLUDED
+ pragma once
+ include "app/tools/stroke.h"
+ include "doc/algo.h"
+ include "gfx/point.h"
+ include "gfx/rect.h"
 namespace app { namespace tools {
 class ToolLoop;
-
-// Converts a sequence of points in several call to
-// Intertwine::doPointshapePoint(). Basically each implementation
-// says which pixels should be drawn between a sequence of
-// user-defined points.
+ Converts a sequence of points in several call to
+ Intertwine::doPointshapePoint(). Basically each implementation
+ says which pixels should be drawn between a sequence of
+ user-defined points.
 class Intertwine {
 public:
   virtual ~Intertwine() {}
   virtual bool snapByAngle() { return false; }
   virtual void prepareIntertwine(ToolLoop* loop) {}
-
   // The given stroke must be relative to the cel origin.
   virtual void joinStroke(ToolLoop* loop, const Stroke& stroke) = 0;
   virtual void fillStroke(ToolLoop* loop, const Stroke& stroke) = 0;
-
   virtual gfx::Rect getStrokeBounds(ToolLoop* loop, const Stroke& stroke);
-
   // Special region to force when the modify_tilemap_cel_region()
   // is called to restore the m_dstTileset from the m_dstImage
   // in ExpandCelCanvas::validateDestTileset.
   virtual gfx::Region forceTilemapRegionToValidate() { return gfx::Region(); }
-
   struct LineData {
     ToolLoop* loop;
     Stroke::Pt a, b, pt;
@@ -56,12 +53,9 @@ protected:
   // TODO We should remove this function and always use dynamics
   static void doPointshapeLineWithoutDynamics(int x1, int y1, int x2, int y2, ToolLoop* loop);
   static void doPointshapeLine(const Stroke::Pt& a, const Stroke::Pt& b, ToolLoop* loop);
-
   static doc::AlgoLineWithAlgoPixel getLineAlgo(ToolLoop* loop,
                                                 const Stroke::Pt& a,
                                                 const Stroke::Pt& b);
 };
-
 }} // namespace app::tools
-
-#endif // TOOLS_INTERTWINE_H_INCLUDED
+// endif // TOOLS_INTERTWINE_H_INCLUDED

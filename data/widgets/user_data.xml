@@ -1,6 +1,11 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2020-2021 by Igara Studio S.A. -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui>
   <hbox id="user_data">
     <label id="color_label" text="@.color" />

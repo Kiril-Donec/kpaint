@@ -1,58 +1,53 @@
-// Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app_menus.h"
-
-#include "app/app.h"
-#include "app/commands/command.h"
-#include "app/commands/commands.h"
-#include "app/commands/params.h"
-#include "app/console.h"
-#include "app/extensions.h"
-#include "app/gui_xml.h"
-#include "app/i18n/strings.h"
-#include "app/recent_files.h"
-#include "app/resource_finder.h"
-#include "app/tools/tool_box.h"
-#include "app/ui/app_menuitem.h"
-#include "app/ui/keyboard_shortcuts.h"
-#include "app/ui/main_window.h"
-#include "app/ui_context.h"
-#include "app/util/filetoks.h"
-#include "base/fs.h"
-#include "base/string.h"
-#include "fmt/format.h"
-#include "os/menus.h"
-#include "os/system.h"
-#include "ui/ui.h"
-#include "ver/info.h"
-
-#include "tinyxml2.h"
-
-#include <algorithm>
-#include <cctype>
-#include <cstdlib>
-#include <cstring>
-#include <string>
-
-#define MENUS_TRACE(...) // TRACEARGS
-
+ endif
+ include "app/app.h"
+ include "app/app_menus.h"
+ include "app/commands/command.h"
+ include "app/commands/commands.h"
+ include "app/commands/params.h"
+ include "app/console.h"
+ include "app/extensions.h"
+ include "app/gui_xml.h"
+ include "app/i18n/strings.h"
+ include "app/recent_files.h"
+ include "app/resource_finder.h"
+ include "app/tools/tool_box.h"
+ include "app/ui/app_menuitem.h"
+ include "app/ui/keyboard_shortcuts.h"
+ include "app/ui/main_window.h"
+ include "app/ui_context.h"
+ include "app/util/filetoks.h"
+ include "base/fs.h"
+ include "base/string.h"
+ include "fmt/format.h"
+ include "os/menus.h"
+ include "os/system.h"
+ include "tinyxml2.h"
+ include "ui/ui.h"
+ include "ver/info.h"
+ include <algorithm>
+ include <cctype>
+ include <cstdlib>
+ include <cstring>
+ include <string>
+// define MENUS_TRACE(...) // TRACEARGS
 namespace app {
-
 using namespace tinyxml2;
 using namespace ui;
-
 namespace {
-
-// TODO Move this to "os" layer
+ TODO Move this to "os" layer
 const int kUnicodeEsc = 27;
 const int kUnicodeEnter = '\r';      // 10
 const int kUnicodeInsert = 0xF727;   // NSInsertFunctionKey
@@ -65,20 +60,16 @@ const int kUnicodeLeft = 0xF702;     // NSLeftArrowFunctionKey
 const int kUnicodeRight = 0xF703;    // NSRightArrowFunctionKey
 const int kUnicodeUp = 0xF700;       // NSUpArrowFunctionKey
 const int kUnicodeDown = 0xF701;     // NSDownArrowFunctionKey
-
 const char* kFileRecentListGroup = "file_recent_list";
-
 void destroy_instance(AppMenus* instance)
 {
   delete instance;
 }
-
 bool is_text_entry_shortcut(const os::Shortcut& shortcut)
 {
   const os::KeyModifiers mod = shortcut.modifiers();
   const int chr = shortcut.unicode();
   const int lchr = std::tolower(chr);
-
   bool result =
     ((mod == os::KeyModifiers::kKeyNoneModifier || mod == os::KeyModifiers::kKeyShiftModifier) &&
      chr >= 32 && chr < 0xF000) ||
@@ -86,14 +77,11 @@ bool is_text_entry_shortcut(const os::Shortcut& shortcut)
      (lchr == 'a' || lchr == 'c' || lchr == 'v' || lchr == 'x')) ||
     (chr == kUnicodeInsert || chr == kUnicodeDel || chr == kUnicodeHome || chr == kUnicodeEnd ||
      chr == kUnicodeLeft || chr == kUnicodeRight || chr == kUnicodeEsc || chr == kUnicodeEnter);
-
   return result;
 }
-
 bool can_call_global_shortcut(const AppMenuItem::Native* native)
 {
   ASSERT(native);
-
   ui::Manager* manager = ui::Manager::getDefault();
   ASSERT(manager);
   ui::Widget* focus = manager->getFocus();
@@ -109,7 +97,7 @@ bool can_call_global_shortcut(const AppMenuItem::Native* native)
     // (e.g. Alt+S opens the Sprite menu, then 'S' key should execute
     // "Sprite Size" command in that menu, instead of Stroke command
     // which is in 'Edit > Stroke'). This is necessary in macOS, when
-    // the native menu + Aseprite pixel-art menus are enabled.
+    // the native menu + KPaint pixel-art menus are enabled.
     (dynamic_cast<MenuBoxWindow*>(manager->getTopWindow()) == nullptr) &&
     // The focused widget cannot be an entry, because entry fields
     // prefer text input, so we cannot call shortcuts without
@@ -120,9 +108,8 @@ bool can_call_global_shortcut(const AppMenuItem::Native* native)
     (native->keyContext == KeyContext::Any ||
      native->keyContext == KeyboardShortcuts::instance()->getCurrentKeyContext());
 }
-
-// TODO this should be on "she" library (or we should use
-// os::Shortcut instead of ui::Accelerators)
+ TODO this should be on "she" library (or we should use
+ os::Shortcut instead of ui::Accelerators)
 int from_scancode_to_unicode(KeyScancode scancode)
 {
   static int map[] = {
@@ -259,7 +246,6 @@ int from_scancode_to_unicode(KeyScancode scancode)
   else
     return 0;
 }
-
 AppMenuItem::Native get_native_shortcut_for_command(const char* commandId,
                                                     const Params& params = Params())
 {
@@ -271,34 +257,27 @@ AppMenuItem::Native get_native_shortcut_for_command(const char* commandId,
   }
   return native;
 }
-
 void destroy_menu_item(ui::Widget* item)
 {
   if (item->parent())
     item->parent()->removeChild(item);
-
   if (auto appItem = dynamic_cast<AppMenuItem*>(item)) {
     if (appItem)
       appItem->disposeNative();
   }
-
   item->deferDelete();
 }
-
 } // anonymous namespace
-
 os::Shortcut get_os_shortcut_from_key(const Key* key)
 {
   if (key && !key->accels().empty()) {
     const ui::Accelerator& accel = key->accels().front();
-
-#ifdef __APPLE__
+ ifdef __APPLE__
     // Shortcuts with spacebar as modifier do not work well in macOS
     // (they will be called when the space bar is unpressed too).
     if ((accel.modifiers() & ui::kKeySpaceModifier) == ui::kKeySpaceModifier)
       return os::Shortcut();
-#endif
-
+ endif
     return os::Shortcut(
       (accel.unicodeChar() ? accel.unicodeChar() : from_scancode_to_unicode(accel.scancode())),
       accel.modifiers());
@@ -306,8 +285,7 @@ os::Shortcut get_os_shortcut_from_key(const Key* key)
   else
     return os::Shortcut();
 }
-
-// static
+ static
 AppMenus* AppMenus::instance()
 {
   static AppMenus* instance = NULL;
@@ -317,45 +295,33 @@ AppMenus* AppMenus::instance()
   }
   return instance;
 }
-
 AppMenus::AppMenus() : m_recentFilesPlaceholder(nullptr), m_osMenu(nullptr)
 {
   m_recentFilesConn = App::instance()->recentFiles()->Changed.connect(
     [this] { rebuildRecentList(); });
 }
-
 void AppMenus::reload()
 {
   MENUS_TRACE("MENUS: AppMenus::reload()");
-
   XMLDocument* doc = GuiXml::instance()->doc();
   XMLHandle handle(doc);
   const char* path = GuiXml::instance()->filename();
-
   ////////////////////////////////////////
   // Remove all menu items added to groups from recent files and
   // scripts so we can re-add them later in the new menus.
-
   for (auto& it : m_groups) {
     GroupInfo& group = it.second;
     MENUS_TRACE("MENUS: - groups", it.first, "with", group.items.size(), "item(s)");
-
     for (auto& item : group.items)
       group.menu->removeChild(item);
-
     // These values will be restored later
     group.end = nullptr;
   }
-
   ////////////////////////////////////////
   // Load menus
-
   LOG("MENU: Loading menus from %s\n", path);
-
   m_rootMenu.reset(loadMenuById(handle, "main_menu"));
-
   LOG("MENU: Main menu loaded.\n");
-
   m_tabPopupMenu.reset(loadMenuById(handle, "tab_popup_menu"));
   m_documentTabPopupMenu.reset(loadMenuById(handle, "document_tab_popup_menu"));
   m_layerPopupMenu.reset(loadMenuById(handle, "layer_popup_menu"));
@@ -367,11 +333,10 @@ void AppMenus::reload()
   m_palettePopupMenu.reset(loadMenuById(handle, "palette_popup_menu"));
   m_inkPopupMenu.reset(loadMenuById(handle, "ink_popup_menu"));
   m_newFramePopupMenu.reset(loadMenuById(handle, "new_frame_popup_menu"));
-
   // Add one menu item to run each script from the user scripts/ folder
   {
     MenuItem* scriptsMenu = dynamic_cast<MenuItem*>(m_rootMenu->findItemById("scripts_menu"));
-#ifdef ENABLE_SCRIPTING
+ ifdef ENABLE_SCRIPTING
     // Load scripts
     ResourceFinder rf;
     rf.includeUserDir("scripts");
@@ -379,42 +344,36 @@ void AppMenus::reload()
     if (base::is_directory(scriptsDir)) {
       loadScriptsSubmenu(scriptsMenu->getSubmenu(), scriptsDir, true);
     }
-#else
+ else
     // Scripting is not available
     if (scriptsMenu) {
       delete scriptsMenu;
       delete m_rootMenu->findItemById("scripts_menu_separator");
-
       // Remove scripts group
       auto it = m_groups.find("file_scripts");
       if (it != m_groups.end())
         m_groups.erase(it);
     }
-#endif
+ endif
   }
-
   // Remove the "Enter license" menu item when DRM is not enabled.
-#ifndef ENABLE_DRM
+ ifndef ENABLE_DRM
   if (auto helpMenuItem = m_rootMenu->findItemById("help_menu")) {
     if (Menu* helpMenu = dynamic_cast<MenuItem*>(helpMenuItem)->getSubmenu()) {
       delete helpMenu->findChild("enter_license_separator");
       delete helpMenu->findChild("enter_license");
     }
-
     auto it = m_groups.find("help_enter_license");
     if (it != m_groups.end())
       m_groups.erase(it);
   }
-#endif
-
+ endif
   ////////////////////////////////////////
   // Re-add menu items in groups (recent files & scripts)
-
   for (auto& it : m_groups) {
     GroupInfo& group = it.second;
     if (group.menu) {
       MENUS_TRACE("MENUS: - re-adding group ", it.first, "with", group.items.size(), "item(s)");
-
       auto menu = group.menu;
       int insertIndex = menu->getChildIndex(group.end);
       if (insertIndex < 0)
@@ -432,18 +391,13 @@ void AppMenus::reload()
       group.items.clear();
     }
   }
-
   ////////////////////////////////////////
   // Load keyboard shortcuts for commands
-
   LOG("MENU: Loading commands keyboard shortcuts from %s\n", path);
-
   XMLElement* xmlKey = handle.FirstChildElement("gui").FirstChildElement("keyboard").ToElement();
-
   // From a fresh start, load the default keys
   KeyboardShortcuts::instance()->clear();
   KeyboardShortcuts::instance()->importFile(xmlKey, KeySource::Original);
-
   // Load extension-defined keys
   for (const Extension* ext : App::instance()->extensions()) {
     if (ext->isEnabled() && ext->hasKeys()) {
@@ -452,7 +406,6 @@ void AppMenus::reload()
       }
     }
   }
-
   // Load user-defined keys
   {
     ResourceFinder rf;
@@ -461,13 +414,11 @@ void AppMenus::reload()
     if (base::is_file(fn))
       KeyboardShortcuts::instance()->importFile(fn, KeySource::UserDefined);
   }
-
   // Create native menus after the default + user defined keyboard
   // shortcuts are loaded correctly.
   createNativeMenus();
 }
-
-#ifdef ENABLE_SCRIPTING
+ ifdef ENABLE_SCRIPTING
 void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir, const bool rootLevel)
 {
   auto files = base::list_files(dir);
@@ -478,10 +429,8 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir, const 
   for (auto fn : files) {
     std::string fullFn = base::join_path(dir, fn);
     AppMenuItem* menuitem = nullptr;
-
     if (fn[0] == '.') // Ignore all files and directories that start with a dot
       continue;
-
     if (base::is_file(fullFn)) {
       if (base::string_to_lower(base::get_file_extension(fn)) == "lua") {
         Params params;
@@ -493,7 +442,6 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir, const 
     else if (base::is_directory(fullFn)) {
       Menu* submenu = new Menu();
       loadScriptsSubmenu(submenu, fullFn, false);
-
       menuitem = new AppMenuItem(base::get_file_title(fn).c_str());
       menuitem->setSubmenu(submenu);
     }
@@ -504,8 +452,7 @@ void AppMenus::loadScriptsSubmenu(ui::Menu* menu, const std::string& dir, const 
   if (rootLevel && insertPos > 0)
     menu->insertChild(insertPos, new MenuSeparator());
 }
-#endif
-
+ endif
 void AppMenus::initTheme()
 {
   updateMenusList();
@@ -513,28 +460,22 @@ void AppMenus::initTheme()
     if (menu)
       menu->initTheme();
 }
-
 bool AppMenus::rebuildRecentList()
 {
   MENUS_TRACE("MENUS: AppMenus::rebuildRecentList m_recentFilesPlaceholder=",
               m_recentFilesPlaceholder);
-
   if (!m_recentFilesPlaceholder)
     return true;
-
   Menu* menu = dynamic_cast<Menu*>(m_recentFilesPlaceholder->parent());
   if (!menu)
     return false;
-
   AppMenuItem* owner = dynamic_cast<AppMenuItem*>(menu->getOwnerMenuItem());
   if (!owner || owner->hasSubmenuOpened())
     return false;
-
   // Remove active items
   for (auto item : m_recentMenuItems)
     removeMenuItemFromGroup(item);
   m_recentMenuItems.clear();
-
   auto recent = App::instance()->recentFiles();
   base::paths files;
   files.insert(files.end(), recent->pinnedFiles().begin(), recent->pinnedFiles().end());
@@ -543,11 +484,9 @@ bool AppMenus::rebuildRecentList()
     Params params;
     for (const auto& fn : files) {
       params.set("filename", fn.c_str());
-
       std::unique_ptr<AppMenuItem> menuitem(
         new AppMenuItem(base::get_file_name(fn).c_str(), CommandId::OpenFile(), params));
       menuitem->setIsRecentFileItem(true);
-
       m_recentMenuItems.push_back(menuitem.get());
       addMenuItemIntoGroup(kFileRecentListGroup, std::move(menuitem));
     }
@@ -557,11 +496,9 @@ bool AppMenus::rebuildRecentList()
       new AppMenuItem(Strings::main_menu_file_no_recent_file()));
     menuitem->setIsRecentFileItem(true);
     menuitem->setEnabled(false);
-
     m_recentMenuItems.push_back(menuitem.get());
     addMenuItemIntoGroup(kFileRecentListGroup, std::move(menuitem));
   }
-
   // Sync native menus
   if (owner->native() && owner->native()->menuItem) {
     auto menus = os::instance()->menus();
@@ -571,10 +508,8 @@ bool AppMenus::rebuildRecentList()
       owner->native()->menuItem->setSubmenu(osMenu);
     }
   }
-
   return true;
 }
-
 Menu* AppMenus::getAnimationMenu()
 {
   auto menuItem = dynamic_cast<MenuItem*>(m_rootMenu->findItemById("animation_menu"));
@@ -583,7 +518,6 @@ Menu* AppMenus::getAnimationMenu()
   else
     return nullptr;
 }
-
 void AppMenus::addMenuGroup(const std::string& groupId, MenuItem* menuItem)
 {
   GroupInfo& group = m_groups[groupId];
@@ -592,15 +526,12 @@ void AppMenus::addMenuGroup(const std::string& groupId, MenuItem* menuItem)
   group.menu = menuItem->getSubmenu();
   group.end = nullptr;
 }
-
 void AppMenus::removeMenuGroup(const std::string& groupId)
 {
   auto it = m_groups.find(groupId);
   if (it != m_groups.end()) {
     GroupInfo& group = it->second;
-
     ASSERT(group.items.empty()); // To remove a group, the group must be empty
-
     if (group.menu->getOwnerMenuItem()) {
       ui::MenuItem* item = group.menu->getOwnerMenuItem();
       removeMenuItemFromGroup([item](Widget* i) { return item == i; });
@@ -608,7 +539,6 @@ void AppMenus::removeMenuGroup(const std::string& groupId)
     m_groups.erase(it);
   }
 }
-
 void AppMenus::addMenuItemIntoGroup(const std::string& groupId, std::unique_ptr<Widget>&& menuItem)
 {
   auto it = m_groups.find(groupId);
@@ -620,11 +550,9 @@ void AppMenus::addMenuItemIntoGroup(const std::string& groupId, std::unique_ptr<
     menuItem.release();
     return;
   }
-
   GroupInfo& group = it->second;
   Menu* menu = group.menu;
   ASSERT(menu);
-
   if (group.end) {
     int insertIndex = menu->getChildIndex(group.end);
     ASSERT(insertIndex >= 0);
@@ -633,13 +561,10 @@ void AppMenus::addMenuItemIntoGroup(const std::string& groupId, std::unique_ptr<
   else {
     menu->addChild(menuItem.get());
   }
-
   group.end = menuItem.get();
   group.items.push_back(menuItem.get());
-
   menuItem.release();
 }
-
 template<typename Pred>
 void AppMenus::removeMenuItemFromGroup(Pred pred)
 {
@@ -650,9 +575,7 @@ void AppMenus::removeMenuItemFromGroup(Pred pred)
       if (pred(item)) {
         if (item == group.end)
           group.end = group.end->previousSibling();
-
         destroy_menu_item(item);
-
         it = group.items.erase(it);
       }
       else {
@@ -661,7 +584,6 @@ void AppMenus::removeMenuItemFromGroup(Pred pred)
     }
   }
 }
-
 void AppMenus::removeMenuItemFromGroup(Command* cmd)
 {
   removeMenuItemFromGroup([cmd](Widget* item) {
@@ -669,38 +591,30 @@ void AppMenus::removeMenuItemFromGroup(Command* cmd)
     return (appMenuItem && appMenuItem->getCommand() == cmd);
   });
 }
-
 void AppMenus::removeMenuItemFromGroup(Widget* menuItem)
 {
   removeMenuItemFromGroup([menuItem](Widget* item) { return (item == menuItem); });
 }
-
 Menu* AppMenus::loadMenuById(XMLHandle& handle, const char* id)
 {
   ASSERT(id != NULL);
-
   // <gui><menus><menu>
   XMLElement* xmlMenu =
     handle.FirstChildElement("gui").FirstChildElement("menus").FirstChildElement("menu").ToElement();
   while (xmlMenu) {
     const char* menuId = xmlMenu->Attribute("id");
-
     if (menuId && strcmp(menuId, id) == 0) {
       m_xmlTranslator.setStringIdPrefix(menuId);
       return convertXmlelemToMenu(xmlMenu);
     }
-
     xmlMenu = xmlMenu->NextSiblingElement();
   }
-
   throw base::Exception("Error loading menu '%s'\nReinstall the application.", id);
 }
-
 Menu* AppMenus::convertXmlelemToMenu(XMLElement* elem)
 {
   Menu* menu = new Menu();
   menu->setText(m_xmlTranslator(elem, "text"));
-
   XMLElement* child = elem->FirstChildElement();
   while (child) {
     Widget* menuitem = convertXmlelemToMenuitem(child, menu);
@@ -709,25 +623,20 @@ Menu* AppMenus::convertXmlelemToMenu(XMLElement* elem)
     else
       throw base::Exception("Error converting the element \"%s\" to a menu-item.\n",
                             static_cast<const char*>(child->Value()));
-
     child = child->NextSiblingElement();
   }
-
   return menu;
 }
-
 Widget* AppMenus::convertXmlelemToMenuitem(XMLElement* elem, Menu* menu)
 {
   const char* id = elem->Attribute("id");
   const char* group = elem->Attribute("group");
   const char* standard = elem->Attribute("standard");
-
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0) {
     auto item = new MenuSeparator;
     if (id) {
       item->setId(id);
-
       // Recent list menu
       if (std::strcmp(id, "recent_files_placeholder") == 0) {
         m_recentFilesPlaceholder = item;
@@ -739,10 +648,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(XMLElement* elem, Menu* menu)
     }
     return item;
   }
-
   const char* commandId = elem->Attribute("command");
   Command* command = (commandId ? Commands::instance()->byId(commandId) : nullptr);
-
   // load params
   Params params;
   if (command) {
@@ -750,20 +657,16 @@ Widget* AppMenus::convertXmlelemToMenuitem(XMLElement* elem, Menu* menu)
     while (xmlParam) {
       const char* param_name = xmlParam->Attribute("name");
       const char* param_value = xmlParam->Attribute("value");
-
       if (param_name && param_value)
         params.set(param_name, param_value);
-
       xmlParam = xmlParam->NextSiblingElement();
     }
   }
-
   // Create the item
   AppMenuItem* menuitem =
     new AppMenuItem(m_xmlTranslator(elem, "text"), (command ? command->id() : ""), params);
   if (!menuitem)
     return nullptr;
-
   // Get menu item text from command friendly name
   if (command && menuitem->text().empty()) {
     command->loadParams(params);
@@ -773,37 +676,30 @@ Widget* AppMenus::convertXmlelemToMenuitem(XMLElement* elem, Menu* menu)
   else {
     menuitem->processMnemonicFromText();
   }
-
   if (id)
     menuitem->setId(id);
   if (group) {
     m_groups[group].menu = menu;
     m_groups[group].end = menuitem;
   }
-
   if (standard && strcmp(standard, "edit") == 0)
     menuitem->setStandardEditMenu();
-
   // Has it a ID?
   if (id) {
     if (std::strcmp(id, "help_menu") == 0) {
       m_helpMenuitem = menuitem;
     }
   }
-
   // Has it a sub-menu (<menu>)?
   if (strcmp(elem->Value(), "menu") == 0) {
     // Create the sub-menu
     Menu* subMenu = convertXmlelemToMenu(elem);
     if (!subMenu)
       throw base::Exception("Error reading the sub-menu\n");
-
     menuitem->setSubmenu(subMenu);
   }
-
   return menuitem;
 }
-
 void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command,
                                                    const Params& params,
                                                    const KeyPtr& key)
@@ -813,7 +709,6 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command,
     if (menu)
       applyShortcutToMenuitemsWithCommand(menu, command, params, key);
 }
-
 void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu,
                                                    Command* command,
                                                    const Params& params,
@@ -824,41 +719,34 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu,
       AppMenuItem* menuitem = dynamic_cast<AppMenuItem*>(child);
       if (!menuitem)
         continue;
-
       const std::string& mi_commandId = menuitem->getCommandId();
       const Params& mi_params = menuitem->getParams();
-
       if ((base::utf8_icmp(mi_commandId, command->id()) == 0) && (mi_params == params)) {
         // Set the keyboard shortcut to be shown in this menu-item
         menuitem->setKey(key);
       }
-
       if (Menu* submenu = menuitem->getSubmenu())
         applyShortcutToMenuitemsWithCommand(submenu, command, params, key);
     }
   }
 }
-
 void AppMenus::syncNativeMenuItemKeyShortcuts()
 {
   syncNativeMenuItemKeyShortcuts(m_rootMenu.get());
 }
-
 void AppMenus::syncNativeMenuItemKeyShortcuts(Menu* menu)
 {
   for (auto child : menu->children()) {
     if (child->type() == kMenuItemWidget) {
       if (AppMenuItem* menuitem = dynamic_cast<AppMenuItem*>(child))
         menuitem->syncNativeMenuItemKeyShortcut();
-
       if (Menu* submenu = static_cast<MenuItem*>(child)->getSubmenu())
         syncNativeMenuItemKeyShortcuts(submenu);
     }
   }
 }
-
-// TODO redesign the list of popup menus, it might be an
-//      autogenerated widget from 'gen'
+ TODO redesign the list of popup menus, it might be an
+ autogenerated widget from 'gen'
 void AppMenus::updateMenusList()
 {
   m_menus.clear();
@@ -875,18 +763,15 @@ void AppMenus::updateMenusList()
   m_menus.push_back(m_inkPopupMenu.get());
   m_menus.push_back(m_newFramePopupMenu.get());
 }
-
 void AppMenus::createNativeMenus()
 {
   os::Menus* menus = os::instance()->menus();
   if (!menus) // This platform doesn't support native menu items
     return;
-
   // Save a reference to the old menu to avoid destroying it.
   os::MenuRef oldOSMenu = m_osMenu;
   m_osMenu = menus->makeMenu();
-
-#ifdef __APPLE__ // Create default macOS app menus (App ... Window)
+// ifdef __APPLE__ // Create default macOS app menus (App ... Window)
   {
     os::MenuItemInfo about(fmt::format("About {}", get_app_name()));
     auto native = get_native_shortcut_for_command(CommandId::About());
@@ -900,7 +785,6 @@ void AppMenus::createNativeMenus()
     about.validate = [native](os::MenuItem* item) {
       item->setEnabled(can_call_global_shortcut(&native));
     };
-
     os::MenuItemInfo preferences("Preferences...");
     native = get_native_shortcut_for_command(CommandId::Options());
     preferences.shortcut = native.shortcut;
@@ -913,13 +797,10 @@ void AppMenus::createNativeMenus()
     preferences.validate = [native](os::MenuItem* item) {
       item->setEnabled(can_call_global_shortcut(&native));
     };
-
     os::MenuItemInfo hide(fmt::format("Hide {}", get_app_name()), os::MenuItemInfo::Hide);
     hide.shortcut = os::Shortcut('h', os::kKeyCmdModifier);
-
     os::MenuItemInfo quit(fmt::format("Quit {}", get_app_name()), os::MenuItemInfo::Quit);
     quit.shortcut = os::Shortcut('q', os::kKeyCmdModifier);
-
     os::MenuRef appMenu = menus->makeMenu();
     appMenu->addItem(menus->makeMenuItem(about));
     appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
@@ -931,16 +812,13 @@ void AppMenus::createNativeMenus()
     appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo("Show All", os::MenuItemInfo::ShowAll)));
     appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
     appMenu->addItem(menus->makeMenuItem(quit));
-
     os::MenuItemRef appItem = menus->makeMenuItem(os::MenuItemInfo("App"));
     appItem->setSubmenu(appMenu);
     m_osMenu->addItem(appItem);
   }
-#endif
-
+ endif
   createNativeSubmenus(m_osMenu.get(), m_rootMenu.get());
-
-#ifdef __APPLE__
+ ifdef __APPLE__
   {
     // Search the index where help menu is located (so the Window menu
     // can take its place/index position)
@@ -952,37 +830,29 @@ void AppMenus::createNativeMenus()
       }
       ++i;
     }
-
     os::MenuItemInfo minimize("Minimize", os::MenuItemInfo::Minimize);
     minimize.shortcut = os::Shortcut('m', os::kKeyCmdModifier);
-
     os::MenuRef windowMenu = menus->makeMenu();
     windowMenu->addItem(menus->makeMenuItem(minimize));
     windowMenu->addItem(menus->makeMenuItem(os::MenuItemInfo("Zoom", os::MenuItemInfo::Zoom)));
-
     os::MenuItemRef windowItem = menus->makeMenuItem(os::MenuItemInfo("Window"));
     windowItem->setSubmenu(windowMenu);
-
     // We use helpIndex+1 because the first index in m_osMenu is the
     // App menu.
     m_osMenu->insertItem(helpIndex + 1, windowItem);
   }
-#endif
-
+ endif
   menus->setAppMenu(m_osMenu);
   if (oldOSMenu)
     oldOSMenu.reset();
 }
-
 void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
 {
   os::Menus* menus = os::instance()->menus();
-
   for (const auto& child : uiMenu->children()) {
     os::MenuItemInfo info;
     AppMenuItem* appMenuItem = dynamic_cast<AppMenuItem*>(child);
     AppMenuItem::Native native;
-
     if (child->type() == kSeparatorWidget) {
       info.type = os::MenuItemInfo::Separator;
     }
@@ -991,7 +861,6 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
         native = get_native_shortcut_for_command(appMenuItem->getCommandId().c_str(),
                                                  appMenuItem->getParams());
       }
-
       info.type = os::MenuItemInfo::Normal;
       info.text = child->text();
       info.shortcut = native.shortcut;
@@ -1015,19 +884,16 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
       ASSERT(false); // Unsupported menu item type
       continue;
     }
-
     os::MenuItemRef osItem = menus->makeMenuItem(info);
     if (osItem) {
       osMenu->addItem(osItem);
       if (appMenuItem) {
         native.menuItem = osItem;
         appMenuItem->setNative(native);
-
         // Set this menu item as the standard "Edit" item for macOS
         if (appMenuItem->isStandardEditMenu())
           osItem->setAsStandardEditMenuItem();
       }
-
       if (child->type() == ui::kMenuItemWidget && ((ui::MenuItem*)child)->hasSubmenu()) {
         os::MenuRef osSubmenu = menus->makeMenu();
         createNativeSubmenus(osSubmenu.get(), ((ui::MenuItem*)child)->getSubmenu());
@@ -1036,5 +902,4 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu)
     }
   }
 }
-
 } // namespace app

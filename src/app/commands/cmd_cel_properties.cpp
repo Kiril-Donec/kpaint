@@ -1,56 +1,52 @@
-// Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/cmd/set_cel_opacity.h"
-#include "app/cmd/set_cel_zindex.h"
-#include "app/cmd/set_user_data.h"
-#include "app/commands/command.h"
-#include "app/console.h"
-#include "app/context_access.h"
-#include "app/doc_event.h"
-#include "app/doc_range.h"
-#include "app/modules/gui.h"
-#include "app/tx.h"
-#include "app/ui/timeline/timeline.h"
-#include "app/ui/user_data_view.h"
-#include "app/ui_context.h"
-#include "base/mem_utils.h"
-#include "base/scoped_value.h"
-#include "doc/cel.h"
-#include "doc/cels_range.h"
-#include "doc/image.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
-#include "ui/ui.h"
-
-#include "cel_properties.xml.h"
-
-#include <algorithm>
-#include <limits>
-
+ endif
+ include "app/app.h"
+ include "app/cmd/set_cel_opacity.h"
+ include "app/cmd/set_cel_zindex.h"
+ include "app/cmd/set_user_data.h"
+ include "app/commands/command.h"
+ include "app/console.h"
+ include "app/context_access.h"
+ include "app/doc_event.h"
+ include "app/doc_range.h"
+ include "app/modules/gui.h"
+ include "app/tx.h"
+ include "app/ui/timeline/timeline.h"
+ include "app/ui/user_data_view.h"
+ include "app/ui_context.h"
+ include "base/mem_utils.h"
+ include "base/scoped_value.h"
+ include "cel_properties.xml.h"
+ include "doc/cel.h"
+ include "doc/cels_range.h"
+ include "doc/image.h"
+ include "doc/layer.h"
+ include "doc/sprite.h"
+ include "ui/ui.h"
+ include <algorithm>
+ include <limits>
 namespace app {
-
 using namespace ui;
-
 class CelPropertiesWindow;
 static CelPropertiesWindow* g_window = nullptr;
-
 struct CelPropsLastValues {
   int opacity = 0;
   int zIndex = 0;
   color_t color = 0;
   std::string text = "";
 };
-
 class CelPropertiesWindow : public app::gen::CelProperties,
                             public ContextObserver,
                             public DocObserver {
@@ -63,9 +59,7 @@ public:
     zindex()->Change.connect([this] { onStartTimer(); });
     userData()->Click.connect([this] { onToggleUserData(); });
     m_timer.Tick.connect([this] { onCommitChange(); });
-
     m_userDataView.UserDataChange.connect([this] { onStartTimer(); });
-
     // TODO add to Expr widget spin flag to include these widgets in
     //      the same Expr
     zindexSpin()->ItemChange.connect([this] {
@@ -73,16 +67,12 @@ public:
       zindex()->setTextf("%d", zindex()->textInt() + dz);
       onStartTimer();
     });
-
     remapWindow();
     centerWindow();
     load_window_pos(this, "CelProperties");
-
     UIContext::instance()->add_observer(this);
   }
-
   ~CelPropertiesWindow() { UIContext::instance()->remove_observer(this); }
-
   void setCel(Doc* doc, Cel* cel)
   {
     if (m_document) {
@@ -90,36 +80,29 @@ public:
       m_document = nullptr;
       m_cel = nullptr;
     }
-
     m_timer.stop();
     m_document = doc;
     m_cel = cel;
     m_range = App::instance()->timeline()->range();
-
     if (m_document)
       m_document->add_observer(this);
-
     if (countCels() > 0) {
       m_userDataView.configureAndSet((m_cel ? m_cel->data()->userData() : UserData()),
                                      g_window->propertiesGrid());
     }
     else if (!m_cel)
       m_userDataView.setVisible(false, false);
-
     g_window->expandWindow(gfx::Size(g_window->bounds().w, g_window->sizeHint().h));
     updateFromCel();
   }
 
 private:
   int opacityValue() const { return opacity()->getValue(); }
-
   int zindexValue() const { return zindex()->textInt(); }
-
   int countCels(int* backgroundCount = nullptr) const
   {
     if (backgroundCount)
       *backgroundCount = 0;
-
     if (!m_document)
       return 0;
     else if (m_cel && (!m_range.enabled() || (m_range.frames() == 1 && m_range.layers() == 1))) {
@@ -142,7 +125,6 @@ private:
     else
       return 0;
   }
-
   bool onProcessMessage(ui::Message* msg) override
   {
     switch (msg->type()) {
@@ -156,7 +138,6 @@ private:
           }
         }
         break;
-
       case kCloseMessage:
         // Save changes before we close the window
         if (m_cel)
@@ -168,46 +149,36 @@ private:
     }
     return Window::onProcessMessage(msg);
   }
-
   void onStartTimer()
   {
     if (m_selfUpdate)
       return;
-
     m_timer.start();
     m_pendingChanges = true;
   }
-
   void onCommitChange()
   {
     // Nothing to change
     if (!m_pendingChanges)
       return;
-
     base::ScopedValue switchSelf(m_selfUpdate, true);
-
     m_timer.stop();
-
     const int newOpacity = opacityValue();
     // Clamp z-index to the limits of the .aseprite specs
     const int newZIndex = std::clamp<int>(zindexValue(),
                                           std::numeric_limits<int16_t>::min(),
                                           std::numeric_limits<int16_t>::max());
     UserData newUserData = m_userDataView.userData();
-
     const bool opacityChanged = newOpacity != m_lastValues.opacity;
     const bool colorChanged = newUserData.color() != m_lastValues.color;
     const bool textChanged = newUserData.text() != m_lastValues.text;
-
     const int count = countCels();
-
     if ((count > 0) || (count == 1 && m_cel &&
                         (newOpacity != m_cel->opacity() || newZIndex != m_cel->zIndex() ||
                          newUserData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
         Tx tx(writer, "Set Cel Properties");
-
         DocRange range;
         if (m_range.enabled()) {
           range = m_range;
@@ -217,24 +188,20 @@ private:
           range.startRange(m_cel->layer(), m_cel->frame(), DocRange::kCels);
           range.endRange(m_cel->layer(), m_cel->frame());
         }
-
         Sprite* sprite = m_document->sprite();
         bool redrawTimeline = false;
-
         // For each unique cel (don't repeat on links)
         for (Cel* cel : sprite->uniqueCels(range.selectedFrames())) {
           if (range.contains(cel->layer())) {
             if (opacityChanged && !cel->layer()->isBackground() && newOpacity != cel->opacity()) {
               tx(new cmd::SetCelOpacity(cel, newOpacity));
             }
-
             if (newUserData != cel->data()->userData()) {
               if (!colorChanged)
                 newUserData.setColor(cel->data()->userData().color());
               if (!textChanged)
                 newUserData.setText(cel->data()->userData().text());
               tx(new cmd::SetUserData(cel->data(), newUserData, m_document));
-
               // Redraw timeline because the cel's user data/color
               // might have changed.
               if (newUserData.color() != cel->data()->userData().color()) {
@@ -243,7 +210,6 @@ private:
             }
           }
         }
-
         // For all cels (repeat links)
         if (newZIndex != m_lastValues.zIndex) {
           for (Cel* cel : sprite->cels(range.selectedFrames())) {
@@ -255,28 +221,22 @@ private:
             }
           }
         }
-
         m_lastValues.opacity = newOpacity;
         m_lastValues.zIndex = newZIndex;
         m_lastValues.color = newUserData.color();
         m_lastValues.text = newUserData.text();
-
         if (redrawTimeline)
           App::instance()->timeline()->invalidate();
-
         tx.commit();
       }
       catch (const std::exception& e) {
         Console::showException(e);
       }
-
       update_screen_for_document(m_document);
     }
-
     // TODO this is similar to LayerPropertiesWindow::onCommitChange()
     m_pendingChanges = false;
   }
-
   void onToggleUserData()
   {
     if (countCels() > 0) {
@@ -284,7 +244,6 @@ private:
       g_window->expandWindow(gfx::Size(g_window->bounds().w, g_window->sizeHint().h));
     }
   }
-
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override
   {
@@ -294,50 +253,40 @@ private:
     else if (m_document)
       setCel(nullptr, nullptr);
   }
-
   // DocObserver impl
   void onBeforeRemoveCel(DocEvent& ev) override
   {
     if (m_cel == ev.cel())
       setCel(m_document, nullptr);
   }
-
   void onCelOpacityChange(DocEvent& ev) override
   {
     if (m_cel == ev.cel())
       updateFromCel();
   }
-
   void onCelZIndexChange(DocEvent& ev) override
   {
     if (m_cel == ev.cel())
       updateFromCel();
   }
-
   void onUserDataChange(DocEvent& ev) override
   {
     if (m_cel && m_cel->data() == ev.withUserData())
       updateFromCel();
   }
-
   void updateFromCel()
   {
     if (m_selfUpdate)
       return;
-
     m_timer.stop(); // Cancel current editions (just in case)
-
     base::ScopedValue switchSelf(m_selfUpdate, true);
-
     int bgCount = 0;
     int count = countCels(&bgCount);
-
     // Dafault cel values when the active cel is empty
     m_lastValues.opacity = 0;
     m_lastValues.zIndex = 0;
     m_lastValues.color = 0;
     m_lastValues.text = "";
-
     if (count > 0) {
       if (m_cel) {
         opacity()->setValue(m_cel->opacity());
@@ -365,7 +314,6 @@ private:
       m_userDataView.setVisible(false, false);
     }
   }
-
   Timer m_timer;
   bool m_pendingChanges = false;
   Doc* m_document = nullptr;
@@ -375,7 +323,6 @@ private:
   UserDataView m_userDataView;
   CelPropsLastValues m_lastValues;
 };
-
 class CelPropertiesCommand : public Command {
 public:
   CelPropertiesCommand();
@@ -384,34 +331,26 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
-
 CelPropertiesCommand::CelPropertiesCommand() : Command(CommandId::CelProperties(), CmdUIOnlyFlag)
 {
 }
-
 bool CelPropertiesCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::ActiveLayerIsImage);
 }
-
 void CelPropertiesCommand::onExecute(Context* context)
 {
   ContextReader reader(context);
-
   if (!g_window)
     g_window = new CelPropertiesWindow;
-
   g_window->setCel(reader.document(), reader.cel());
   g_window->openWindow();
-
   // Focus layer name
   g_window->opacity()->requestFocus();
 }
-
 Command* CommandFactory::createCelPropertiesCommand()
 {
   return new CelPropertiesCommand;
 }
-
 } // namespace app

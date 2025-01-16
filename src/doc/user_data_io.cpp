@@ -1,39 +1,33 @@
-// Aseprite Document Library
-// Copyright (c) 2023 Igara Studio S.A.
-// Copyright (c) 2001-2015 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Document Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "doc/user_data_io.h"
-
-#include "base/serialization.h"
-#include "doc/string_io.h"
-#include "doc/user_data.h"
-
-#include <iostream>
-
+ endif
+ include "base/serialization.h"
+ include "doc/string_io.h"
+ include "doc/user_data.h"
+ include "doc/user_data_io.h"
+ include <iostream>
 namespace doc {
-
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
-
 static void write_point(std::ostream& os, const gfx::Point& point)
 {
   write32(os, point.x);
   write32(os, point.y);
 }
-
 static void write_size(std::ostream& os, const gfx::Size& size)
 {
   write32(os, size.w);
   write32(os, size.h);
 }
-
 static void write_property_value(std::ostream& os, const UserData::Variant& variant)
 {
   switch (variant.type()) {
@@ -76,10 +70,8 @@ static void write_property_value(std::ostream& os, const UserData::Variant& vari
       for (auto property : properties) {
         const std::string& name = property.first;
         write_string(os, name);
-
         const UserData::Variant& value = property.second;
         write16(os, value.type());
-
         write_property_value(os, value);
       }
       break;
@@ -93,7 +85,6 @@ static void write_property_value(std::ostream& os, const UserData::Variant& vari
     }
   }
 }
-
 static void write_properties_maps(std::ostream& os, const UserData::PropertiesMaps& propertiesMaps)
 {
   write32(os, propertiesMaps.size());
@@ -104,14 +95,12 @@ static void write_properties_maps(std::ostream& os, const UserData::PropertiesMa
     write_property_value(os, properties);
   }
 }
-
 void write_user_data(std::ostream& os, const UserData& userData)
 {
   write_string(os, userData.text());
   write32(os, userData.color());
   write_properties_maps(os, userData.propertiesMaps());
 }
-
 static UserData::Variant read_property_value(std::istream& is, uint16_t type)
 {
   switch (type) {
@@ -215,10 +204,8 @@ static UserData::Variant read_property_value(std::istream& is, uint16_t type)
       return value;
     }
   }
-
   return doc::UserData::Variant{};
 }
-
 static UserData::PropertiesMaps read_properties_maps(std::istream& is)
 {
   doc::UserData::PropertiesMaps propertiesMaps;
@@ -230,7 +217,6 @@ static UserData::PropertiesMaps read_properties_maps(std::istream& is)
   }
   return propertiesMaps;
 }
-
 UserData read_user_data(std::istream& is, const SerialFormat serial)
 {
   UserData userData;
@@ -242,7 +228,7 @@ UserData read_user_data(std::istream& is, const SerialFormat serial)
   // 0xffffffff in 32-bit).
   if (!is.eof()) {
     userData.setColor(read32(is));
-    // When recovering a session from an old Aseprite version, we need
+    // When recovering a session from an old KPaint version, we need
     // to skip reading the parts that it doesn't contains. Otherwise
     // it is very likely to fail.
     if (serial >= SerialFormat::Ver2) {
@@ -251,5 +237,4 @@ UserData read_user_data(std::istream& is, const SerialFormat serial)
   }
   return userData;
 }
-
 } // namespace doc

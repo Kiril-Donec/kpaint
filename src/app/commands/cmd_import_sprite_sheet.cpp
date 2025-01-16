@@ -1,49 +1,48 @@
-// Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/commands/command.h"
-#include "app/commands/commands.h"
-#include "app/commands/new_params.h"
-#include "app/console.h"
-#include "app/context.h"
-#include "app/context_access.h"
-#include "app/doc_access.h"
-#include "app/doc_api.h"
-#include "app/i18n/strings.h"
-#include "app/modules/gui.h"
-#include "app/modules/palettes.h"
-#include "app/pref/preferences.h"
-#include "app/tx.h"
-#include "app/ui/drop_down_button.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/editor/editor_decorator.h"
-#include "app/ui/editor/select_box_state.h"
-#include "app/ui/editor/standby_state.h"
-#include "app/ui/workspace.h"
-#include "doc/cel.h"
-#include "doc/image.h"
-#include "doc/layer.h"
-#include "doc/palette.h"
-#include "doc/primitives.h"
-#include "doc/sprite.h"
-#include "render/render.h"
-#include "ui/ui.h"
-
-#include "import_sprite_sheet.xml.h"
-
+ endif
+ include "app/app.h"
+ include "app/commands/command.h"
+ include "app/commands/commands.h"
+ include "app/commands/new_params.h"
+ include "app/console.h"
+ include "app/context.h"
+ include "app/context_access.h"
+ include "app/doc_access.h"
+ include "app/doc_api.h"
+ include "app/i18n/strings.h"
+ include "app/modules/gui.h"
+ include "app/modules/palettes.h"
+ include "app/pref/preferences.h"
+ include "app/tx.h"
+ include "app/ui/drop_down_button.h"
+ include "app/ui/editor/editor.h"
+ include "app/ui/editor/editor_decorator.h"
+ include "app/ui/editor/select_box_state.h"
+ include "app/ui/editor/standby_state.h"
+ include "app/ui/workspace.h"
+ include "doc/cel.h"
+ include "doc/image.h"
+ include "doc/layer.h"
+ include "doc/palette.h"
+ include "doc/primitives.h"
+ include "doc/sprite.h"
+ include "import_sprite_sheet.xml.h"
+ include "render/render.h"
+ include "ui/ui.h"
 namespace app {
-
 using namespace ui;
-
 gfx::Size calcFrameSize(gfx::Size availSize,
                         int cols,
                         int rows,
@@ -54,13 +53,10 @@ gfx::Size calcFrameSize(gfx::Size availSize,
     cols = 1;
   if (rows <= 0)
     rows = 1;
-
   availSize.w -= (frameOrigin.x + padding.w * (cols - 1));
   availSize.h -= (frameOrigin.y + padding.h * (rows - 1));
-
   return gfx::Size(availSize.w / cols, availSize.h / rows);
 }
-
 struct ImportSpriteSheetParams : public NewParams {
   Param<bool> ui{ this, true, "ui" };
   Param<app::SpriteSheetType> type{ this, app::SpriteSheetType::None, "type" };
@@ -74,7 +70,6 @@ struct ImportSpriteSheetParams : public NewParams {
   Param<int> columns{ this, 0, "columns" };
   Param<int> rows{ this, 0, "rows" };
 };
-
 class ImportSpriteSheetWindow : public app::gen::ImportSpriteSheet,
                                 public SelectBoxDelegate {
 public:
@@ -86,18 +81,15 @@ public:
     , m_docPref(nullptr)
   {
     import()->setEnabled(false);
-
     static_assert((int)app::SpriteSheetType::Horizontal == 1 &&
                     (int)app::SpriteSheetType::Vertical == 2 &&
                     (int)app::SpriteSheetType::Rows == 3 && (int)app::SpriteSheetType::Columns == 4,
                   "SpriteSheetType enum changed");
-
     sheetType()->addItem(Strings::import_sprite_sheet_type_horz());
     sheetType()->addItem(Strings::import_sprite_sheet_type_vert());
     sheetType()->addItem(Strings::import_sprite_sheet_type_rows());
     sheetType()->addItem(Strings::import_sprite_sheet_type_cols());
     sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows - 1);
-
     sheetType()->Change.connect([this] { onSheetTypeChange(); });
     x()->Change.connect([this] { onEntriesChange(); });
     y()->Change.connect([this] { onEntriesChange(); });
@@ -110,26 +102,21 @@ public:
     verticalPadding()->Change.connect([this] { onEntriesChange(); });
     partialTiles()->Click.connect([this] { onEntriesChange(); });
     selectFile()->Click.connect([this] { onSelectFile(); });
-
     remapWindow();
     centerWindow();
     load_window_pos(this, "ImportSpriteSheet");
-
     if (m_context->activeDocument()) {
       selectActiveDocument();
       m_fileOpened = false;
     }
-
     if (params.type.isSet())
       sheetType()->setSelectedItemIndex((int)params.type() - 1);
-
     if (params.frameBounds.isSet()) {
       x()->setTextf("%d", params.frameBounds().x);
       y()->setTextf("%d", params.frameBounds().y);
       width()->setTextf("%d", params.frameBounds().w);
       height()->setTextf("%d", params.frameBounds().h);
     }
-
     paddingEnabled()->setSelected(params.padding.isSet());
     if (params.padding.isSet()) {
       if (m_docPref)
@@ -139,50 +126,35 @@ public:
         verticalPadding()->setTextf("%d", params.padding().h);
       }
     }
-
     if (params.partialTiles.isSet())
       partialTiles()->setSelected(params.partialTiles());
-
     onPaddingEnabledChange();
-
     if (params.columns.isSet()) {
       columns()->setTextf("%d", params.columns());
       onColumnsChange();
     }
-
     if (params.rows.isSet()) {
       rows()->setTextf("%d", params.rows());
       onRowsChange();
     }
   }
-
   ~ImportSpriteSheetWindow() { releaseEditor(); }
-
   SpriteSheetType sheetTypeValue() const
   {
     return (app::SpriteSheetType)(sheetType()->getSelectedItemIndex() + 1);
   }
-
   bool partialTilesValue() const { return partialTiles()->isSelected(); }
-
   bool paddingEnabledValue() const { return paddingEnabled()->isSelected(); }
-
   bool ok() const { return closer() == import(); }
-
   Doc* document() const { return m_document; }
-
   DocumentPreferences* docPref() const { return m_docPref; }
-
   gfx::Rect frameBounds() const { return m_rect; }
-
   gfx::Size paddingThickness() const { return m_padding; }
-
   void updateParams(ImportSpriteSheetParams& params)
   {
     params.type(sheetTypeValue());
     params.frameBounds(frameBounds());
     params.partialTiles(partialTilesValue());
-
     if (paddingEnabledValue())
       params.padding(paddingThickness());
     else
@@ -195,7 +167,6 @@ protected:
     updateGridState();
     onEntriesChange();
   }
-
   void onSelectFile()
   {
     Doc* oldActiveDocument = m_context->activeDocument();
@@ -203,22 +174,18 @@ protected:
     Params params;
     params.set("filename", "");
     m_context->executeCommand(openFile, params);
-
     // The user have selected another document.
     if (oldActiveDocument != m_context->activeDocument()) {
       selectActiveDocument();
       m_fileOpened = true;
     }
   }
-
   gfx::Rect getRectFromEntries()
   {
     int w = width()->textInt();
     int h = height()->textInt();
-
     return gfx::Rect(x()->textInt(), y()->textInt(), std::max<int>(1, w), std::max<int>(1, h));
   }
-
   gfx::Size getPaddingFromEntries()
   {
     int padW = horizontalPadding()->textInt();
@@ -229,12 +196,10 @@ protected:
       padH = 0;
     return gfx::Size(padW, padH);
   }
-
   void updateRulers()
   {
     m_rect = getRectFromEntries();
     m_padding = getPaddingFromEntries();
-
     // Redraw new rulers position
     if (m_editor) {
       EditorStatePtr state = m_editor->getState();
@@ -248,15 +213,13 @@ protected:
       m_editor->invalidate();
     }
   }
-
   void onEntriesChange()
   {
     updateRulers();
     columns()->setTextf("%d", calcColumns());
     rows()->setTextf("%d", calcRows());
   }
-
-#define ON_COLROWS_CHANGE(widtheigth, wh)                                                          \
+ define ON_COLROWS_CHANGE(widtheigth, wh)                                                          \
   if (!m_editor)                                                                                   \
     return;                                                                                        \
   auto frameSize = calcFrameSize(m_editor->sprite()->size(),                                       \
@@ -266,13 +229,9 @@ protected:
                                  getPaddingFromEntries());                                         \
   widtheigth()->setTextf("%d", frameSize.wh);                                                      \
   updateRulers();
-
   void onColumnsChange() { ON_COLROWS_CHANGE(width, w); }
-
   void onRowsChange() { ON_COLROWS_CHANGE(height, h); }
-
-#undef ON_COLROWS_CHANGE
-
+ undef ON_COLROWS_CHANGE
   bool onProcessMessage(ui::Message* msg) override
   {
     switch (msg->type()) {
@@ -280,17 +239,14 @@ protected:
     }
     return Window::onProcessMessage(msg);
   }
-
   void onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& targets) override
   {
     Window::onBroadcastMouseMessage(screenPos, targets);
-
     // Add the editor as receptor of mouse events too.
     if (m_editor)
       targets.push_back(View::getView(m_editor));
   }
-
-#define CALC_SPANS(xy, wh)                                                                         \
+ define CALC_SPANS(xy, wh)                                                                         \
   if (!m_editor)                                                                                   \
     return 0;                                                                                      \
   int spans = 0;                                                                                   \
@@ -304,28 +260,23 @@ protected:
     wh -= m_padding.wh;                                                                            \
   }                                                                                                \
   return spans;
-
   int calcColumns()
   {
     if (sheetTypeValue() == SpriteSheetType::Vertical)
       return 1;
     CALC_SPANS(x, w);
   }
-
   int calcRows()
   {
     if (sheetTypeValue() == SpriteSheetType::Horizontal)
       return 1;
     CALC_SPANS(y, h);
   }
-
-#undef CALC_SPANS
-
+ undef CALC_SPANS
   // SelectBoxDelegate impleentation
   void onChangeRectangle(const gfx::Rect& rect) override
   {
     m_rect = rect;
-
     x()->setTextf("%d", m_rect.x);
     y()->setTextf("%d", m_rect.y);
     width()->setTextf("%d", m_rect.w);
@@ -333,7 +284,6 @@ protected:
     columns()->setTextf("%d", calcColumns());
     rows()->setTextf("%d", calcRows());
   }
-
   void onChangePadding(const gfx::Size& padding) override
   {
     if (paddingEnabled()->isSelected()) {
@@ -353,7 +303,6 @@ protected:
     columns()->setTextf("%d", calcColumns());
     rows()->setTextf("%d", calcRows());
   }
-
   std::string onGetContextBarHelp() override
   {
     return Strings::import_sprite_sheet_context_bar_help();
@@ -364,12 +313,10 @@ private:
   {
     Doc* oldDocument = m_document;
     m_document = m_context->activeDocument();
-
     // If the user already have selected a file, we have to destroy
     // that file in order to select the new one.
     if (oldDocument) {
       releaseEditor();
-
       if (m_fileOpened) {
         try {
           DocDestroyer destroyer(m_context, oldDocument, 500);
@@ -380,20 +327,15 @@ private:
         }
       }
     }
-
     captureEditor();
-
     import()->setEnabled(m_document ? true : false);
-
     if (m_document) {
       m_docPref = &Preferences::instance().document(m_document);
-
       if (m_docPref->importSpriteSheet.type() >= app::SpriteSheetType::Horizontal &&
           m_docPref->importSpriteSheet.type() <= app::SpriteSheetType::Columns)
         sheetType()->setSelectedItemIndex((int)m_docPref->importSpriteSheet.type() - 1);
       else
         sheetType()->setSelectedItemIndex((int)app::SpriteSheetType::Rows - 1);
-
       gfx::Rect defBounds = m_docPref->importSpriteSheet.bounds();
       if (defBounds.isEmpty()) {
         if (m_document->isMaskVisible())
@@ -402,23 +344,19 @@ private:
           defBounds = m_document->sprite()->gridBounds();
       }
       onChangeRectangle(defBounds);
-
       gfx::Size defPaddingBounds = m_docPref->importSpriteSheet.paddingBounds();
       if (defPaddingBounds.w < 0 || defPaddingBounds.h < 0)
         defPaddingBounds = gfx::Size(0, 0);
       onChangePadding(defPaddingBounds);
-
       paddingEnabled()->setSelected(m_docPref->importSpriteSheet.paddingEnabled());
       partialTiles()->setSelected(m_docPref->importSpriteSheet.partialTiles());
       onEntriesChange();
       onPaddingEnabledChange();
     }
   }
-
   void captureEditor()
   {
     ASSERT(m_editor == NULL);
-
     if (m_document && !m_editor) {
       m_rect = getRectFromEntries();
       m_padding = getPaddingFromEntries();
@@ -429,17 +367,14 @@ private:
         SelectBoxState::Flags(
           int(SelectBoxState::Flags::Rulers) | int(SelectBoxState::Flags::Grid) |
           int(SelectBoxState::Flags::DarkOutside) | int(SelectBoxState::Flags::PaddingRulers))));
-
       m_editor->setState(m_editorState);
       updateGridState();
     }
   }
-
   void updateGridState()
   {
     if (!m_editorState)
       return;
-
     int flags = (int)static_cast<SelectBoxState*>(m_editorState.get())->getFlags();
     flags = flags & ~((int)SelectBoxState::Flags::HGrid | (int)SelectBoxState::Flags::VGrid);
     switch (sheetTypeValue()) {
@@ -460,11 +395,9 @@ private:
         rows()->setEnabled(true);
         break;
     }
-
     static_cast<SelectBoxState*>(m_editorState.get())->setFlags(SelectBoxState::Flags(flags));
     m_editor->invalidate();
   }
-
   void releaseEditor()
   {
     if (m_editor) {
@@ -472,7 +405,6 @@ private:
       m_editor = NULL;
     }
   }
-
   void onPaddingEnabledChange()
   {
     const bool state = paddingEnabled()->isSelected();
@@ -488,27 +420,21 @@ private:
         onChangePadding(gfx::Size(0, 0));
       }
     }
-
     onEntriesChange();
     resize();
   }
-
   void resize() { expandWindow(sizeHint()); }
-
   Context* m_context;
   Doc* m_document;
   Editor* m_editor;
   EditorStatePtr m_editorState;
   gfx::Rect m_rect;
   gfx::Size m_padding;
-
   // True if the user has been opened the file (instead of selecting
   // the current document).
   bool m_fileOpened;
-
   DocumentPreferences* m_docPref;
 };
-
 class ImportSpriteSheetCommand : public CommandWithNewParams<ImportSpriteSheetParams> {
 public:
   ImportSpriteSheetCommand();
@@ -516,29 +442,23 @@ public:
 protected:
   virtual void onExecute(Context* context) override;
 };
-
 ImportSpriteSheetCommand::ImportSpriteSheetCommand()
   : CommandWithNewParams(CommandId::ImportSpriteSheet(), CmdRecordableFlag)
 {
 }
-
 void ImportSpriteSheetCommand::onExecute(Context* context)
 {
   Doc* document;
   auto& params = this->params();
-
   if (context->isUIAvailable() && params.ui()) {
     ImportSpriteSheetWindow window(params, context);
     window.openWindowInForeground();
     if (!window.ok())
       return;
-
     document = window.document();
     if (!document)
       return;
-
     window.updateParams(params);
-
     DocumentPreferences* docPref = window.docPref();
     docPref->importSpriteSheet.type(params.type());
     docPref->importSpriteSheet.bounds(params.frameBounds());
@@ -552,9 +472,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     document = context->activeDocument();
     if (!document)
       return;
-
     Sprite* sprite = document->sprite();
-
     auto newFrameBounds = calcFrameSize(sprite->size(),
                                         params.columns(),
                                         params.rows(),
@@ -565,17 +483,14 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
       fb.w = newFrameBounds.w;
       params.frameBounds(fb);
     }
-
     if (params.rows.isSet()) {
       auto fb = params.frameBounds();
       fb.h = newFrameBounds.h;
       params.frameBounds(fb);
     }
   }
-
   // The list of frames imported from the sheet
   std::vector<ImageRef> animation;
-
   try {
     Sprite* sprite = document->sprite();
     frame_t currentFrame = context->activeSite().frame();
@@ -583,10 +498,8 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     const gfx::Size padding = params.padding();
     render::Render render;
     render.setNewBlend(Preferences::instance().experimental.newBlend());
-
     if (frameBounds.isEmpty())
       frameBounds = sprite->bounds();
-
     // Each sprite in the sheet
     std::vector<gfx::Rect> tileRects;
     int widthStop = sprite->width();
@@ -595,7 +508,6 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
       widthStop += frameBounds.w - 1;
       heightStop += frameBounds.h - 1;
     }
-
     switch (params.type()) {
       case app::SpriteSheetType::Horizontal:
         for (int x = frameBounds.x; x + frameBounds.w <= widthStop;
@@ -628,69 +540,53 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
         }
         break;
     }
-
     // As first step, we cut each tile and add them into "animation" list.
     for (const auto& tileRect : tileRects) {
       ImageRef resultImage(Image::create(sprite->pixelFormat(), tileRect.w, tileRect.h));
-
       // Render the portion of sheet.
       render.renderSprite(resultImage.get(), sprite, currentFrame, gfx::Clip(0, 0, tileRect));
-
       animation.push_back(resultImage);
     }
-
     if (animation.size() == 0) {
       Alert::show(Strings::alerts_empty_rect_importing_sprite_sheet());
       return;
     }
-
     // The following steps modify the sprite, so we wrap all
     // operations in a undo-transaction.
     ContextWriter writer(context);
     Tx tx(writer, Strings::import_sprite_sheet_title(), ModifyDocument);
     DocApi api = document->getApi(tx);
-
     // Add the layer in the sprite.
     LayerImage* resultLayer = api.newLayer(sprite->root(),
                                            Strings::import_sprite_sheet_layer_name());
-
     // Add all frames+cels to the new layer
     for (size_t i = 0; i < animation.size(); ++i) {
       // Create the cel.
       std::unique_ptr<Cel> resultCel(new Cel(frame_t(i), animation[i]));
-
       // Add the cel in the layer.
       api.addCel(resultLayer, resultCel.get());
       resultCel.release();
     }
-
     // Copy the list of layers (because we will modify it in the iteration).
     LayerList layers = sprite->root()->layers();
-
     // Remove all other layers
     for (Layer* child : layers) {
       if (child != resultLayer)
         api.removeLayer(child);
     }
-
     // Change the number of frames
     api.setTotalFrames(sprite, frame_t(animation.size()));
-
     // Set the size of the sprite to the tile size.
     api.setSpriteSize(sprite, frameBounds.w, frameBounds.h);
-
     tx.commit();
   }
   catch (...) {
     throw;
   }
-
   update_screen_for_document(document);
 }
-
 Command* CommandFactory::createImportSpriteSheetCommand()
 {
   return new ImportSpriteSheetCommand;
 }
-
 } // namespace app

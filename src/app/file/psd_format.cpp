@@ -1,22 +1,25 @@
-// Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#include "app/file/file.h"
-#include "app/file/file_format.h"
-#include "base/file_handle.h"
-#include "doc/blend_mode.h"
-#include "doc/image_impl.h"
-#include "doc/layer.h"
-#include "doc/palette.h"
-#include "doc/slice.h"
-#include "doc/sprite.h"
-#include "psd/psd.h"
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
+
+
+ include "app/file/file.h"
+ include "app/file/file_format.h"
+ include "base/file_handle.h"
+ include "doc/blend_mode.h"
+ include "doc/image_impl.h"
+ include "doc/layer.h"
+ include "doc/palette.h"
+ include "doc/slice.h"
+ include "doc/sprite.h"
+ include "psd/psd.h"
 namespace app {
-
 doc::PixelFormat psd_cmode_to_ase_format(const psd::ColorMode mode)
 {
   switch (mode) {
@@ -25,7 +28,6 @@ doc::PixelFormat psd_cmode_to_ase_format(const psd::ColorMode mode)
     default:                        return doc::PixelFormat::IMAGE_INDEXED;
   }
 }
-
 doc::BlendMode psd_blendmode_to_ase(const psd::LayerBlendMode mode)
 {
   switch (mode) {
@@ -50,29 +52,22 @@ doc::BlendMode psd_blendmode_to_ase(const psd::LayerBlendMode mode)
     default:                              return doc::BlendMode::NORMAL;
   }
 }
-
 class PsdFormat : public FileFormat {
   const char* onGetName() const override { return "psd"; }
-
   void onGetExtensions(base::paths& exts) const override
   {
     exts.push_back("psb");
     exts.push_back("psd");
   }
-
   dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::PSD_IMAGE; }
-
   int onGetFlags() const override { return FILE_SUPPORT_LOAD; }
-
   bool onLoad(FileOp* fop) override;
   bool onSave(FileOp* fop) override;
 };
-
 FileFormat* CreatePsdFormat()
 {
   return new PsdFormat();
 }
-
 class PsdDecoderDelegate : public psd::DecoderDelegate {
 public:
   PsdDecoderDelegate()
@@ -85,16 +80,13 @@ public:
     , m_layerHasTransparentChannel(false)
   {
   }
-
   Sprite* getSprite() { return assembleDocument(); }
-
   void onFileHeader(const psd::FileHeader& header) override
   {
     m_pixelFormat = psd_cmode_to_ase_format(header.colorMode);
     m_sprite = new Sprite(ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
     m_layerHasTransparentChannel = hasTransparency(header.nchannels);
   }
-
   void onSlicesData(const psd::Slices& slices) override
   {
     auto& spriteSlices = m_sprite->slices();
@@ -106,14 +98,12 @@ public:
       if (!rect.isEmpty() && slice.groupID > 0) {
         auto slice = new doc::Slice;
         slice->insert(0, doc::SliceKey(rect));
-
         // TO-DO: the slices color should come from the app preference
         slice->userData().setColor(doc::rgba(0, 0, 255, 255));
         spriteSlices.add(slice);
       }
     }
   }
-
   void onFramesData(const std::vector<psd::FrameInformation>& frameInfo,
                     const uint32_t activeFrameIndex) override
   {
@@ -130,7 +120,6 @@ public:
     else
       m_sprite->setTotalFrames(frame_t(frameInfo.size()));
   }
-
   // Emitted when a new layer has been chosen and its channel image data
   // is about to be read
   void onBeginLayer(const psd::LayerRecord& layerRecord) override
@@ -141,18 +130,15 @@ public:
         m_sprite->root()->addLayer(layerGroup);
       else
         m_layerGroup->addLayer(layerGroup);
-
       m_layerGroup = layerGroup;
       m_groups.push_back(layerGroup);
     }
     else if (layerRecord.isCloseGroup()) {
       if (!m_layerGroup)
         throw std::runtime_error("unexpected end of a group layer");
-
       m_layerGroup->setName(layerRecord.name);
       if (!m_groups.empty())
         m_groups.pop_back();
-
       if (m_groups.empty())
         m_layerGroup = m_sprite->root();
       else
@@ -166,7 +152,6 @@ public:
       if (findIter == m_layers.end()) {
         if (!m_layerGroup) // In this case, there are no layer groups
           m_layerGroup = m_sprite->root();
-
         createNewLayer(layerRecord.name);
         // m_currentLayer->setVisible(layerRecord.isVisible());
         m_layerHasTransparentChannel = hasTransparency(layerRecord.channels.size());
@@ -177,7 +162,6 @@ public:
       }
     }
   }
-
   void onEndLayer(const psd::LayerRecord& layerRecord) override
   {
     if (!m_framesInfo.empty() && (layerRecord.inFrames.size() == m_framesInfo.size()) &&
@@ -185,7 +169,6 @@ public:
       std::unique_ptr<Cel> layerCel(m_currentLayer->cel(frame_t(0)));
       LayerImage* imageLayer = static_cast<LayerImage*>(m_currentLayer);
       imageLayer->removeCel(layerCel.get());
-
       for (const auto& inFrame : layerRecord.inFrames) {
         if (inFrame.isVisibleInFrame) {
           const auto findIter = std::find_if(
@@ -202,12 +185,10 @@ public:
         }
       }
     }
-
     m_currentImage.reset();
     m_currentLayer = nullptr;
     m_layerHasTransparentChannel = false;
   }
-
   // Emitted only if there's a palette in an image
   void onColorModeData(const psd::ColorModeData& colorModeD) override
   {
@@ -218,7 +199,6 @@ public:
       }
     }
   }
-
   // Emitted when an image data is about to be transmitted
   void onBeginImage(const psd::ImageData& imageData) override
   {
@@ -235,17 +215,14 @@ public:
       }
     }
   }
-
   // Emitted when all layers and their masks have been processed
   void onLayersAndMask(const psd::LayersInformation& layersInfo) override
   {
     if (layersInfo.layers.size() == m_layers.size()) {
       for (int i = 0; i < m_layers.size(); ++i) {
         const psd::LayerRecord& layerRecord = layersInfo.layers[i];
-
         LayerImage* layer = static_cast<LayerImage*>(m_layers[i]);
         layer->setBlendMode(psd_blendmode_to_ase(layerRecord.blendMode));
-
         for (size_t i = 0; i < m_sprite->totalFrames(); ++i) {
           Cel* cel = layer->cel(frame_t(i));
           if (cel) {
@@ -256,7 +233,6 @@ public:
       }
     }
   }
-
   void onImageScanline(const psd::ImageData& img,
                        const int y,
                        const psd::ChannelID chanID,
@@ -265,10 +241,8 @@ public:
   {
     if (!m_currentImage || y >= m_currentImage->height())
       return;
-
     const int dataCount = bytes / (img.depth >= 8 ? (img.depth / 8) : 1);
     uint8_t* dstGenericAddress = m_currentImage->getPixelAddress(0, y);
-
     if (m_pixelFormat == doc::PixelFormat::IMAGE_INDEXED) {
       IndexedTraits::address_t dstAddress = (IndexedTraits::address_t)dstGenericAddress;
       for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
@@ -325,7 +299,6 @@ private:
     // RGBA or grayscale image with alpha channel
     return nchannels == 4 || nchannels == 2;
   }
-
   void linkNewCel(Layer* layer, doc::ImageRef image)
   {
     if (!image)
@@ -334,7 +307,6 @@ private:
     cel->setPosition(0, 0);
     static_cast<LayerImage*>(layer)->addCel(cel.release());
   }
-
   void createNewLayer(const std::string& layerName)
   {
     m_currentLayer = new LayerImage(m_sprite);
@@ -342,12 +314,10 @@ private:
     m_layers.push_back(m_currentLayer);
     m_currentLayer->setName(layerName);
   }
-
   Sprite* assembleDocument()
   {
     if (m_palette.getModifications() > 1)
       m_sprite->setPalette(&m_palette, true);
-
     for (size_t i = 0; i < m_framesInfo.size(); ++i) {
       const psd::FrameInformation& frameInfo = m_framesInfo[i];
       const int timeMs = frameInfo.duration * 10;
@@ -356,7 +326,6 @@ private:
     // at this point, we're supposed to be able to set the activeFrame
     return m_sprite;
   }
-
   std::uint8_t getNormalizedPixelValue(const std::uint8_t*& data, const int depth)
   {
     if (depth == 1 || depth == 8) {
@@ -376,16 +345,13 @@ private:
     else
       throw std::runtime_error("invalid image depth");
   }
-
   void createNewImage(const int width, const int height)
   {
     if (width <= 0 || height <= 0)
       return; // throw std::runtime_error("invalid image width/height");
-
     m_currentImage.reset(Image::create(m_pixelFormat, width, height));
     clear_image(m_currentImage.get(), 0);
   }
-
   doc::ImageRef m_currentImage;
   doc::Layer* m_currentLayer;
   doc::LayerGroup* m_layerGroup;
@@ -398,7 +364,6 @@ private:
   Palette m_palette;
   bool m_layerHasTransparentChannel;
 };
-
 bool PsdFormat::onLoad(FileOp* fop)
 {
   base::FileHandle fileHandle = base::open_file_with_exception(fop->filename(), "rb");
@@ -406,21 +371,17 @@ bool PsdFormat::onLoad(FileOp* fop)
   psd::StdioFileInterface fileInterface(f);
   PsdDecoderDelegate pDelegate;
   psd::Decoder decoder(&fileInterface, &pDelegate);
-
   if (!decoder.readFileHeader()) {
     fop->setError("The file doesn't have a valid PSD header\n");
     return false;
   }
-
   const psd::FileHeader header = decoder.fileHeader();
-
   if (header.colorMode != psd::ColorMode::RGB && header.colorMode != psd::ColorMode::Indexed &&
       header.colorMode != psd::ColorMode::Grayscale) {
     fop->setError("This preliminary work only supports "
                   "RGB, Grayscale & Indexed images\n");
     return false;
   }
-
   try {
     decoder.readColorModeData();
     decoder.readImageResources();
@@ -431,14 +392,11 @@ bool PsdFormat::onLoad(FileOp* fop)
     fop->setError(e.what());
     return false;
   }
-
   fop->createDocument(pDelegate.getSprite());
   return true;
 }
-
 bool PsdFormat::onSave(FileOp* fop)
 {
   return false;
 }
-
 } // namespace app

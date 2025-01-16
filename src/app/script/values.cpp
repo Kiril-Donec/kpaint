@@ -1,61 +1,54 @@
-// Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/script/values.h"
-
-#include "app/pref/preferences.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/tools/dynamics.h"
-#include "doc/frame.h"
-#include "doc/layer.h"
-#include "doc/remap.h"
-#include "doc/sprite.h"
-
-#include <any>
-#include <cstddef>
-#include <variant>
-
+ endif
+ include "app/pref/preferences.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/script/values.h"
+ include "app/tools/dynamics.h"
+ include "doc/frame.h"
+ include "doc/layer.h"
+ include "doc/remap.h"
+ include "doc/sprite.h"
+ include <any>
+ include <cstddef>
+ include <variant>
 namespace app { namespace script {
-
-// TODO this is similar to app::Param<> specializations::fromLua() specializations
-
-// ----------------------------------------------------------------------
-// nullptr_t
-
+ TODO this is similar to app::Param<> specializations::fromLua() specializations
+ ----------------------------------------------------------------------
+ nullptr_t
 template<>
 void push_value_to_lua(lua_State* L, const std::nullptr_t&)
 {
   TRACEARGS("push_value_to_lua nullptr_t");
   lua_pushnil(L);
 }
-
-// ----------------------------------------------------------------------
-// bool
-
+ ----------------------------------------------------------------------
+ bool
 template<>
 void push_value_to_lua(lua_State* L, const bool& value)
 {
   lua_pushboolean(L, value);
 }
-
 template<>
 bool get_value_from_lua(lua_State* L, int index)
 {
   return lua_toboolean(L, index);
 }
-
-// ----------------------------------------------------------------------
-// int
-
+ ----------------------------------------------------------------------
+ int
 template<>
 void push_value_to_lua(lua_State* L, const int8_t& value)
 {
@@ -96,61 +89,49 @@ void push_value_to_lua(lua_State* L, const uint64_t& value)
 {
   lua_pushinteger(L, value);
 }
-
 template<>
 int get_value_from_lua(lua_State* L, int index)
 {
   return lua_tointeger(L, index);
 }
-
-// ----------------------------------------------------------------------
-// float
-
+ ----------------------------------------------------------------------
+ float
 template<>
 void push_value_to_lua(lua_State* L, const float& value)
 {
   lua_pushnumber(L, value);
 }
-
 template<>
 float get_value_from_lua(lua_State* L, int index)
 {
   return lua_tonumber(L, index);
 }
-
-// ----------------------------------------------------------------------
-// double
-
+ ----------------------------------------------------------------------
+ double
 template<>
 void push_value_to_lua(lua_State* L, const double& value)
 {
   lua_pushnumber(L, value);
 }
-
 template<>
 double get_value_from_lua(lua_State* L, int index)
 {
   return lua_tonumber(L, index);
 }
-
-// ----------------------------------------------------------------------
-// fixed
-
+ ----------------------------------------------------------------------
+ fixed
 template<>
 void push_value_to_lua(lua_State* L, const doc::UserData::Fixed& value)
 {
   lua_pushnumber(L, fixmath::fixtof(value.value));
 }
-
-// ----------------------------------------------------------------------
-// std::string
-
+ ----------------------------------------------------------------------
+ std::string
 template<>
 void push_value_to_lua(lua_State* L, const std::string& value)
 {
   lua_pushstring(L, value.c_str());
 }
-
 template<>
 std::string get_value_from_lua(lua_State* L, int index)
 {
@@ -159,17 +140,14 @@ std::string get_value_from_lua(lua_State* L, int index)
   else
     return std::string();
 }
-
-// ----------------------------------------------------------------------
-// doc::Remap
-
+ ----------------------------------------------------------------------
+ doc::Remap
 template<>
 void push_value_to_lua(lua_State* L, const doc::Remap& value)
 {
   lua_newtable(L);
   for (int i = 0; i < value.size(); ++i) {
     lua_pushinteger(L, value[i]);
-
     // This will be a weird Lua table where the base index start at 0,
     // anyway the tile=0 cannot be remapped, so it doesn't contain
     // useful information anyway. The idea here is that the user can
@@ -181,10 +159,8 @@ void push_value_to_lua(lua_State* L, const doc::Remap& value)
     lua_seti(L, -2, i);
   }
 }
-
-// ----------------------------------------------------------------------
-// app::Params
-
+ ----------------------------------------------------------------------
+ app::Params
 template<>
 void push_value_to_lua(lua_State* L, const Params& params)
 {
@@ -195,10 +171,8 @@ void push_value_to_lua(lua_State* L, const Params& params)
     lua_rawset(L, -3);
   }
 }
-
-// ----------------------------------------------------------------------
-// std::any
-
+ ----------------------------------------------------------------------
+ std::any
 template<>
 void push_value_to_lua(lua_State* L, const std::any& value)
 {
@@ -234,91 +208,73 @@ void push_value_to_lua(lua_State* L, const std::any& value)
     throw std::runtime_error("Cannot convert type inside std::any");
   }
 }
-
-// ----------------------------------------------------------------------
-// Color
-
+ ----------------------------------------------------------------------
+ Color
 template<>
 void push_value_to_lua(lua_State* L, const app::Color& value)
 {
   push_obj(L, value);
 }
-
 template<>
 app::Color get_value_from_lua(lua_State* L, int index)
 {
   return convert_args_into_color(L, index);
 }
-
-// ----------------------------------------------------------------------
-// Point
-
+ ----------------------------------------------------------------------
+ Point
 template<>
 void push_value_to_lua(lua_State* L, const gfx::Point& value)
 {
   push_obj(L, value);
 }
-
 template<>
 gfx::Point get_value_from_lua(lua_State* L, int index)
 {
   return convert_args_into_point(L, index);
 }
-
-// ----------------------------------------------------------------------
-// Size
-
+ ----------------------------------------------------------------------
+ Size
 template<>
 void push_value_to_lua(lua_State* L, const gfx::Size& value)
 {
   push_obj(L, value);
 }
-
 template<>
 gfx::Size get_value_from_lua(lua_State* L, int index)
 {
   return convert_args_into_size(L, index);
 }
-
-// ----------------------------------------------------------------------
-// Rect
-
+ ----------------------------------------------------------------------
+ Rect
 template<>
 void push_value_to_lua(lua_State* L, const gfx::Rect& value)
 {
   push_obj(L, value);
 }
-
 template<>
 gfx::Rect get_value_from_lua(lua_State* L, int index)
 {
   return convert_args_into_rect(L, index);
 }
-
-// ----------------------------------------------------------------------
-// Uuid
-
+ ----------------------------------------------------------------------
+ Uuid
 template<>
 void push_value_to_lua(lua_State* L, const base::Uuid& value)
 {
   push_obj(L, value);
 }
-
 template<>
 base::Uuid get_value_from_lua(lua_State* L, int index)
 {
   return convert_args_into_uuid(L, index);
 }
-
-// ----------------------------------------------------------------------
-// tools::InkType
-
+ ----------------------------------------------------------------------
+ tools::InkType
 template<>
 void push_value_to_lua(lua_State* L, const app::tools::InkType& inkType)
 {
   lua_pushinteger(L, (int)inkType);
 }
-
 template<>
 app::tools::InkType get_value_from_lua(lua_State* L, int index)
 {
@@ -328,27 +284,22 @@ app::tools::InkType get_value_from_lua(lua_State* L, int index)
   }
   return (app::tools::InkType)lua_tointeger(L, index);
 }
-
-// ----------------------------------------------------------------------
-// doc::tile_t
-
-#if 0 // doc::tile_t matches uint32_t, and we have the uint32_t version already defined
+ ----------------------------------------------------------------------
+ doc::tile_t
+// if 0 // doc::tile_t matches uint32_t, and we have the uint32_t version already defined
 template<>
 void push_value_to_lua(lua_State* L, const doc::tile_t& value) {
   lua_pushinteger(L, value);
 }
-#endif
-
+ endif
 template<>
 doc::tile_t get_value_from_lua(lua_State* L, int index)
 {
   return lua_tointeger(L, index);
 }
-
-// ----------------------------------------------------------------------
-// enums
-
-#define FOR_ENUM(T)                                                                                \
+ ----------------------------------------------------------------------
+ enums
+ define FOR_ENUM(T)                                                                                \
   template<>                                                                                       \
   void push_value_to_lua(lua_State* L, const T& value)                                             \
   {                                                                                                \
@@ -360,7 +311,6 @@ doc::tile_t get_value_from_lua(lua_State* L, int index)
   {                                                                                                \
     return static_cast<T>(lua_tointeger(L, index));                                                \
   }
-
 FOR_ENUM(app::CelsTarget)
 FOR_ENUM(app::ColorBar::ColorSelector)
 FOR_ENUM(app::SpriteSheetDataFormat)
@@ -399,24 +349,20 @@ FOR_ENUM(doc::RgbMapAlgorithm)
 FOR_ENUM(filters::HueSaturationFilter::Mode)
 FOR_ENUM(filters::TiledMode)
 FOR_ENUM(render::OnionskinPosition)
-
-// ----------------------------------------------------------------------
-// UserData::Properties / Variant
-
+ ----------------------------------------------------------------------
+ UserData::Properties / Variant
 template<>
 void push_value_to_lua(lua_State* L, const doc::UserData::Properties& value);
 template<>
 void push_value_to_lua(lua_State* L, const doc::UserData::Vector& value);
-
 template<>
 doc::UserData::Properties get_value_from_lua(lua_State* L, int index);
 template<>
 doc::UserData::Vector get_value_from_lua(lua_State* L, int index);
-
 template<>
 void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value)
 {
-#if 1 // We are targetting macOS 10.9, so we don't have the std::visit() available
+// if 1 // We are targetting macOS 10.9, so we don't have the std::visit() available
   switch (value.type()) {
     case USER_DATA_PROPERTY_TYPE_NULLPTR: push_value_to_lua<std::nullptr_t>(L, nullptr); break;
     case USER_DATA_PROPERTY_TYPE_BOOL:    push_value_to_lua(L, *std::get_if<bool>(&value)); break;
@@ -457,22 +403,18 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Variant& value)
       push_value_to_lua(L, *std::get_if<base::Uuid>(&value));
       break;
   }
-#else // TODO enable this in the future
+// else // TODO enable this in the future
   std::visit([L](auto&& v) { push_value_to_lua(L, v); }, value);
-#endif
+ endif
 }
-
 template<>
 doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
 {
   doc::UserData::Variant v;
-
   switch (lua_type(L, index)) {
     case LUA_TNONE:
     case LUA_TNIL:     v = nullptr; break;
-
     case LUA_TBOOLEAN: v = (lua_toboolean(L, index) ? true : false); break;
-
     case LUA_TNUMBER:
       if (lua_isinteger(L, index)) {
         // This is required because some compilers/stdc++ impls
@@ -493,9 +435,7 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
         v = lua_tonumber(L, index);
       }
       break;
-
     case LUA_TSTRING: v = std::string(lua_tostring(L, index)); break;
-
     case LUA_TTABLE:
       if (is_array_table(L, index)) {
         v = get_value_from_lua<doc::UserData::Vector>(L, index);
@@ -504,7 +444,6 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
         v = get_value_from_lua<doc::UserData::Properties>(L, index);
       }
       break;
-
     case LUA_TUSERDATA: {
       if (auto rect = may_get_obj<gfx::Rect>(L, index)) {
         v = *rect;
@@ -521,10 +460,8 @@ doc::UserData::Variant get_value_from_lua(lua_State* L, int index)
       break;
     }
   }
-
   return v;
 }
-
 template<>
 void push_value_to_lua(lua_State* L, const doc::UserData::Properties& value)
 {
@@ -534,7 +471,6 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Properties& value)
     lua_setfield(L, -2, kv.first.c_str());
   }
 }
-
 template<>
 void push_value_to_lua(lua_State* L, const doc::UserData::Vector& value)
 {
@@ -545,12 +481,10 @@ void push_value_to_lua(lua_State* L, const doc::UserData::Vector& value)
     lua_seti(L, -2, ++i);
   }
 }
-
 template<>
 doc::UserData::Properties get_value_from_lua(lua_State* L, int index)
 {
   doc::UserData::Properties m;
-
   if (index < 0)
     --index;
   lua_pushnil(L);
@@ -559,21 +493,17 @@ doc::UserData::Properties get_value_from_lua(lua_State* L, int index)
       m[k] = get_value_from_lua<doc::UserData::Variant>(L, -1);
     lua_pop(L, 1);
   }
-
   return m;
 }
-
 template<>
 doc::UserData::Vector get_value_from_lua(lua_State* L, int index)
 {
   doc::UserData::Vector v;
-
   lua_len(L, index);
   int len = lua_tointeger(L, -1);
   lua_pop(L, 1);
   if (len > 0)
     v.reserve(len);
-
   if (index < 0)
     --index;
   lua_pushnil(L);
@@ -581,15 +511,12 @@ doc::UserData::Vector get_value_from_lua(lua_State* L, int index)
     v.push_back(get_value_from_lua<doc::UserData::Variant>(L, -1));
     lua_pop(L, 1);
   }
-
   return v;
 }
-
 bool is_array_table(lua_State* L, int index)
 {
   if (index < 0)
     --index;
-
   int i = 0;
   lua_pushnil(L);
   while (lua_next(L, index) != 0) {
@@ -607,5 +534,4 @@ bool is_array_table(lua_State* L, int index)
   }
   return true;
 }
-
 }} // namespace app::script

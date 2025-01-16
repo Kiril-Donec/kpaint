@@ -1,30 +1,30 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/app.h"
-#include "app/console.h"
-#include "app/context.h"
-#include "app/context_observer.h"
-#include "app/script/docobj.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/site.h"
-#include "doc/cel.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
-
+ endif
+ include "app/app.h"
+ include "app/console.h"
+ include "app/context.h"
+ include "app/context_observer.h"
+ include "app/script/docobj.h"
+ include "app/script/engine.h"
+ include "app/script/luacpp.h"
+ include "app/site.h"
+ include "doc/cel.h"
+ include "doc/layer.h"
+ include "doc/sprite.h"
 namespace app { namespace script {
-
 namespace {
-
 int Site_get_sprite(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
@@ -34,7 +34,6 @@ int Site_get_sprite(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Site_get_layer(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
@@ -44,7 +43,6 @@ int Site_get_layer(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Site_get_cel(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
@@ -54,7 +52,6 @@ int Site_get_cel(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Site_get_frame(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
@@ -64,14 +61,12 @@ int Site_get_frame(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Site_get_frameNumber(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
   lua_pushinteger(L, site->frame() + 1);
   return 1;
 }
-
 int Site_get_image(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
@@ -81,7 +76,6 @@ int Site_get_image(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Site_get_tilemapMode(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
@@ -91,7 +85,6 @@ int Site_get_tilemapMode(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 int Site_get_tilesetMode(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
@@ -101,11 +94,9 @@ int Site_get_tilesetMode(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
-
 const luaL_Reg Site_methods[] = {
   { nullptr, nullptr }
 };
-
 const Property Site_properties[] = {
   { "sprite",      Site_get_sprite,      nullptr },
   { "layer",       Site_get_layer,       nullptr },
@@ -117,15 +108,11 @@ const Property Site_properties[] = {
   { "tilesetMode", Site_get_tilesetMode, nullptr },
   { nullptr,       nullptr,              nullptr }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(app::Site);
-
 void register_site_class(lua_State* L)
 {
   REG_CLASS(L, Site);
   REG_CLASS_PROPERTIES(L, Site);
 }
-
 }} // namespace app::script

@@ -1,28 +1,27 @@
-// Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
-// Copyright (C) 2016  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_TOOLS_POINTER_H_INCLUDED
-#define APP_TOOLS_POINTER_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "base/vector2d.h"
-#include "gfx/point.h"
-#include "ui/pointer_type.h"
 
+
+ ifndef APP_TOOLS_POINTER_H_INCLUDED
+ define APP_TOOLS_POINTER_H_INCLUDED
+ pragma once
+ include "base/vector2d.h"
+ include "gfx/point.h"
+ include "ui/pointer_type.h"
 namespace app { namespace tools {
-
 using Vec2 = base::Vector2d<float>;
-
-// Simple container of mouse events information.
+ Simple container of mouse events information.
 class Pointer {
 public:
   enum Button { None, Left, Middle, Right };
   typedef ui::PointerType Type;
-
   Pointer()
     : m_point(0, 0)
     , m_velocity(0.0, 0.0)
@@ -31,7 +30,6 @@ public:
     , m_pressure(0.0f)
   {
   }
-
   Pointer(const gfx::Point& point,
           const Vec2& velocity,
           const Button button,
@@ -44,7 +42,6 @@ public:
     , m_pressure(pressure)
   {
   }
-
   const gfx::Point& point() const { return m_point; }
   const Vec2& velocity() const { return m_velocity; }
   Button button() const { return m_button; }
@@ -58,7 +55,5 @@ private:
   Type m_type;
   float m_pressure;
 };
-
 }} // namespace app::tools
-
-#endif
+ endif

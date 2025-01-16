@@ -1,20 +1,20 @@
-// Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
-// Copyright (C) 2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/util/readable_time.h"
-
-#include "fmt/format.h"
-
+ endif
+ include "app/util/readable_time.h"
+ include "fmt/format.h"
 namespace app {
-
 std::string human_readable_time(const int t)
 {
   if (t < 900)
@@ -26,5 +26,4 @@ std::string human_readable_time(const int t)
   else
     return fmt::format("{:0.2f}h", double(t) / 1000.0 / 60.0 / 60.0);
 }
-
 } // namespace app

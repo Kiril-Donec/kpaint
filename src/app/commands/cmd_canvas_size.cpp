@@ -1,38 +1,37 @@
-// Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/commands/command.h"
-#include "app/commands/new_params.h"
-#include "app/context_access.h"
-#include "app/doc_api.h"
-#include "app/modules/gui.h"
-#include "app/tx.h"
-#include "app/ui/color_bar.h"
-#include "app/ui/doc_view.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/editor/select_box_state.h"
-#include "app/ui/skin/skin_theme.h"
-#include "app/ui_context.h"
-#include "doc/image.h"
-#include "doc/mask.h"
-#include "doc/sprite.h"
-#include "ui/ui.h"
-
-#include "canvas_size.xml.h"
-
+ endif
+ include "app/commands/command.h"
+ include "app/commands/new_params.h"
+ include "app/context_access.h"
+ include "app/doc_api.h"
+ include "app/modules/gui.h"
+ include "app/tx.h"
+ include "app/ui/color_bar.h"
+ include "app/ui/doc_view.h"
+ include "app/ui/editor/editor.h"
+ include "app/ui/editor/select_box_state.h"
+ include "app/ui/skin/skin_theme.h"
+ include "app/ui_context.h"
+ include "canvas_size.xml.h"
+ include "doc/image.h"
+ include "doc/mask.h"
+ include "doc/sprite.h"
+ include "ui/ui.h"
 namespace app {
-
 using namespace ui;
 using namespace app::skin;
-
 struct CanvasSizeParams : public NewParams {
   Param<bool> ui{ this, true, "ui" };
   Param<int> left{ this, 0, "left" };
@@ -42,13 +41,11 @@ struct CanvasSizeParams : public NewParams {
   Param<gfx::Rect> bounds{ this, gfx::Rect(0, 0, 0, 0), "bounds" };
   Param<bool> trimOutside{ this, false, "trimOutside" };
 };
-
-// Window used to show canvas parameters.
+ Window used to show canvas parameters.
 class CanvasSizeWindow : public app::gen::CanvasSize,
                          public SelectBoxDelegate {
 public:
   enum class Dir { NW, N, NE, W, C, E, SW, S, SE };
-
   CanvasSizeWindow(const CanvasSizeParams& params, const gfx::Rect& bounds)
     : m_editor(Editor::activeEditor())
     , m_rect(bounds)
@@ -65,7 +62,6 @@ public:
     setTop(0);
     setBottom(0);
     updateBorderFromRect();
-
     width()->Change.connect([this] { onSizeChange(); });
     height()->Change.connect([this] { onSizeChange(); });
     dir()->ItemChange.connect([this] { onDirChange(); });
@@ -73,18 +69,13 @@ public:
     right()->Change.connect([this] { onBorderChange(); });
     top()->Change.connect([this] { onBorderChange(); });
     bottom()->Change.connect([this] { onBorderChange(); });
-
     m_editor->setState(m_selectBoxState);
-
     dir()->setSelectedItem((int)Dir::C);
     trim()->setSelected(params.trimOutside());
     updateIcons();
   }
-
   ~CanvasSizeWindow() { m_editor->backToPreviousState(); }
-
   bool pressedOk() { return closer() == ok(); }
-
   int getWidth() { return width()->textInt(); }
   int getHeight() { return height()->textInt(); }
   int getLeft() { return left()->textInt(); }
@@ -98,21 +89,17 @@ protected:
   void onChangeRectangle(const gfx::Rect& rect) override
   {
     m_rect = rect;
-
     updateSizeFromRect();
     updateBorderFromRect();
     updateIcons();
   }
-
   std::string onGetContextBarHelp() override { return "Select new canvas size"; }
-
   void onSizeChange()
   {
     updateBorderFromSize();
     updateRectFromBorder();
     updateEditorBoxFromRect();
   }
-
   void onDirChange()
   {
     updateIcons();
@@ -120,7 +107,6 @@ protected:
     updateRectFromBorder();
     updateEditorBoxFromRect();
   }
-
   void onBorderChange()
   {
     updateIcons();
@@ -128,11 +114,9 @@ protected:
     updateSizeFromRect();
     updateEditorBoxFromRect();
   }
-
   virtual void onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& targets) override
   {
     Window::onBroadcastMouseMessage(screenPos, targets);
-
     // Add the editor as receptor of mouse events too.
     targets.push_back(View::getView(m_editor));
   }
@@ -144,7 +128,6 @@ private:
     int h = getHeight() - m_editor->sprite()->height();
     int l, r, t, b;
     l = r = t = b = 0;
-
     switch ((Dir)dir()->selectedItem()) {
       case Dir::NW:
       case Dir::W:
@@ -160,7 +143,6 @@ private:
       case Dir::E:
       case Dir::SE: l = w; break;
     }
-
     switch ((Dir)dir()->selectedItem()) {
       case Dir::NW:
       case Dir::N:
@@ -176,30 +158,25 @@ private:
       case Dir::S:
       case Dir::SE: t = h; break;
     }
-
     setLeft(l);
     setRight(r);
     setTop(t);
     setBottom(b);
   }
-
   void updateRectFromBorder()
   {
     int left = getLeft();
     int top = getTop();
-
     m_rect = gfx::Rect(-left,
                        -top,
                        m_editor->sprite()->width() + left + getRight(),
                        m_editor->sprite()->height() + top + getBottom());
   }
-
   void updateSizeFromRect()
   {
     setWidth(m_rect.w);
     setHeight(m_rect.h);
   }
-
   void updateBorderFromRect()
   {
     setLeft(-m_rect.x);
@@ -207,26 +184,20 @@ private:
     setRight((m_rect.x + m_rect.w) - m_editor->sprite()->width());
     setBottom((m_rect.y + m_rect.h) - m_editor->sprite()->height());
   }
-
   void updateEditorBoxFromRect()
   {
     static_cast<SelectBoxState*>(m_selectBoxState.get())->setBoxBounds(m_rect);
-
     // Redraw new rulers position
     m_editor->invalidate();
   }
-
   void updateIcons()
   {
     auto theme = SkinTheme::get(this);
-
     int sel = dir()->selectedItem();
-
     int c = 0;
     for (int v = 0; v < 3; ++v) {
       for (int u = 0; u < 3; ++u) {
         SkinPartPtr icon = theme->parts.canvasEmpty();
-
         if (c == sel) {
           icon = theme->parts.canvasC();
         }
@@ -254,25 +225,21 @@ private:
         else if (u - 1 >= 0 && v - 1 >= 0 && (u - 1) + 3 * (v - 1) == sel) {
           icon = theme->parts.canvasSe();
         }
-
         dir()->getItem(c)->setIcon(icon);
         ++c;
       }
     }
   }
-
   void setWidth(int v) { width()->setTextf("%d", v); }
   void setHeight(int v) { height()->setTextf("%d", v); }
   void setLeft(int v) { left()->setTextf("%d", v); }
   void setRight(int v) { right()->setTextf("%d", v); }
   void setTop(int v) { top()->setTextf("%d", v); }
   void setBottom(int v) { bottom()->setTextf("%d", v); }
-
   Editor* m_editor;
   gfx::Rect m_rect;
   EditorStatePtr m_selectBoxState;
 };
-
 class CanvasSizeCommand : public CommandWithNewParams<CanvasSizeParams> {
 public:
   CanvasSizeCommand();
@@ -281,25 +248,21 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
-
 CanvasSizeCommand::CanvasSizeCommand()
   : CommandWithNewParams(CommandId::CanvasSize(), CmdRecordableFlag)
 {
 }
-
 bool CanvasSizeCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite);
 }
-
 void CanvasSizeCommand::onExecute(Context* context)
 {
   const bool ui = (params().ui() && context->isUIAvailable());
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
   auto& params = this->params();
-
   gfx::Rect bounds(0, 0, sprite->width(), sprite->height());
   if (params.bounds.isSet()) {
     bounds = params.bounds();
@@ -307,17 +270,13 @@ void CanvasSizeCommand::onExecute(Context* context)
   else {
     bounds.enlarge(gfx::Border(params.left(), params.top(), params.right(), params.bottom()));
   }
-
   if (ui) {
     if (!params.trimOutside.isSet()) {
       params.trimOutside(Preferences::instance().canvasSize.trimOutside());
     }
-
     // load the window widget
     std::unique_ptr<CanvasSizeWindow> window(new CanvasSizeWindow(params, bounds));
-
     window->remapWindow();
-
     // Find best position for the window on the editor
     if (DocView* docView = static_cast<UIContext*>(context)->activeView()) {
       Display* display = ui::Manager::getDefault()->display();
@@ -331,23 +290,18 @@ void CanvasSizeCommand::onExecute(Context* context)
     else {
       window->centerWindow();
     }
-
     load_window_pos(window.get(), "CanvasSize");
     window->setVisible(true);
     window->openWindowInForeground();
     save_window_pos(window.get(), "CanvasSize");
-
     if (!window->pressedOk())
       return;
-
     params.left(window->getLeft());
     params.right(window->getRight());
     params.top(window->getTop());
     params.bottom(window->getBottom());
     params.trimOutside(window->getTrimOutside());
-
     Preferences::instance().canvasSize.trimOutside(params.trimOutside());
-
     if (params.bounds.isSet()) {
       bounds = params.bounds();
     }
@@ -355,12 +309,10 @@ void CanvasSizeCommand::onExecute(Context* context)
       bounds.enlarge(gfx::Border(params.left(), params.top(), params.right(), params.bottom()));
     }
   }
-
   if (bounds.w < 1)
     bounds.w = 1;
   if (bounds.h < 1)
     bounds.h = 1;
-
   {
     ContextWriter writer(reader);
     Doc* doc = writer.document();
@@ -369,14 +321,11 @@ void CanvasSizeCommand::onExecute(Context* context)
     DocApi api = doc->getApi(tx);
     api.cropSprite(sprite, bounds, params.trimOutside());
     tx.commit();
-
     update_screen_for_document(doc);
   }
 }
-
 Command* CommandFactory::createCanvasSizeCommand()
 {
   return new CanvasSizeCommand;
 }
-
 } // namespace app

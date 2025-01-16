@@ -1,18 +1,21 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
-<!-- Copyright (C) 2018  David Capello -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui i18nwarnings="false">
-<window id="about" text="About Aseprite">
+<window id="about" text="About KPaint">
   <vbox>
     <label text="" id="title" />
     <label text="Animated sprite editor &amp;&amp; pixel art tool" />
     <hbox homogeneous="true">
       <hbox>
         <vbox expansive="true">
-          <separator text="Developer Team" horizontal="true" />
-          <link text="David Capello" url="https://twitter.com/davidcapello" />
-          <link text="Gaspar Capello" url="https://twitter.com/Gasparoken" />
-          <link text="Martín Capello" url="https://twitter.com/martincapell0" />
+          <separator text="Developer" horizontal="true" />
+          <link text="Kiril Donec" url="" />
           <vbox minheight="8" />
         </vbox>
         <separator vertical="true" />
@@ -26,8 +29,7 @@
     </hbox>
     <separator horizontal="true" />
     <hbox>
-      <label text="Copyright (C) 2001-2025" />
-      <link text="Igara Studio S.A." url="https://igara.com/" />
+      <link text="" url="" />
     </hbox>
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />
     <hbox>

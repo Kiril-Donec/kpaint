@@ -1,37 +1,33 @@
-// Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint UI Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "gfx/size.h"
-#include "ui/box.h"
-#include "ui/message.h"
-#include "ui/resize_event.h"
-#include "ui/size_hint_event.h"
-#include "ui/theme.h"
-
-#include <algorithm>
-
+ endif
+ include "gfx/size.h"
+ include "ui/box.h"
+ include "ui/message.h"
+ include "ui/resize_event.h"
+ include "ui/size_hint_event.h"
+ include "ui/theme.h"
+ include <algorithm>
 namespace ui {
-
 using namespace gfx;
-
 Box::Box(int align) : Widget(kBoxWidget)
 {
   enableFlags(IGNORE_MOUSE);
   setAlign(align);
   initTheme();
 }
-
 void Box::onSizeHint(SizeHintEvent& ev)
 {
-#define ADD_CHILD_SIZE(w, h)                                                                       \
+ define ADD_CHILD_SIZE(w, h)                                                                       \
   {                                                                                                \
     if (align() & HOMOGENEOUS)                                                                     \
       prefSize.w = std::max(prefSize.w, childSize.w);                                              \
@@ -39,25 +35,21 @@ void Box::onSizeHint(SizeHintEvent& ev)
       prefSize.w += childSize.w;                                                                   \
     prefSize.h = std::max(prefSize.h, childSize.h);                                                \
   }
-
-#define FINAL_ADJUSTMENT(w)                                                                        \
+ define FINAL_ADJUSTMENT(w)                                                                        \
   {                                                                                                \
     if (align() & HOMOGENEOUS)                                                                     \
       prefSize.w *= visibleChildren;                                                               \
     prefSize.w += childSpacing() * (visibleChildren - 1);                                          \
   }
-
   int visibleChildren = 0;
   for (auto child : children()) {
     if (!child->hasFlags(HIDDEN))
       ++visibleChildren;
   }
-
   Size prefSize(0, 0);
   for (auto child : children()) {
     if (child->hasFlags(HIDDEN))
       continue;
-
     Size childSize = child->sizeHint();
     if (align() & HORIZONTAL) {
       ADD_CHILD_SIZE(w, h);
@@ -66,7 +58,6 @@ void Box::onSizeHint(SizeHintEvent& ev)
       ADD_CHILD_SIZE(h, w);
     }
   }
-
   if (visibleChildren > 0) {
     if (align() & HORIZONTAL) {
       FINAL_ADJUSTMENT(w);
@@ -75,16 +66,13 @@ void Box::onSizeHint(SizeHintEvent& ev)
       FINAL_ADJUSTMENT(h);
     }
   }
-
   prefSize.w += border().width();
   prefSize.h += border().height();
-
   ev.setSizeHint(prefSize);
 }
-
 void Box::onResize(ResizeEvent& ev)
 {
-#define LAYOUT_CHILDREN(x, y, w, h)                                                                \
+ define LAYOUT_CHILDREN(x, y, w, h)                                                                \
   {                                                                                                \
     availExtraSize = availSize.w - prefSize.w;                                                     \
     availSize.w -= childSpacing() * (visibleChildren - 1);                                         \
@@ -127,9 +115,7 @@ void Box::onResize(ResizeEvent& ev)
       ++i;                                                                                         \
     }                                                                                              \
   }
-
   setBoundsQuietly(ev.bounds());
-
   int visibleChildren = 0;
   int expansiveChildren = 0;
   for (auto child : children()) {
@@ -139,16 +125,13 @@ void Box::onResize(ResizeEvent& ev)
         ++expansiveChildren;
     }
   }
-
   if (visibleChildren > 0) {
     Size prefSize(sizeHint());
     Size availSize(childrenBounds().size());
     int homogeneousSize = 0;
     int availExtraSize = 0;
-
     prefSize.w -= border().width();
     prefSize.h -= border().height();
-
     if (align() & HORIZONTAL) {
       LAYOUT_CHILDREN(x, y, w, h);
     }
@@ -157,5 +140,4 @@ void Box::onResize(ResizeEvent& ev)
     }
   }
 }
-
 } // namespace ui

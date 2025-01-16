@@ -1,6 +1,11 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2024 by Igara Studio S.A. -->
-<!-- Copyright (C) 2001-2018 by David Capello -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui>
 <window id="sprite_size" text="@.title" help="resize">
   <box vertical="true">

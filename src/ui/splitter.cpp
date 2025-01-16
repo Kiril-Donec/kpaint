@@ -1,33 +1,29 @@
-// Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+ KPaint UI Library
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "ui/splitter.h"
-
-#include "ui/load_layout_event.h"
-#include "ui/manager.h"
-#include "ui/message.h"
-#include "ui/resize_event.h"
-#include "ui/save_layout_event.h"
-#include "ui/scale.h"
-#include "ui/size_hint_event.h"
-#include "ui/system.h"
-#include "ui/theme.h"
-
-#include <algorithm>
-#include <sstream>
-
+ endif
+ include "ui/load_layout_event.h"
+ include "ui/manager.h"
+ include "ui/message.h"
+ include "ui/resize_event.h"
+ include "ui/save_layout_event.h"
+ include "ui/scale.h"
+ include "ui/size_hint_event.h"
+ include "ui/splitter.h"
+ include "ui/system.h"
+ include "ui/theme.h"
+ include <algorithm>
+ include <sstream>
 namespace ui {
-
 using namespace gfx;
-
 Splitter::Splitter(Type type, int align)
   : Widget(kSplitterWidget)
   , m_type(type)
@@ -38,16 +34,13 @@ Splitter::Splitter(Type type, int align)
   setAlign(align);
   initTheme();
 }
-
 void Splitter::setPosition(double pos)
 {
   m_userPos = pos;
   calcPos();
   onPositionChange();
-
   invalidate();
 }
-
 bool Splitter::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -59,19 +52,14 @@ bool Splitter::onProcessMessage(Message* msg)
         int x1, y1, x2, y2;
         int bar, click_bar;
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-
         bar = click_bar = 0;
-
         for (auto it = children().begin(), end = children().end(); it != end;) {
           auto next = it;
           ++next;
-
           if (next != end) {
             c1 = *it;
             c2 = *next;
-
             ++bar;
-
             if (this->align() & HORIZONTAL) {
               x1 = c1->bounds().x2();
               y1 = bounds().y;
@@ -84,27 +72,20 @@ bool Splitter::onProcessMessage(Message* msg)
               x2 = bounds().x2();
               y2 = c2->bounds().y;
             }
-
             if ((mousePos.x >= x1) && (mousePos.x < x2) && (mousePos.y >= y1) && (mousePos.y < y2))
               click_bar = bar;
           }
-
           it = next;
         }
-
         if (!click_bar)
           break;
-
         captureMouse();
-
         // Continue with motion message...
         [[fallthrough]];
       }
-
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-
         if (align() & HORIZONTAL) {
           switch (m_type) {
             case ByPercentage: m_userPos = 100.0 * (mousePos.x - bounds().x) / bounds().w; break;
@@ -117,35 +98,29 @@ bool Splitter::onProcessMessage(Message* msg)
             case ByPixel:      m_userPos = mousePos.y - bounds().y; break;
           }
         }
-
         calcPos();
         onPositionChange();
         return true;
       }
       break;
-
     case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
         return true;
       }
       break;
-
     case kSetCursorMessage:
       if (isEnabled() && (!manager()->getCapture() || hasCapture())) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         Widget *c1, *c2;
         int x1, y1, x2, y2;
         bool change_cursor = false;
-
         for (auto it = children().begin(), end = children().end(); it != end;) {
           auto next = it;
           ++next;
-
           if (next != end) {
             c1 = *it;
             c2 = *(it + 1);
-
             if (this->align() & HORIZONTAL) {
               x1 = c1->bounds().x2();
               y1 = bounds().y;
@@ -158,17 +133,14 @@ bool Splitter::onProcessMessage(Message* msg)
               x2 = bounds().x2();
               y2 = c2->bounds().y;
             }
-
             if ((mousePos.x >= x1) && (mousePos.x < x2) && (mousePos.y >= y1) &&
                 (mousePos.y < y2)) {
               change_cursor = true;
               break;
             }
           }
-
           it = next;
         }
-
         if (change_cursor) {
           if (align() & HORIZONTAL)
             set_mouse_cursor(kSizeWECursor);
@@ -179,10 +151,8 @@ bool Splitter::onProcessMessage(Message* msg)
       }
       break;
   }
-
   return Widget::onProcessMessage(msg);
 }
-
 void Splitter::onInitTheme(InitThemeEvent& ev)
 {
   if (m_type == ByPixel)
@@ -190,13 +160,11 @@ void Splitter::onInitTheme(InitThemeEvent& ev)
   m_guiscale = ui::guiscale();
   if (m_type == ByPixel)
     m_pos *= m_guiscale;
-
   Widget::onInitTheme(ev);
 }
-
 void Splitter::onResize(ResizeEvent& ev)
 {
-#define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                                                \
+ define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                                                \
   {                                                                                                \
     avail = rc.w - childSpacing();                                                                 \
                                                                                                    \
@@ -221,17 +189,13 @@ void Splitter::onResize(ResizeEvent& ev)
                                                                                                    \
     child2->setBounds(pos);                                                                        \
   }
-
   gfx::Rect rc(ev.bounds());
   gfx::Rect pos(0, 0, 0, 0);
   int avail;
-
   setBoundsQuietly(rc);
   calcPos();
-
   Widget* child1 = panel1();
   Widget* child2 = panel2();
-
   if (child1 && child2) {
     if (align() & HORIZONTAL) {
       LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b);
@@ -245,58 +209,46 @@ void Splitter::onResize(ResizeEvent& ev)
   else if (child2)
     child2->setBounds(rc);
 }
-
 void Splitter::onSizeHint(SizeHintEvent& ev)
 {
-#define GET_CHILD_SIZE(w, h)                                                                       \
+ define GET_CHILD_SIZE(w, h)                                                                       \
   do {                                                                                             \
     w = std::max(w, reqSize.w);                                                                    \
     h = std::max(h, reqSize.h);                                                                    \
   } while (0)
-
-#define FINAL_SIZE(w)                                                                              \
+ define FINAL_SIZE(w)                                                                              \
   do {                                                                                             \
     w *= visibleChildren;                                                                          \
     w += childSpacing() * (visibleChildren - 1);                                                   \
   } while (0)
-
   int visibleChildren;
   Size reqSize;
-
   visibleChildren = 0;
   for (auto child : children()) {
     if (child->isVisible())
       visibleChildren++;
   }
-
   int w, h;
   w = h = 0;
-
   for (auto child : children()) {
     if (!child->isVisible())
       continue;
-
     reqSize = child->sizeHint();
-
     if (this->align() & HORIZONTAL)
       GET_CHILD_SIZE(w, h);
     else
       GET_CHILD_SIZE(h, w);
   }
-
   if (visibleChildren > 0) {
     if (this->align() & HORIZONTAL)
       FINAL_SIZE(w);
     else
       FINAL_SIZE(h);
   }
-
   w += border().width();
   h += border().height();
-
   ev.setSizeHint(Size(w, h));
 }
-
 void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 {
   ev.stream() >> m_userPos;
@@ -304,21 +256,17 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
     m_userPos = 0;
   if (m_type == ByPixel)
     m_userPos *= m_guiscale;
-
   calcPos();
 }
-
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
   double pos = (m_type == ByPixel ? m_userPos / m_guiscale : m_userPos);
   ev.stream() << pos;
 }
-
 void Splitter::onPositionChange()
 {
   layout();
 }
-
 Widget* Splitter::panel1() const
 {
   const WidgetsList& list = children();
@@ -327,7 +275,6 @@ Widget* Splitter::panel1() const
   else
     return nullptr;
 }
-
 Widget* Splitter::panel2() const
 {
   const WidgetsList& list = children();
@@ -336,7 +283,6 @@ Widget* Splitter::panel2() const
   else
     return nullptr;
 }
-
 void Splitter::calcPos()
 {
   if (align() & HORIZONTAL) {
@@ -358,5 +304,4 @@ void Splitter::calcPos()
     }
   }
 }
-
 } // namespace ui

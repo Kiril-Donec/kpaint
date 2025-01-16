@@ -1,21 +1,21 @@
-// Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CONTEXT_FLAGS_H_INCLUDED
-#define APP_CONTEXT_FLAGS_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "base/ints.h"
 
+
+ ifndef APP_CONTEXT_FLAGS_H_INCLUDED
+ define APP_CONTEXT_FLAGS_H_INCLUDED
+ pragma once
+ include "base/ints.h"
 namespace app {
-
 class Context;
 class Site;
-
 class ContextFlags {
 public:
   enum {
@@ -37,18 +37,13 @@ public:
     HasSelectedColors = 1 << 15,
     HasSelectedTiles = 1 << 16,
   };
-
   ContextFlags();
-
   bool check(uint32_t flags) const { return (m_flags & flags) == flags; }
   void update(Context* context);
 
 private:
   void updateFlagsFromSite(const Site& site);
-
   uint32_t m_flags;
 };
-
 } // namespace app
-
-#endif
+ endif

@@ -1,28 +1,28 @@
-// Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
-// Copyright (C) 2001-2016  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_COPY_REGION_H_INCLUDED
-#define APP_CMD_COPY_REGION_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd.h"
-#include "app/cmd/with_image.h"
-#include "base/buffer.h"
-#include "doc/tile.h"
-#include "gfx/point.h"
-#include "gfx/region.h"
 
+
+ ifndef APP_CMD_COPY_REGION_H_INCLUDED
+ define APP_CMD_COPY_REGION_H_INCLUDED
+ pragma once
+ include "app/cmd.h"
+ include "app/cmd/with_image.h"
+ include "base/buffer.h"
+ include "doc/tile.h"
+ include "gfx/point.h"
+ include "gfx/region.h"
 namespace doc {
 class Tileset;
 }
-
 namespace app { namespace cmd {
 using namespace doc;
-
 class CopyRegion : public Cmd,
                    public WithImage {
 public:
@@ -45,12 +45,10 @@ protected:
 private:
   void swap();
   virtual void rehash() {}
-
   bool m_alreadyCopied;
   gfx::Region m_region;
   base::buffer m_buffer;
 };
-
 class CopyTileRegion : public CopyRegion {
 public:
   CopyTileRegion(Image* dst,
@@ -63,11 +61,8 @@ public:
 
 private:
   void rehash() override;
-
   doc::tile_index m_tileIndex;
   doc::ObjectId m_tilesetId;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

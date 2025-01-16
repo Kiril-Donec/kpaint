@@ -1,27 +1,24 @@
-// Aseprite Code Generator
-// Copyright (c) 2021-2024 Igara Studio S.A.
-// Copyright (c) 2014-2018 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#include "gen/ui_class.h"
-
-#include "base/exception.h"
-#include "base/file_handle.h"
-#include "base/fs.h"
-#include "base/string.h"
-#include "gen/common.h"
-
-#include <iostream>
-#include <set>
-#include <vector>
-
+Copyright (C) 2024-2025 KiriX Company
+ KPaint Code Generator
+// // This file is released under the terms of the MIT license.
+ Read LICENSE.txt for more information.
+ include "gen/ui_class.h"
+ include "base/exception.h"
+ include "base/file_handle.h"
+ include "base/fs.h"
+ include "base/string.h"
+ include "gen/common.h"
+ include <iostream>
+ include <set>
+ include <vector>
 using namespace tinyxml2;
 using XmlElements = std::vector<XMLElement*>;
-
 namespace {
-
 struct Item {
   std::string xmlid;
   std::string cppid;
@@ -34,27 +31,21 @@ struct Item {
     return *this;
   }
 };
-
 } // namespace
-
 static XMLElement* find_element_by_id(XMLElement* elem, const std::string& thisId)
 {
   const char* id = elem->Attribute("id");
   if (id && id == thisId)
     return elem;
-
   XMLElement* child = elem->FirstChildElement();
   while (child) {
     XMLElement* match = find_element_by_id(child, thisId);
     if (match)
       return match;
-
     child = child->NextSiblingElement();
   }
-
   return NULL;
 }
-
 static void collect_widgets_with_ids(XMLElement* elem, XmlElements& widgets)
 {
   XMLElement* child = elem->FirstChildElement();
@@ -66,20 +57,17 @@ static void collect_widgets_with_ids(XMLElement* elem, XmlElements& widgets)
     child = child->NextSiblingElement();
   }
 }
-
 static Item convert_to_item(XMLElement* elem)
 {
   static std::string parent;
   const std::string name = elem->Value();
   if (name != "item")
     parent = name;
-
   Item item;
   if (elem->Attribute("id")) {
     item.xmlid = elem->Attribute("id");
     item.cppid = convert_xmlid_to_cppid(item.xmlid, false);
   }
-
   if (name == "box")
     return item.typeIncl("ui::Box", "ui/box.h");
   if (name == "boxfiller")
@@ -146,15 +134,12 @@ static Item convert_to_item(XMLElement* elem)
     return item.typeIncl("ui::View", "ui/view.h");
   if (name == "window")
     return item.typeIncl("ui::Window", "ui/window.h");
-
   throw base::Exception("Unknown widget name: " + name);
 }
-
 void gen_ui_class(XMLDocument* doc, const std::string& inputFn, const std::string& widgetId)
 {
   std::cout << "// Don't modify, generated file from " << inputFn << "\n"
             << "\n";
-
   XMLHandle handle(doc);
   XMLElement* elem = handle.FirstChildElement("gui").ToElement();
   elem = find_element_by_id(elem, widgetId);
@@ -162,7 +147,6 @@ void gen_ui_class(XMLDocument* doc, const std::string& inputFn, const std::strin
     std::cout << "#error Widget not found: " << widgetId << "\n";
     return;
   }
-
   std::vector<Item> items;
   {
     XmlElements xmlWidgets;
@@ -174,18 +158,15 @@ void gen_ui_class(XMLDocument* doc, const std::string& inputFn, const std::strin
       items.push_back(convert_to_item(elem));
     }
   }
-
   std::string className = convert_xmlid_to_cppid(widgetId, true);
   std::string fnUpper = base::string_to_upper(base::get_file_title(inputFn));
   Item mainWidget = convert_to_item(elem);
-
   std::set<std::string> headerFiles;
   headerFiles.insert("app/find_widget.h");
   headerFiles.insert("app/load_widget.h");
   headerFiles.insert(mainWidget.incl);
   for (const Item& item : items)
     headerFiles.insert(item.incl);
-
   std::cout << "#ifndef GENERATED_" << fnUpper << "_H_INCLUDED\n"
             << "#define GENERATED_" << fnUpper << "_H_INCLUDED\n"
             << "#pragma once\n"
@@ -199,7 +180,6 @@ void gen_ui_class(XMLDocument* doc, const std::string& inputFn, const std::strin
             << "  class " << className << " : public " << mainWidget.type << " {\n"
             << "  public:\n"
             << "    " << className << "()";
-
   // Special ctor for base class
   if (mainWidget.type == "ui::Window") {
     const char* desktop = elem->Attribute("desktop");
@@ -208,32 +188,25 @@ void gen_ui_class(XMLDocument* doc, const std::string& inputFn, const std::strin
     else
       std::cout << " : ui::Window(ui::Window::WithTitleBar)";
   }
-
   std::cout << " {\n"
             << "      app::load_widget(\"" << base::get_file_name(inputFn) << "\", \"" << widgetId
             << "\", this);\n"
             << "      app::finder(this)\n";
-
   for (const Item& item : items) {
     std::cout << "        >> \"" << item.xmlid << "\" >> m_" << item.cppid << "\n";
   }
-
   std::cout << "      ;\n"
             << "    }\n"
             << "\n";
-
   for (const Item& item : items) {
     std::cout << "    " << item.type << "* " << item.cppid << "() const { return m_" << item.cppid
               << "; }\n";
   }
-
   std::cout << "\n"
             << "  private:\n";
-
   for (const Item& item : items) {
     std::cout << "    " << item.type << "* m_" << item.cppid << ";\n";
   }
-
   std::cout << "  };\n"
             << "\n"
             << "} // namespace gen\n"

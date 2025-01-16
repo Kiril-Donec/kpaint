@@ -1,23 +1,24 @@
-// Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
-// Copyright (C) 2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_EDITOR_MOVING_SELECTION_STATE_H_INCLUDED
-#define APP_UI_EDITOR_MOVING_SELECTION_STATE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/context.h"
-#include "app/ui/editor/standby_state.h"
-#include "obs/connection.h"
 
+
+ ifndef APP_UI_EDITOR_MOVING_SELECTION_STATE_H_INCLUDED
+ define APP_UI_EDITOR_MOVING_SELECTION_STATE_H_INCLUDED
+ pragma once
+ include "app/context.h"
+ include "app/ui/editor/standby_state.h"
+ include "obs/connection.h"
 namespace app {
 class MovingSelectionState : public StandbyState {
 public:
   MovingSelectionState(Editor* editor, ui::MouseMessage* msg);
-
   // EditorState
   virtual void onEnterState(Editor* editor) override;
   virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
@@ -32,7 +33,6 @@ public:
 private:
   // ContextObserver
   void onBeforeCommandExecution(CommandExecutionEvent& ev);
-
   Editor* m_editor;
   gfx::Point m_cursorStart;
   gfx::Point m_selOrigin;
@@ -40,7 +40,5 @@ private:
   obs::scoped_connection m_ctxConn;
   bool m_selectionCanceled;
 };
-
 } // namespace app
-
-#endif // APP_UI_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
+// endif // APP_UI_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED

@@ -1,30 +1,27 @@
-// Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/expr_entry.h"
-
-#include "ui/message.h"
-
-#include "fmt/format.h"
-#include "tinyexpr.h"
-
-#include <cmath>
-#include <cstdio>
-
+ endif
+ include "app/ui/expr_entry.h"
+ include "fmt/format.h"
+ include "tinyexpr.h"
+ include "ui/message.h"
+ include <cmath>
+ include <cstdio>
 namespace app {
-
 ExprEntry::ExprEntry() : ui::Entry(1024, ""), m_decimals(0)
 {
 }
-
 bool ExprEntry::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
@@ -33,20 +30,17 @@ bool ExprEntry::onProcessMessage(ui::Message* msg)
       onFormatExprFocusLeave(buf);
       if (text() != buf)
         setText(buf);
-
       Leave();
       break;
     }
   }
   return ui::Entry::onProcessMessage(msg);
 }
-
 void ExprEntry::onChange()
 {
   Entry::onChange();
   // TODO show expression errors?
 }
-
 int ExprEntry::onGetTextInt() const
 {
   int err = 0;
@@ -56,7 +50,6 @@ int ExprEntry::onGetTextInt() const
   else
     return int(v);
 }
-
 double ExprEntry::onGetTextDouble() const
 {
   int err = 0;
@@ -66,7 +59,6 @@ double ExprEntry::onGetTextDouble() const
   else
     return v;
 }
-
 void ExprEntry::onFormatExprFocusLeave(std::string& buf)
 {
   if (m_decimals == 0)
@@ -74,5 +66,4 @@ void ExprEntry::onFormatExprFocusLeave(std::string& buf)
   else
     buf = fmt::format("{:.{}f}", onGetTextDouble(), m_decimals);
 }
-
 } // namespace app

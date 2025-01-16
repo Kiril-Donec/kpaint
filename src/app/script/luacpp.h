@@ -1,55 +1,50 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_SCRIPT_LUACPP_H_INCLUDED
-#define APP_SCRIPT_LUACPP_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-// We're compiling Lua with C++ support to handle error with
-// exceptions, so there is no need of extern "C" { ... } these
-// includes.
-#include "lauxlib.h"
-#include "lua.h"
-#include "lualib.h"
 
-#include "base/debug.h"
 
-#include <functional>
-#include <type_traits>
-
+ ifndef APP_SCRIPT_LUACPP_H_INCLUDED
+ define APP_SCRIPT_LUACPP_H_INCLUDED
+ pragma once
+ We're compiling Lua with C++ support to handle error with
+ exceptions, so there is no need of extern "C" { ... } these
+ includes.
+ include "base/debug.h"
+ include "lauxlib.h"
+ include "lua.h"
+ include "lualib.h"
+ include <functional>
+ include <type_traits>
 namespace app { namespace script {
-
-#if LUA_TNONE != -1
+ if LUA_TNONE != -1
   #error Invalid LUA_TNONE value
-#endif
-#if LUA_TNIL != 0
+ endif
+ if LUA_TNIL != 0
   #error Invalid LUA_TNIL value
-#endif
-#define VALID_LUATYPE(type) ((type) > 0)
-
-// Some of these auxiliary methods are based on code from the Skia
-// library (SkLua.cpp file) by Google Inc.
-
+ endif
+ define VALID_LUATYPE(type) ((type) > 0)
+ Some of these auxiliary methods are based on code from the Skia
+ library (SkLua.cpp file) by Google Inc.
 template<typename T>
 const char* get_mtname();
-#define DEF_MTNAME(T)                                                                              \
+ define DEF_MTNAME(T)                                                                              \
   template<>                                                                                       \
   const char* get_mtname<T>()                                                                      \
   {                                                                                                \
     return #T;                                                                                     \
   }
-
-#define DEF_MTNAME_ALIAS(T, ALIAS)                                                                 \
+ define DEF_MTNAME_ALIAS(T, ALIAS)                                                                 \
   template<>                                                                                       \
   const char* get_mtname<ALIAS>()                                                                  \
   {                                                                                                \
     return #T;                                                                                     \
   }
-
 template<typename T, typename... Args>
 T* push_new(lua_State* L, Args&&... args)
 {
@@ -59,7 +54,6 @@ T* push_new(lua_State* L, Args&&... args)
   lua_setmetatable(L, -2);
   return addr;
 }
-
 template<typename T>
 void push_obj(lua_State* L, const T& obj)
 {
@@ -67,7 +61,6 @@ void push_obj(lua_State* L, const T& obj)
   luaL_getmetatable(L, get_mtname<T>());
   lua_setmetatable(L, -2);
 }
-
 template<typename T>
 T* push_ptr(lua_State* L, T* ptr)
 {
@@ -76,13 +69,11 @@ T* push_ptr(lua_State* L, T* ptr)
   lua_setmetatable(L, -2);
   return ptr;
 }
-
 template<typename T>
 T* get_ptr(lua_State* L, int index)
 {
   return *(T**)luaL_checkudata(L, index, get_mtname<T>());
 }
-
 template<typename T>
 T* get_obj(lua_State* L, int index)
 {
@@ -90,8 +81,7 @@ T* get_obj(lua_State* L, int index)
   ASSERT(typeid(*ptr) == typeid(T));
   return ptr;
 }
-
-// Returns nil if the index doesn't have the given metatable
+ Returns nil if the index doesn't have the given metatable
 template<typename T>
 T* may_get_ptr(lua_State* L, int index)
 {
@@ -103,34 +93,29 @@ T* may_get_ptr(lua_State* L, int index)
   else
     return nullptr;
 }
-
-// Returns nil if the index doesn't have the given metatable
+ Returns nil if the index doesn't have the given metatable
 template<typename T>
 T* may_get_obj(lua_State* L, int index)
 {
   return (T*)luaL_testudata(L, index, get_mtname<T>());
 }
-
 inline bool lua2bool(lua_State* L, int index)
 {
   return !!lua_toboolean(L, index);
 }
-
 template<typename T>
 inline void setfield_integer(lua_State* L, const char* key, const T& value)
 {
   lua_pushinteger(L, int(value));
   lua_setfield(L, -2, key);
 }
-
 template<typename T>
 inline void setfield_uinteger(lua_State* L, const char* key, const T& value)
 {
   lua_pushinteger(L, value);
   lua_setfield(L, -2, key);
 }
-
-#define REG_CLASS(L, T)                                                                            \
+ define REG_CLASS(L, T)                                                                            \
   {                                                                                                \
     luaL_newmetatable(L, get_mtname<T>());                                                         \
     lua_getglobal(L, "__generic_mt_index");                                                        \
@@ -140,31 +125,24 @@ inline void setfield_uinteger(lua_State* L, const char* key, const T& value)
     luaL_setfuncs(L, T##_methods, 0);                                                              \
     lua_pop(L, 1);                                                                                 \
   }
-
-#define REG_CLASS_NEW(L, T)                                                                        \
+ define REG_CLASS_NEW(L, T)                                                                        \
   {                                                                                                \
     lua_pushcfunction(L, T##_new);                                                                 \
     lua_setglobal(L, #T);                                                                          \
   }
-
 struct Property {
   const char* name;
   lua_CFunction getter;
   lua_CFunction setter;
 };
-
 void run_mt_index_code(lua_State* L);
 void create_mt_getters_setters(lua_State* L, const char* tname, const Property* properties);
-
 bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName);
-
-#define REG_CLASS_PROPERTIES(L, T)                                                                 \
+ define REG_CLASS_PROPERTIES(L, T)                                                                 \
   {                                                                                                \
     luaL_getmetatable(L, get_mtname<T>());                                                         \
     create_mt_getters_setters(L, get_mtname<T>(), T##_properties);                                 \
     lua_pop(L, 1);                                                                                 \
   }
-
 }} // namespace app::script
-
-#endif
+ endif

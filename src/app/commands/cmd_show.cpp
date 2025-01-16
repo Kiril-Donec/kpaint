@@ -1,21 +1,22 @@
-// Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
-// Copyright (C) 2001-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/commands/command.h"
-#include "app/context.h"
-#include "app/modules/gui.h"
-#include "app/pref/preferences.h"
-
+ endif
+ include "app/commands/command.h"
+ include "app/context.h"
+ include "app/modules/gui.h"
+ include "app/pref/preferences.h"
 namespace app {
-
 class ShowExtrasCommand : public Command {
 public:
   ShowExtrasCommand() : Command(CommandId::ShowExtras(), CmdUIOnlyFlag) {}
@@ -26,7 +27,6 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.selectionEdges();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& globPref = Preferences::instance().document(nullptr);
@@ -46,7 +46,6 @@ protected:
     }
   }
 };
-
 class ShowLayerEdgesCommand : public Command {
 public:
   ShowLayerEdgesCommand() : Command(CommandId::ShowLayerEdges(), CmdUIOnlyFlag) {}
@@ -57,14 +56,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.layerEdges();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.layerEdges(!docPref.show.layerEdges());
   }
 };
-
 class ShowGridCommand : public Command {
 public:
   ShowGridCommand() : Command(CommandId::ShowGrid(), CmdUIOnlyFlag) {}
@@ -75,14 +72,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.grid();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.grid(!docPref.show.grid());
   }
 };
-
 class ShowPixelGridCommand : public Command {
 public:
   ShowPixelGridCommand() : Command(CommandId::ShowPixelGrid(), CmdUIOnlyFlag) {}
@@ -93,14 +88,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.pixelGrid();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.pixelGrid(!docPref.show.pixelGrid());
   }
 };
-
 class ShowSelectionEdgesCommand : public Command {
 public:
   ShowSelectionEdgesCommand() : Command(CommandId::ShowSelectionEdges(), CmdUIOnlyFlag) {}
@@ -111,14 +104,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.selectionEdges();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.selectionEdges(!docPref.show.selectionEdges());
   }
 };
-
 class ShowBrushPreviewCommand : public Command {
 public:
   ShowBrushPreviewCommand() : Command(CommandId::ShowBrushPreview(), CmdUIOnlyFlag) {}
@@ -129,19 +120,16 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.brushPreview();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.brushPreview(!docPref.show.brushPreview());
-
     // TODO we shouldn't need this, but it happens to be that the
     // Preview editor isn't being updated correctly when we change the
     // brush preview state.
     update_screen_for_document(ctx->activeDocument());
   }
 };
-
 class ShowBrushPreviewInPreviewCommand : public Command {
 public:
   ShowBrushPreviewInPreviewCommand()
@@ -155,14 +143,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.brushPreviewInPreview();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.brushPreviewInPreview(!docPref.show.brushPreviewInPreview());
   }
 };
-
 class ShowAutoGuidesCommand : public Command {
 public:
   ShowAutoGuidesCommand() : Command(CommandId::ShowAutoGuides(), CmdUIOnlyFlag) {}
@@ -173,14 +159,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.autoGuides();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.autoGuides(!docPref.show.autoGuides());
   }
 };
-
 class ShowSlicesCommand : public Command {
 public:
   ShowSlicesCommand() : Command(CommandId::ShowSlices(), CmdUIOnlyFlag) {}
@@ -191,14 +175,12 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.slices();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.slices(!docPref.show.slices());
   }
 };
-
 class ShowTileNumbersCommand : public Command {
 public:
   ShowTileNumbersCommand() : Command(CommandId::ShowTileNumbers(), CmdUIOnlyFlag) {}
@@ -209,62 +191,50 @@ protected:
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.tileNumbers();
   }
-
   void onExecute(Context* ctx) override
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.tileNumbers(!docPref.show.tileNumbers());
   }
 };
-
 Command* CommandFactory::createShowExtrasCommand()
 {
   return new ShowExtrasCommand;
 }
-
 Command* CommandFactory::createShowGridCommand()
 {
   return new ShowGridCommand;
 }
-
 Command* CommandFactory::createShowPixelGridCommand()
 {
   return new ShowPixelGridCommand;
 }
-
 Command* CommandFactory::createShowLayerEdgesCommand()
 {
   return new ShowLayerEdgesCommand;
 }
-
 Command* CommandFactory::createShowSelectionEdgesCommand()
 {
   return new ShowSelectionEdgesCommand;
 }
-
 Command* CommandFactory::createShowBrushPreviewCommand()
 {
   return new ShowBrushPreviewCommand;
 }
-
 Command* CommandFactory::createShowBrushPreviewInPreviewCommand()
 {
   return new ShowBrushPreviewInPreviewCommand;
 }
-
 Command* CommandFactory::createShowAutoGuidesCommand()
 {
   return new ShowAutoGuidesCommand;
 }
-
 Command* CommandFactory::createShowSlicesCommand()
 {
   return new ShowSlicesCommand;
 }
-
 Command* CommandFactory::createShowTileNumbersCommand()
 {
   return new ShowTileNumbersCommand;
 }
-
 } // namespace app

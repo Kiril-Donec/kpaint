@@ -1,18 +1,20 @@
-// Aseprite
-// Copyright (C) 2001-2017  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_ICON_BUTTON_H_INCLUDED
-#define APP_UI_ICON_BUTTON_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/ui/skin/skin_part.h"
-#include "ui/button.h"
 
+
+ ifndef APP_UI_ICON_BUTTON_H_INCLUDED
+ define APP_UI_ICON_BUTTON_H_INCLUDED
+ pragma once
+ include "app/ui/skin/skin_part.h"
+ include "ui/button.h"
 namespace app {
-
 class IconButton : public ui::Button {
 public:
   IconButton(const skin::SkinPartPtr& part);
@@ -25,7 +27,5 @@ protected:
 private:
   skin::SkinPartPtr m_part;
 };
-
 } // namespace app
-
-#endif
+ endif

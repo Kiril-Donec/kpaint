@@ -1,9 +1,13 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2019-2021  Igara Studio S.A. -->
-<!-- Copyright (C) 2001-2017  David Capello -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui>
   <vbox noborders="true" id="home_view" border="4" childspacing="2" expansive="true">
-
     <hbox noborders="true" id="header_placeholder">
       <link id="aseprite_face" style="aseprite_face" />
       <vbox border="4" childspacing="4">

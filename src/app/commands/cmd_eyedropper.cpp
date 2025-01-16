@@ -1,38 +1,37 @@
-// Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/color.h"
-#include "app/color_picker.h"
-#include "app/commands/cmd_eyedropper.h"
-#include "app/commands/commands.h"
-#include "app/commands/params.h"
-#include "app/context.h"
-#include "app/pref/preferences.h"
-#include "app/site.h"
-#include "app/tools/tool.h"
-#include "app/tools/tool_box.h"
-#include "app/ui/color_bar.h"
-#include "app/ui/editor/editor.h"
-#include "ui/manager.h"
-#include "ui/system.h"
-
+ endif
+ include "app/color.h"
+ include "app/color_picker.h"
+ include "app/commands/cmd_eyedropper.h"
+ include "app/commands/commands.h"
+ include "app/commands/params.h"
+ include "app/context.h"
+ include "app/pref/preferences.h"
+ include "app/site.h"
+ include "app/tools/tool.h"
+ include "app/tools/tool_box.h"
+ include "app/ui/color_bar.h"
+ include "app/ui/editor/editor.h"
+ include "ui/manager.h"
+ include "ui/system.h"
 namespace app {
-
 using namespace ui;
-
 EyedropperCommand::EyedropperCommand() : Command(CommandId::Eyedropper(), CmdUIOnlyFlag)
 {
   m_background = false;
 }
-
 void EyedropperCommand::pickSample(const Site& site,
                                    const gfx::PointF& pixelPos,
                                    const render::Projection& proj,
@@ -49,17 +48,13 @@ void EyedropperCommand::pickSample(const Site& site,
       mode = ColorPicker::FromFirstReferenceLayer;
       break;
   }
-
   ColorPicker picker;
   picker.pickColor(site, pixelPos, proj, mode);
-
   app::gen::EyedropperChannel channel = pref.eyedropper.channel();
-
   if (site.tilemapMode() == TilemapMode::Tiles) {
     tile = picker.tile();
     return;
   }
-
   app::Color picked = picker.color();
   switch (channel) {
     case app::gen::EyedropperChannel::COLOR_ALPHA: color = picked; break;
@@ -79,21 +74,18 @@ void EyedropperCommand::pickSample(const Site& site,
                                       color.getBlue(),
                                       picked.getAlpha());
           break;
-
         case app::Color::HsvType:
           color = app::Color::fromHsv(color.getHsvHue(),
                                       color.getHsvSaturation(),
                                       color.getHsvValue(),
                                       picked.getAlpha());
           break;
-
         case app::Color::HslType:
           color = app::Color::fromHsl(color.getHslHue(),
                                       color.getHslSaturation(),
                                       color.getHslLightness(),
                                       picked.getAlpha());
           break;
-
         case app::Color::GrayType:
           color = app::Color::fromGray(color.getGray(), picked.getAlpha());
           break;
@@ -162,7 +154,6 @@ void EyedropperCommand::pickSample(const Site& site,
       break;
   }
 }
-
 void EyedropperCommand::onLoadParams(const Params& params)
 {
   std::string target = params.get("target");
@@ -171,50 +162,41 @@ void EyedropperCommand::onLoadParams(const Params& params)
   else if (target == "background")
     m_background = true;
 }
-
 void EyedropperCommand::onExecute(Context* context)
 {
   gfx::Point mousePos = ui::get_mouse_position();
   Widget* widget = ui::Manager::getDefault()->pickFromScreenPos(mousePos);
   if (!widget || widget->type() != Editor::Type())
     return;
-
   Editor* editor = static_cast<Editor*>(widget);
   executeOnMousePos(context,
                     editor,
                     editor->display()->nativeWindow()->pointFromScreen(mousePos),
                     !m_background);
 }
-
 void EyedropperCommand::executeOnMousePos(Context* context,
                                           Editor* editor,
                                           const gfx::Point& mousePos,
                                           const bool foreground)
 {
   ASSERT(editor);
-
   Sprite* sprite = editor->sprite();
   if (!sprite)
     return;
-
   // Discard current image brush
   if (Preferences::instance().eyedropper.discardBrush()) {
     Command* discardBrush = Commands::instance()->byId(CommandId::DiscardBrush());
     context->executeCommand(discardBrush);
   }
-
   // Pixel position to get
   gfx::PointF pixelPos = editor->screenToEditorF(mousePos);
-
   // Start with fg/bg color
   DisableColorBarEditMode disable;
   Preferences& pref = Preferences::instance();
   app::Color color = (foreground ? pref.colorBar.fgColor() : pref.colorBar.bgColor());
   doc::tile_t tile = (foreground ? pref.colorBar.fgTile() : pref.colorBar.bgTile());
-
   Site site = editor->getSite();
   pickSample(site, pixelPos, editor->projection(), color, tile);
-
   if (site.tilemapMode() == TilemapMode::Tiles) {
     if (foreground)
       pref.colorBar.fgTile(tile);
@@ -228,10 +210,8 @@ void EyedropperCommand::executeOnMousePos(Context* context,
       pref.colorBar.bgColor(color);
   }
 }
-
 Command* CommandFactory::createEyedropperCommand()
 {
   return new EyedropperCommand;
 }
-
 } // namespace app

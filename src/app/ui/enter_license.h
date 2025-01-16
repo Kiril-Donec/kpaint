@@ -1,19 +1,21 @@
-// Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_ENTER_LICENSE_H_INCLUDED
-#define APP_UI_ENTER_LICENSE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "drm/license_manager.h"
-#include "enter_license.xml.h"
-#include "ui/timer.h"
 
+
+ ifndef APP_UI_ENTER_LICENSE_H_INCLUDED
+ define APP_UI_ENTER_LICENSE_H_INCLUDED
+ pragma once
+ include "drm/license_manager.h"
+ include "enter_license.xml.h"
+ include "ui/timer.h"
 namespace app {
-
 class EnterLicense : public app::gen::EnterLicense {
 public:
   EnterLicense();
@@ -27,12 +29,9 @@ private:
   std::thread m_activation;
   ui::Timer m_timer;
   bool m_activationInProgress;
-
   void startActivation();
   void showError(const std::string& msg);
   void showSuccess();
 };
-
 } // namespace app
-
-#endif
+ endif

@@ -1,22 +1,24 @@
-// Aseprite
-// Copyright (C) 2021-2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "aseprite_update.h"
-#include "base/time.h"
-#include "base/trim_string.h"
-#include "ui/label.h"
-#include "ui/system.h"
-#include "ver/info.h"
-
+ endif
+ include "aseprite_update.h"
+ include "base/time.h"
+ include "base/trim_string.h"
+ include "ui/label.h"
+ include "ui/system.h"
+ include "ver/info.h"
 namespace app {
-
 AsepriteUpdate::AsepriteUpdate(std::string version)
   : m_download(get_app_name(), version)
   , m_timer(500, this)
@@ -24,8 +26,7 @@ AsepriteUpdate::AsepriteUpdate(std::string version)
   okButton()->setEnabled(false);
   okButton()->Click.connect([this]() {});
   m_timer.Tick.connect([this] { this->onTimerTick(); });
-
-  log(base::string_printf("Downloading Aseprite %s...", version.c_str()));
+  log(base::string_printf("Downloading KPaint %s...", version.c_str()));
   m_download.DataReceived.connect([this](long total, long now) { onDataReceived(total, now); });
   m_download.DownloadFailed.connect(
     [this](drm::LicenseManager::DownloadException& e) { onDownloadFailed(e); });
@@ -34,7 +35,6 @@ AsepriteUpdate::AsepriteUpdate(std::string version)
   m_download.start();
   m_timer.start();
 }
-
 void AsepriteUpdate::onBeforeClose(ui::CloseEvent& ev)
 {
   if ((m_download.status() != drm::Thread::Status::FINISHED) ||
@@ -50,17 +50,14 @@ void AsepriteUpdate::onBeforeClose(ui::CloseEvent& ev)
   }
   m_closing = true;
 }
-
 void AsepriteUpdate::onDataReceived(long total, long now)
 {
   ui::execute_from_ui_thread([this, total, now] { progress()->setValue(100 * now / total); });
 }
-
 void AsepriteUpdate::onDownloadFailed(drm::LicenseManager::DownloadException& e)
 {
   ui::execute_from_ui_thread([this, e] { log(e.what()); });
 }
-
 void AsepriteUpdate::onDownloadFinished(drm::Package& package)
 {
   ui::execute_from_ui_thread([this, package] {
@@ -85,7 +82,6 @@ void AsepriteUpdate::onDownloadFinished(drm::Package& package)
     m_installation->start();
   });
 }
-
 void AsepriteUpdate::onInstallationPhaseStarted(drm::InstallationPhase phase)
 {
   ui::execute_from_ui_thread([this, phase] {
@@ -99,7 +95,6 @@ void AsepriteUpdate::onInstallationPhaseStarted(drm::InstallationPhase phase)
       log(msg);
   });
 }
-
 void AsepriteUpdate::onInstallationPhaseSkipped(drm::InstallationPhase phase)
 {
   ui::execute_from_ui_thread([this, phase] {
@@ -113,12 +108,10 @@ void AsepriteUpdate::onInstallationPhaseSkipped(drm::InstallationPhase phase)
       log(msg);
   });
 }
-
 void AsepriteUpdate::onInstallationPhaseFinished(drm::InstallationPhase phase)
 {
   ui::execute_from_ui_thread([this, phase] {
     std::string msg;
-
     switch (phase) {
       case drm::InstallationPhase::CREATING_BACKUP:   msg = "Backup created!"; break;
       case drm::InstallationPhase::UNPACKING_PACKAGE: msg = "Package unpacked!"; break;
@@ -128,42 +121,34 @@ void AsepriteUpdate::onInstallationPhaseFinished(drm::InstallationPhase phase)
       log(msg);
   });
 }
-
 void AsepriteUpdate::onInstallationStarted(drm::Package& package)
 {
   ui::execute_from_ui_thread([this] { log("Installation process started..."); });
 }
-
 void AsepriteUpdate::onInstallationProgress(int pctCompleted)
 {
   ui::execute_from_ui_thread([this, pctCompleted] { progress()->setValue(pctCompleted); });
 }
-
 void AsepriteUpdate::onInstallationFinished(drm::Package& package)
 {
   ui::execute_from_ui_thread([this] { log("Installation process finished!"); });
 }
-
-// TODO: Create a unique onFailure() method to handle any exception.
+ TODO: Create a unique onFailure() method to handle any exception.
 void AsepriteUpdate::onInstallationFailed(drm::LicenseManager::InstallationException& e)
 {
   ui::execute_from_ui_thread([this, e] { log(e.what()); });
 }
-
 void AsepriteUpdate::onTimerTick()
 {
   if (m_closing && m_download.status() == drm::Thread::Status::FINISHED) {
     this->closeWindow(this);
   }
 }
-
 void AsepriteUpdate::log(std::string text)
 {
   if (m_closing)
     return;
-
   base::trim_string(text, text);
-
   auto now = base::current_time();
   auto strNow = base::string_printf("%d-%02d-%02d %02d:%02d:%02d",
                                     now.year,
@@ -175,5 +160,4 @@ void AsepriteUpdate::log(std::string text)
   logitems()->addChild(new ui::Label(strNow + " " + text));
   layout();
 }
-
 } // namespace app

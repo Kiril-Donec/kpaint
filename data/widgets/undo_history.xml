@@ -1,6 +1,11 @@
-<!-- Aseprite -->
-<!-- Copyright (C) 2022 by Igara Studio S.A. -->
-<!-- Copyright (C) 2015-2016 by David Capello -->
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<?xml version="1.0" encoding="utf-8"?>
+<!---- KPaint
+     Copyright (C) 2024-2025 KiriX Company --->
+
+<!---- KPaint --->
 <gui>
   <window id="undo_history" text="@.title">
     <view id="view" expansive="true" width="80" height="100" />

@@ -1,43 +1,41 @@
-// Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/script/graphics_context.h"
-
-#include "app/color.h"
-#include "app/color_utils.h"
-#include "app/modules/palettes.h"
-#include "app/script/blend_mode.h"
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/ui/skin/skin_theme.h"
-#include "app/util/conversion_to_surface.h"
-#include "doc/cel.h"
-#include "doc/tileset.h"
-#include "os/draw_text.h"
-#include "os/surface.h"
-#include "os/system.h"
-
-#include <algorithm>
-
+ endif
+ include "app/color.h"
+ include "app/color_utils.h"
+ include "app/modules/palettes.h"
+ include "app/script/blend_mode.h"
+ include "app/script/engine.h"
+ include "app/script/graphics_context.h"
+ include "app/script/luacpp.h"
+ include "app/ui/skin/skin_theme.h"
+ include "app/util/conversion_to_surface.h"
+ include "doc/cel.h"
+ include "doc/tileset.h"
+ include "os/draw_text.h"
+ include "os/surface.h"
+ include "os/system.h"
+ include <algorithm>
 namespace app { namespace script {
-
 void GraphicsContext::fillText(const std::string& text, int x, int y)
 {
   os::draw_text(m_surface.get(), m_font.get(), text, m_paint.color(), 0, x, y, nullptr);
 }
-
 gfx::Size GraphicsContext::measureText(const std::string& text) const
 {
   return os::draw_text(nullptr, m_font.get(), text, 0, 0, 0, 0, nullptr).size();
 }
-
 void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
 {
   if (m_paint.blendMode() == os::BlendMode::Src) {
@@ -52,17 +50,14 @@ void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
                              img->height());
     return;
   }
-
   drawImage(img, img->bounds(), gfx::Rect(x, y, img->size().w, img->size().h));
 }
-
 void GraphicsContext::drawImage(const doc::Image* img,
                                 const gfx::Rect& srcRc,
                                 const gfx::Rect& dstRc)
 {
   if (srcRc.isEmpty() || dstRc.isEmpty())
     return; // Do nothing for empty rectangles
-
   static os::SurfaceRef tmpSurface = nullptr;
   if (!tmpSurface || tmpSurface->width() < srcRc.w || tmpSurface->height() < srcRc.h) {
     tmpSurface = os::instance()->makeRgbaSurface(
@@ -79,7 +74,6 @@ void GraphicsContext::drawImage(const doc::Image* img,
                              0,
                              srcRc.w,
                              srcRc.h);
-
     m_surface->drawSurface(tmpSurface.get(),
                            gfx::Rect(0, 0, srcRc.w, srcRc.h),
                            dstRc,
@@ -87,7 +81,6 @@ void GraphicsContext::drawImage(const doc::Image* img,
                            &m_paint);
   }
 }
-
 void GraphicsContext::drawThemeImage(const std::string& partId, const gfx::Point& pt)
 {
   if (auto theme = skin::SkinTheme::instance()) {
@@ -99,7 +92,6 @@ void GraphicsContext::drawThemeImage(const std::string& partId, const gfx::Point
     }
   }
 }
-
 void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& rc)
 {
   if (auto theme = skin::SkinTheme::instance()) {
@@ -107,9 +99,7 @@ void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& 
                                               theme->getPartById(partId));
     if (part && part->bitmap(0)) {
       ui::Graphics g(nullptr, m_surface, 0, 0);
-
       // TODO Copy code from Theme::paintLayer()
-
       // 9-slices
       if (!part->slicesBounds().isEmpty()) {
         if (m_uiscale > 1)
@@ -138,49 +128,41 @@ void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& 
     }
   }
 }
-
 void GraphicsContext::stroke()
 {
   m_paint.style(os::Paint::Stroke);
   m_surface->drawPath(m_path, m_paint);
 }
-
 void GraphicsContext::fill()
 {
   m_paint.style(os::Paint::Fill);
   m_surface->drawPath(m_path, m_paint);
 }
-
 namespace {
-
 int GraphicsContext_gc(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->~GraphicsContext();
   return 0;
 }
-
 int GraphicsContext_save(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->save();
   return 0;
 }
-
 int GraphicsContext_restore(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->restore();
   return 0;
 }
-
 int GraphicsContext_clip(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->clip();
   return 0;
 }
-
 int GraphicsContext_strokeRect(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -188,7 +170,6 @@ int GraphicsContext_strokeRect(lua_State* L)
   gc->strokeRect(rc);
   return 0;
 }
-
 int GraphicsContext_fillRect(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -196,7 +177,6 @@ int GraphicsContext_fillRect(lua_State* L)
   gc->fillRect(rc);
   return 0;
 }
-
 int GraphicsContext_fillText(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -207,7 +187,6 @@ int GraphicsContext_fillText(lua_State* L)
   }
   return 0;
 }
-
 int GraphicsContext_measureText(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -217,7 +196,6 @@ int GraphicsContext_measureText(lua_State* L)
   }
   return 0;
 }
-
 doc::Palette* get_image_palette(const doc::Image* img,
                                 const doc::Palette* currentPal,
                                 lua_State* L,
@@ -225,7 +203,6 @@ doc::Palette* get_image_palette(const doc::Image* img,
 {
   if (img->spec().colorMode() != ColorMode::INDEXED || currentPal)
     return nullptr;
-
   if (const doc::Cel* cel = get_image_cel_from_arg(L, index)) {
     return cel->sprite()->palette(cel->frame());
   }
@@ -234,7 +211,6 @@ doc::Palette* get_image_palette(const doc::Image* img,
   }
   return nullptr;
 }
-
 int GraphicsContext_drawImage(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -246,7 +222,6 @@ int GraphicsContext_drawImage(lua_State* L)
     }
     int x = lua_tointeger(L, 3);
     int y = lua_tointeger(L, 4);
-
     if (lua_gettop(L) >= 9) {
       int w = lua_tointeger(L, 5);
       int h = lua_tointeger(L, 6);
@@ -270,14 +245,12 @@ int GraphicsContext_drawImage(lua_State* L)
   }
   return 0;
 }
-
 int GraphicsContext_theme(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   push_app_theme(L, gc->uiscale());
   return 1;
 }
-
 int GraphicsContext_drawThemeImage(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -287,7 +260,6 @@ int GraphicsContext_drawThemeImage(lua_State* L)
   }
   return 0;
 }
-
 int GraphicsContext_drawThemeRect(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -297,7 +269,6 @@ int GraphicsContext_drawThemeRect(lua_State* L)
   }
   return 0;
 }
-
 int GraphicsContext_beginPath(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -305,7 +276,6 @@ int GraphicsContext_beginPath(lua_State* L)
   lua_pushvalue(L, 1);
   return 1;
 }
-
 int GraphicsContext_closePath(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -313,7 +283,6 @@ int GraphicsContext_closePath(lua_State* L)
   lua_pushvalue(L, 1);
   return 1;
 }
-
 int GraphicsContext_moveTo(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -323,7 +292,6 @@ int GraphicsContext_moveTo(lua_State* L)
   lua_pushvalue(L, 1);
   return 1;
 }
-
 int GraphicsContext_lineTo(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -333,7 +301,6 @@ int GraphicsContext_lineTo(lua_State* L)
   lua_pushvalue(L, 1);
   return 1;
 }
-
 int GraphicsContext_cubicTo(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -347,7 +314,6 @@ int GraphicsContext_cubicTo(lua_State* L)
   lua_pushvalue(L, 1);
   return 1;
 }
-
 int GraphicsContext_oval(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -355,7 +321,6 @@ int GraphicsContext_oval(lua_State* L)
   gc->oval(rc);
   return 0;
 }
-
 int GraphicsContext_rect(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -363,7 +328,6 @@ int GraphicsContext_rect(lua_State* L)
   gc->rect(rc);
   return 0;
 }
-
 int GraphicsContext_roundedRect(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -373,7 +337,6 @@ int GraphicsContext_roundedRect(lua_State* L)
   gc->roundedRect(rc, rx, ry);
   return 0;
 }
-
 int GraphicsContext_stroke(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -381,7 +344,6 @@ int GraphicsContext_stroke(lua_State* L)
   lua_pushvalue(L, 1);
   return 1;
 }
-
 int GraphicsContext_fill(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -389,28 +351,24 @@ int GraphicsContext_fill(lua_State* L)
   lua_pushvalue(L, 1);
   return 1;
 }
-
 int GraphicsContext_get_width(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, gc->width());
   return 1;
 }
-
 int GraphicsContext_get_height(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, gc->height());
   return 1;
 }
-
 int GraphicsContext_get_antialias(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushboolean(L, gc->antialias());
   return 1;
 }
-
 int GraphicsContext_set_antialias(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -418,14 +376,12 @@ int GraphicsContext_set_antialias(lua_State* L)
   gc->antialias(antialias);
   return 1;
 }
-
 int GraphicsContext_get_color(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   push_obj(L, color_utils::color_from_ui(gc->color()));
   return 1;
 }
-
 int GraphicsContext_set_color(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -433,14 +389,12 @@ int GraphicsContext_set_color(lua_State* L)
   gc->color(color_utils::color_for_ui(color));
   return 1;
 }
-
 int GraphicsContext_get_strokeWidth(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushnumber(L, gc->strokeWidth());
   return 1;
 }
-
 int GraphicsContext_set_strokeWidth(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -448,28 +402,24 @@ int GraphicsContext_set_strokeWidth(lua_State* L)
   gc->strokeWidth(strokeWidth);
   return 1;
 }
-
 int GraphicsContext_get_blendMode(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, int(base::convert_to<app::script::BlendMode>(gc->blendMode())));
   return 0;
 }
-
 int GraphicsContext_set_blendMode(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->blendMode(base::convert_to<os::BlendMode>(app::script::BlendMode(lua_tointeger(L, 2))));
   return 0;
 }
-
 int GraphicsContext_get_opacity(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, gc->opacity());
   return 1;
 }
-
 int GraphicsContext_set_opacity(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -477,14 +427,12 @@ int GraphicsContext_set_opacity(lua_State* L)
   gc->opacity(std::clamp(opacity, 0, 255));
   return 0;
 }
-
 int GraphicsContext_get_palette(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   push_palette(L, gc->palette());
   return 1;
 }
-
 int GraphicsContext_set_palette(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
@@ -492,7 +440,6 @@ int GraphicsContext_set_palette(lua_State* L)
   gc->palette(palette);
   return 1;
 }
-
 const luaL_Reg GraphicsContext_methods[] = {
   { "__gc",           GraphicsContext_gc             },
   { "save",           GraphicsContext_save           },
@@ -517,7 +464,6 @@ const luaL_Reg GraphicsContext_methods[] = {
   { "fill",           GraphicsContext_fill           },
   { nullptr,          nullptr                        }
 };
-
 const Property GraphicsContext_properties[] = {
   { "width",       GraphicsContext_get_width,       nullptr                         },
   { "height",      GraphicsContext_get_height,      nullptr                         },
@@ -530,15 +476,11 @@ const Property GraphicsContext_properties[] = {
   { "palette",     GraphicsContext_get_palette,     GraphicsContext_set_palette     },
   { nullptr,       nullptr,                         nullptr                         }
 };
-
 } // anonymous namespace
-
 DEF_MTNAME(GraphicsContext);
-
 void register_graphics_context_class(lua_State* L)
 {
   REG_CLASS(L, GraphicsContext);
   REG_CLASS_PROPERTIES(L, GraphicsContext);
 }
-
 }} // namespace app::script

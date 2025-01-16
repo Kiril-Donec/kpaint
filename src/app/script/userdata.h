@@ -1,38 +1,37 @@
-// Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
-// Copyright (C) 2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_SCRIPT_USERDATA_HELPER_H_INCLUDED
-#define APP_SCRIPT_USERDATA_HELPER_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd/set_user_data.h"
-#include "app/cmd/set_user_data_properties.h"
-#include "app/color.h"
-#include "app/color_utils.h"
-#include "app/script/luacpp.h"
-#include "app/script/values.h"
-#include "app/tx.h"
-#include "doc/cel.h"
-#include "doc/with_user_data.h"
 
+
+ ifndef APP_SCRIPT_USERDATA_HELPER_H_INCLUDED
+ define APP_SCRIPT_USERDATA_HELPER_H_INCLUDED
+ pragma once
+ include "app/cmd/set_user_data.h"
+ include "app/cmd/set_user_data_properties.h"
+ include "app/color.h"
+ include "app/color_utils.h"
+ include "app/script/luacpp.h"
+ include "app/script/values.h"
+ include "app/tx.h"
+ include "doc/cel.h"
+ include "doc/with_user_data.h"
 namespace app { namespace script {
-
 template<typename T>
 inline doc::WithUserData* get_WithUserData(T* obj)
 {
   return static_cast<doc::WithUserData*>(obj);
 }
-
 template<>
 inline doc::WithUserData* get_WithUserData<doc::Cel>(doc::Cel* obj)
 {
   return obj->data();
 }
-
 template<typename T>
 int UserData_get_text(lua_State* L)
 {
@@ -40,7 +39,6 @@ int UserData_get_text(lua_State* L)
   lua_pushstring(L, get_WithUserData<T>(obj)->userData().text().c_str());
   return 1;
 }
-
 template<typename T>
 int UserData_get_color(lua_State* L)
 {
@@ -55,7 +53,6 @@ int UserData_get_color(lua_State* L)
   push_obj<app::Color>(L, appColor);
   return 1;
 }
-
 template<typename T>
 int UserData_get_properties(lua_State* L)
 {
@@ -63,7 +60,6 @@ int UserData_get_properties(lua_State* L)
   push_properties(L, get_WithUserData<T>(obj), std::string());
   return 1;
 }
-
 template<typename T>
 int UserData_set_text(lua_State* L)
 {
@@ -82,7 +78,6 @@ int UserData_set_text(lua_State* L)
   }
   return 0;
 }
-
 template<typename T>
 int UserData_set_color(lua_State* L)
 {
@@ -101,7 +96,6 @@ int UserData_set_color(lua_State* L)
   }
   return 0;
 }
-
 template<typename T>
 int UserData_set_properties(lua_State* L)
 {
@@ -119,7 +113,5 @@ int UserData_set_properties(lua_State* L)
   }
   return 0;
 }
-
 }} // namespace app::script
-
-#endif
+ endif

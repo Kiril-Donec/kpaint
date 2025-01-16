@@ -1,27 +1,25 @@
-// Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
-// Copyright (C) 2015-2016  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/ui/editor/moving_symmetry_state.h"
-
-#include "app/ui/editor/editor.h"
-#include "app/ui/status_bar.h"
-#include "fmt/format.h"
-#include "ui/message.h"
-
-#include <cmath>
-
+ endif
+ include "app/ui/editor/editor.h"
+ include "app/ui/editor/moving_symmetry_state.h"
+ include "app/ui/status_bar.h"
+ include "fmt/format.h"
+ include "ui/message.h"
+ include <cmath>
 namespace app {
-
 using namespace ui;
-
 MovingSymmetryState::MovingSymmetryState(Editor* editor,
                                          MouseMessage* msg,
                                          app::gen::SymmetryMode mode,
@@ -33,20 +31,17 @@ MovingSymmetryState::MovingSymmetryState(Editor* editor,
   m_mouseStart = editor->screenToEditorF(msg->position());
   editor->captureMouse();
 }
-
 bool MovingSymmetryState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   editor->backToPreviousState();
   editor->releaseMouse();
   return true;
 }
-
 bool MovingSymmetryState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::PointF newCursorPos = editor->screenToEditorF(msg->position());
   gfx::PointF delta = newCursorPos - m_mouseStart;
   double pos = 0.0;
-
   switch (m_symmetryMode) {
     case app::gen::SymmetryMode::HORIZONTAL:
       pos = m_symmetryAxisStart + delta.x;
@@ -60,14 +55,11 @@ bool MovingSymmetryState::onMouseMove(Editor* editor, MouseMessage* msg)
       break;
   }
   m_symmetryAxis(pos);
-
   // Redraw the editor.
   editor->invalidate();
-
   // Use StandbyState implementation
   return StandbyState::onMouseMove(editor, msg);
 }
-
 bool MovingSymmetryState::onUpdateStatusBar(Editor* editor)
 {
   if (m_symmetryMode == app::gen::SymmetryMode::HORIZONTAL)
@@ -82,8 +74,6 @@ bool MovingSymmetryState::onUpdateStatusBar(Editor* editor)
       fmt::format("Top {:3.1f} Bottom {:3.1f}",
                   m_symmetryAxis(),
                   double(editor->sprite()->height()) - m_symmetryAxis()));
-
   return true;
 }
-
 } // namespace app

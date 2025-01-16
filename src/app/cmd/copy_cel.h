@@ -1,22 +1,23 @@
-// Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_CMD_COPY_CEL_H_INCLUDED
-#define APP_CMD_COPY_CEL_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/cmd/with_layer.h"
-#include "app/cmd_sequence.h"
-#include "doc/color.h"
-#include "doc/frame.h"
 
+
+ ifndef APP_CMD_COPY_CEL_H_INCLUDED
+ define APP_CMD_COPY_CEL_H_INCLUDED
+ pragma once
+ include "app/cmd/with_layer.h"
+ include "app/cmd_sequence.h"
+ include "doc/color.h"
+ include "doc/frame.h"
 namespace app { namespace cmd {
 using namespace doc;
-
 class CopyCel : public CmdSequence {
 public:
   CopyCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame, bool continuous);
@@ -30,7 +31,5 @@ private:
   frame_t m_srcFrame, m_dstFrame;
   bool m_continuous;
 };
-
 }} // namespace app::cmd
-
-#endif
+ endif

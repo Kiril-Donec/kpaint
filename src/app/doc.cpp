@@ -1,52 +1,49 @@
-// Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/doc.h"
-
-#include "app/app.h"
-#include "app/color_target.h"
-#include "app/color_utils.h"
-#include "app/context.h"
-#include "app/doc_api.h"
-#include "app/doc_event.h"
-#include "app/doc_observer.h"
-#include "app/doc_undo.h"
-#include "app/file/format_options.h"
-#include "app/flatten.h"
-#include "app/pref/preferences.h"
-#include "app/util/cel_ops.h"
-#include "base/memory.h"
-#include "doc/cel.h"
-#include "doc/layer.h"
-#include "doc/layer_tilemap.h"
-#include "doc/mask.h"
-#include "doc/mask_boundaries.h"
-#include "doc/palette.h"
-#include "doc/slice.h"
-#include "doc/sprite.h"
-#include "doc/tag.h"
-#include "os/system.h"
-#include "os/window.h"
-#include "ui/system.h"
-
-#include <limits>
-#include <map>
-
-#define DOC_TRACE(...) // TRACEARGS(__VA_ARGS__)
-
+ endif
+ include "app/app.h"
+ include "app/color_target.h"
+ include "app/color_utils.h"
+ include "app/context.h"
+ include "app/doc.h"
+ include "app/doc_api.h"
+ include "app/doc_event.h"
+ include "app/doc_observer.h"
+ include "app/doc_undo.h"
+ include "app/file/format_options.h"
+ include "app/flatten.h"
+ include "app/pref/preferences.h"
+ include "app/util/cel_ops.h"
+ include "base/memory.h"
+ include "doc/cel.h"
+ include "doc/layer.h"
+ include "doc/layer_tilemap.h"
+ include "doc/mask.h"
+ include "doc/mask_boundaries.h"
+ include "doc/palette.h"
+ include "doc/slice.h"
+ include "doc/sprite.h"
+ include "doc/tag.h"
+ include "os/system.h"
+ include "os/window.h"
+ include "ui/system.h"
+ include <limits>
+ include <map>
+// define DOC_TRACE(...) // TRACEARGS(__VA_ARGS__)
 namespace app {
-
 using namespace base;
 using namespace doc;
-
 Doc::Doc(Sprite* sprite)
   : m_ctx(nullptr)
   , m_flags(kMaskVisible)
@@ -59,95 +56,77 @@ Doc::Doc(Sprite* sprite)
   , m_lastDrawingPoint(Doc::NoLastDrawingPoint())
 {
   setFilename("Sprite");
-
   if (sprite)
     sprites().add(sprite);
-
   updateOSColorSpace(false);
   DOC_TRACE("DOC: New", this);
 }
-
 Doc::~Doc()
 {
   DOC_TRACE("DOC: Deleting", this);
   removeFromContext();
 }
-
 void Doc::setContext(Context* ctx)
 {
   if (ctx == m_ctx)
     return;
-
   removeFromContext();
-
   m_ctx = ctx;
   if (ctx) {
     DOC_TRACE("DOC: Removing as fully backed up", this);
-
     // Remove the flag that indicates that this doc is fully backed
     // up, because now we are inside a context, so the user can change
     // it again and the backup will be outdated.
     if (m_flags & kFullyBackedUp)
       m_flags ^= kFullyBackedUp;
-
     ctx->documents().add(this);
   }
-
   onContextChanged();
 }
-
 bool Doc::canWriteLockFromRead() const
 {
   return m_rwLock.canWriteLockFromRead();
 }
-
 Doc::LockResult Doc::readLock(int timeout)
 {
   auto res = m_rwLock.lock(base::RWLock::ReadLock, timeout);
   DOC_TRACE("DOC: readLock", this, (int)res);
   return res;
 }
-
 Doc::LockResult Doc::writeLock(int timeout)
 {
   auto res = m_rwLock.lock(base::RWLock::WriteLock, timeout);
   DOC_TRACE("DOC: writeLock", this, (int)res);
   return res;
 }
-
 Doc::LockResult Doc::upgradeToWrite(int timeout)
 {
   auto res = m_rwLock.upgradeToWrite(timeout);
   DOC_TRACE("DOC: upgradeToWrite", this, (int)res);
   return res;
 }
-
 void Doc::downgradeToRead(LockResult lockResult)
 {
   DOC_TRACE("DOC: downgradeToRead", this, (int)lockResult);
   m_rwLock.downgradeToRead(lockResult);
 }
-
 void Doc::unlock(LockResult lockResult)
 {
   ASSERT(lockResult != base::RWLock::LockResult::Fail);
   DOC_TRACE("DOC: unlock", this, (int)lockResult);
   m_rwLock.unlock(lockResult);
 }
-
 bool Doc::weakLock(std::atomic<base::RWLock::WeakLock>* weak_lock_flag)
 {
   bool res = m_rwLock.weakLock(weak_lock_flag);
   DOC_TRACE("DOC: weakLock", this, (int)res);
   return res;
 }
-
 void Doc::weakUnlock()
 {
   DOC_TRACE("DOC: weakUnlock", this);
   m_rwLock.weakUnlock();
 }
-
 void Doc::setTransaction(Transaction* transaction)
 {
   if (transaction) {
@@ -159,20 +138,16 @@ void Doc::setTransaction(Transaction* transaction)
     m_transaction = nullptr;
   }
 }
-
 DocApi Doc::getApi(Transaction& transaction)
 {
   return DocApi(this, transaction);
 }
-
-//////////////////////////////////////////////////////////////////////
-// Main properties
-
+// ////////////////////////////////////////////////////////////////////
+ Main properties
 bool Doc::isUndoing() const
 {
   return m_undo->isUndoing();
 }
-
 color_t Doc::bgColor() const
 {
   return color_utils::color_for_target(Preferences::instance().colorBar.bgColor(),
@@ -180,7 +155,6 @@ color_t Doc::bgColor() const
                                                    sprite()->pixelFormat(),
                                                    sprite()->transparentColor()));
 }
-
 color_t Doc::bgColor(Layer* layer) const
 {
   if (layer->isBackground())
@@ -188,48 +162,39 @@ color_t Doc::bgColor(Layer* layer) const
   else
     return layer->sprite()->transparentColor();
 }
-
-//////////////////////////////////////////////////////////////////////
-// Modifications with notifications
-
+// ////////////////////////////////////////////////////////////////////
+ Modifications with notifications
 void Doc::setLayerVisibilityWithNotifications(Layer* layer, const bool visible)
 {
   notifyBeforeLayerVisibilityChange(layer, visible);
   layer->setVisible(visible);
   notifyAfterLayerVisibilityChange(layer);
 }
-
 void Doc::setLayerEditableWithNotifications(Layer* layer, const bool editable)
 {
   notifyBeforeLayerEditableChange(layer, editable);
   layer->setEditable(editable);
 }
-
-//////////////////////////////////////////////////////////////////////
-// Notifications
-
+// ////////////////////////////////////////////////////////////////////
+ Notifications
 void Doc::notifyGeneralUpdate()
 {
   DocEvent ev(this);
   notify_observers<DocEvent&>(&DocObserver::onGeneralUpdate, ev);
 }
-
 void Doc::notifyColorSpaceChanged()
 {
   updateOSColorSpace(true);
-
   DocEvent ev(this);
   ev.sprite(sprite());
   notify_observers<DocEvent&>(&DocObserver::onColorSpaceChanged, ev);
 }
-
 void Doc::notifyPaletteChanged()
 {
   DocEvent ev(this);
   ev.sprite(sprite());
   notify_observers<DocEvent&>(&DocObserver::onPaletteChanged, ev);
 }
-
 void Doc::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
 {
   DocEvent ev(this);
@@ -238,7 +203,6 @@ void Doc::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, 
   ev.frame(frame);
   notify_observers<DocEvent&>(&DocObserver::onSpritePixelsModified, ev);
 }
-
 void Doc::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region)
 {
   DocEvent ev(this);
@@ -246,7 +210,6 @@ void Doc::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region)
   ev.region(region);
   notify_observers<DocEvent&>(&DocObserver::onExposeSpritePixels, ev);
 }
-
 void Doc::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
 {
   DocEvent ev(this);
@@ -255,28 +218,24 @@ void Doc::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
   ev.targetLayer(targetLayer);
   notify_observers<DocEvent&>(&DocObserver::onLayerMergedDown, ev);
 }
-
 void Doc::notifyBeforeLayerVisibilityChange(Layer* layer, bool newState)
 {
   DocEvent ev(this);
   ev.layer(layer);
   notify_observers<DocEvent&, bool>(&DocObserver::onBeforeLayerVisibilityChange, ev, newState);
 }
-
 void Doc::notifyAfterLayerVisibilityChange(Layer* layer)
 {
   DocEvent ev(this);
   ev.layer(layer);
   notify_observers<DocEvent&>(&DocObserver::onAfterLayerVisibilityChange, ev);
 }
-
 void Doc::notifyBeforeLayerEditableChange(Layer* layer, bool newState)
 {
   DocEvent ev(this);
   ev.layer(layer);
   notify_observers<DocEvent&, bool>(&DocObserver::onBeforeLayerEditableChange, ev, newState);
 }
-
 void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
@@ -287,7 +246,6 @@ void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, fr
   ev.targetFrame(toFrame);
   notify_observers<DocEvent&>(&DocObserver::onCelMoved, ev);
 }
-
 void Doc::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
@@ -298,33 +256,28 @@ void Doc::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, f
   ev.targetFrame(toFrame);
   notify_observers<DocEvent&>(&DocObserver::onCelCopied, ev);
 }
-
 void Doc::notifySelectionChanged()
 {
   DocEvent ev(this);
   notify_observers<DocEvent&>(&DocObserver::onSelectionChanged, ev);
 }
-
 void Doc::notifySelectionBoundariesChanged()
 {
   DocEvent ev(this);
   notify_observers<DocEvent&>(&DocObserver::onSelectionBoundariesChanged, ev);
 }
-
 void Doc::notifyTilesetChanged(Tileset* tileset)
 {
   DocEvent ev(this);
   ev.tileset(tileset);
   notify_observers<DocEvent&>(&DocObserver::onTilesetChanged, ev);
 }
-
 void Doc::notifyLayerGroupCollapseChange(Layer* layer)
 {
   DocEvent ev(this);
   ev.layer(layer);
   notify_observers<DocEvent&>(&DocObserver::onLayerCollapsedChanged, ev);
 }
-
 void Doc::notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti)
 {
   DocEvent ev(this);
@@ -335,40 +288,33 @@ void Doc::notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti)
   ev.tileIndex(ti);
   notify_observers<DocEvent&>(&DocObserver::onAfterAddTile, ev);
 }
-
 bool Doc::isModified() const
 {
   return !m_undo->isInSavedStateOrSimilar();
 }
-
 bool Doc::isAssociatedToFile() const
 {
   return (m_flags & kAssociatedToFile) == kAssociatedToFile;
 }
-
 void Doc::markAsSaved()
 {
   m_flags |= kAssociatedToFile;
   m_undo->markSavedState();
 }
-
 void Doc::impossibleToBackToSavedState()
 {
   m_undo->impossibleToBackToSavedState();
 }
-
 bool Doc::needsBackup() const
 {
   // If the undo history isn't empty, the user has modified the
   // document, so we need to backup those changes.
   return m_undo->canUndo() || m_undo->canRedo();
 }
-
 bool Doc::inhibitBackup() const
 {
   return (m_flags & kInhibitBackup) == kInhibitBackup;
 }
-
 void Doc::setInhibitBackup(const bool inhibitBackup)
 {
   if (inhibitBackup)
@@ -376,59 +322,45 @@ void Doc::setInhibitBackup(const bool inhibitBackup)
   else
     m_flags &= ~kInhibitBackup;
 }
-
 void Doc::markAsBackedUp()
 {
   DOC_TRACE("DOC: Mark as fully backed up", this);
-
   m_flags |= kFullyBackedUp;
 }
-
 bool Doc::isFullyBackedUp() const
 {
   return (m_flags & kFullyBackedUp ? true : false);
 }
-
 void Doc::markAsReadOnly()
 {
   DOC_TRACE("DOC: Mark as read-only", this);
-
   m_flags |= kReadOnly;
 }
-
 bool Doc::isReadOnly() const
 {
   return (m_flags & kReadOnly ? true : false);
 }
-
 void Doc::removeReadOnlyMark()
 {
   DOC_TRACE("DOC: Read-only mark removed", this);
-
   m_flags &= ~kReadOnly;
 }
-
-//////////////////////////////////////////////////////////////////////
-// Loaded options from file
-
+// ////////////////////////////////////////////////////////////////////
+ Loaded options from file
 void Doc::setFormatOptions(const FormatOptionsPtr& format_options)
 {
   m_format_options = format_options;
 }
-
-//////////////////////////////////////////////////////////////////////
-// Boundaries
-
+// ////////////////////////////////////////////////////////////////////
+ Boundaries
 void Doc::destroyMaskBoundaries()
 {
   m_maskBoundaries.reset();
   notifySelectionBoundariesChanged();
 }
-
 void Doc::generateMaskBoundaries(const Mask* mask)
 {
   m_maskBoundaries.reset();
-
   // No mask specified? Use the current one in the document
   if (!mask) {
     if (!isMaskVisible()) // The mask is hidden
@@ -436,36 +368,27 @@ void Doc::generateMaskBoundaries(const Mask* mask)
     else
       mask = this->mask(); // Use the document mask
   }
-
   ASSERT(mask);
-
   if (!mask->isEmpty()) {
     m_maskBoundaries.regen(mask->bitmap());
     m_maskBoundaries.offset(mask->bounds().x, mask->bounds().y);
   }
-
   notifySelectionBoundariesChanged();
 }
-
-//////////////////////////////////////////////////////////////////////
-// Mask
-
+// ////////////////////////////////////////////////////////////////////
+ Mask
 void Doc::setMask(const Mask* mask)
 {
   ASSERT(mask);
-
   m_mask->copyFrom(mask);
   m_flags |= kMaskVisible;
-
   resetTransformation();
 }
-
 bool Doc::isMaskVisible() const
 {
   return (m_flags & kMaskVisible) && // The mask was not hidden by the user explicitly
          !m_mask->isEmpty();         // The mask is not empty
 }
-
 void Doc::setMaskVisible(bool visible)
 {
   if (visible)
@@ -473,64 +396,49 @@ void Doc::setMaskVisible(bool visible)
   else
     m_flags &= ~kMaskVisible;
 }
-
-//////////////////////////////////////////////////////////////////////
-// Transformation
-
+// ////////////////////////////////////////////////////////////////////
+ Transformation
 Transformation Doc::getTransformation() const
 {
   return m_transformation;
 }
-
 void Doc::setTransformation(const Transformation& transform)
 {
   m_transformation = transform;
 }
-
 void Doc::resetTransformation()
 {
   m_transformation = Transformation(gfx::RectF(m_mask->bounds()), m_transformation.cornerThick());
 }
-
-//////////////////////////////////////////////////////////////////////
-// Copying
-
+// ////////////////////////////////////////////////////////////////////
+ Copying
 void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destLayer0) const
 {
   LayerFlags dstFlags = sourceLayer0->flags();
-
   // Remove the "background" flag if the destDoc already has a background layer.
   if (((int)dstFlags & (int)LayerFlags::Background) == (int)LayerFlags::Background &&
       (destDoc->sprite()->backgroundLayer())) {
     dstFlags = (LayerFlags)((int)dstFlags & ~(int)(LayerFlags::BackgroundLayerFlags));
   }
-
   // Copy the layer name/flags/user data
   destLayer0->setName(sourceLayer0->name());
   destLayer0->setFlags(dstFlags);
   destLayer0->setUserData(sourceLayer0->userData());
-
   if (sourceLayer0->isImage() && destLayer0->isImage()) {
     const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
     LayerImage* destLayer = static_cast<LayerImage*>(destLayer0);
-
     // Copy blend mode and opacity
     destLayer->setBlendMode(sourceLayer->blendMode());
     destLayer->setOpacity(sourceLayer->opacity());
-
     // Copy cels
     CelConstIterator it = sourceLayer->getCelBegin();
     CelConstIterator end = sourceLayer->getCelEnd();
-
     std::map<ObjectId, Cel*> linked;
-
     for (; it != end; ++it) {
       const Cel* sourceCel = *it;
       if (sourceCel->frame() > destLayer->sprite()->lastFrame())
         break;
-
       std::unique_ptr<Cel> newCel(nullptr);
-
       auto it = linked.find(sourceCel->data()->id());
       if (it != linked.end()) {
         newCel.reset(Cel::MakeLink(sourceCel->frame(), it->second));
@@ -544,7 +452,6 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
                                      sourceCel->frame()));
         linked.insert(std::make_pair(sourceCel->data()->id(), newCel.get()));
       }
-
       destLayer->addCel(newCel.get());
       newCel.release();
     }
@@ -552,10 +459,8 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
   else if (sourceLayer0->isGroup() && destLayer0->isGroup()) {
     const LayerGroup* sourceLayer = static_cast<const LayerGroup*>(sourceLayer0);
     LayerGroup* destLayer = static_cast<LayerGroup*>(destLayer0);
-
     for (Layer* sourceChild : sourceLayer->layers()) {
       std::unique_ptr<Layer> destChild(nullptr);
-
       if (sourceChild->isImage()) {
         destChild.reset(new LayerImage(destLayer->sprite()));
         copyLayerContent(sourceChild, destDoc, destChild.get());
@@ -567,17 +472,12 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       else {
         ASSERT(false);
       }
-
       ASSERT(destChild != NULL);
-
       // Add the new layer in the sprite.
-
       Layer* newLayer = destChild.release();
       Layer* afterThis = destLayer->lastLayer();
-
       destLayer->addLayer(newLayer);
       destChild.release();
-
       destLayer->stackLayer(newLayer, afterThis);
     }
   }
@@ -585,34 +485,26 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
     ASSERT(false && "Trying to copy two incompatible layers");
   }
 }
-
 Doc* Doc::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = sprite();
   std::unique_ptr<Sprite> spriteCopyPtr(
     new Sprite(sourceSprite->spec(), sourceSprite->palette(frame_t(0))->size()));
-
   std::unique_ptr<Doc> documentCopy(new Doc(spriteCopyPtr.get()));
   Sprite* spriteCopy = spriteCopyPtr.release();
-
   spriteCopy->setTotalFrames(sourceSprite->totalFrames());
-
   // Copy frames duration
   for (frame_t i(0); i < sourceSprite->totalFrames(); ++i)
     spriteCopy->setFrameDuration(i, sourceSprite->frameDuration(i));
-
   // Copy frame tags
   for (const Tag* tag : sourceSprite->tags())
     spriteCopy->tags().add(new Tag(*tag));
-
   // Copy slices
   for (const Slice* slice : sourceSprite->slices()) {
     auto sliceCopy = new Slice(*slice);
     spriteCopy->slices().add(sliceCopy);
-
     ASSERT(sliceCopy->owner() == &spriteCopy->slices());
   }
-
   // Copy color palettes
   {
     PalettesList::const_iterator it = sourceSprite->getPalettes().begin();
@@ -622,20 +514,16 @@ Doc* Doc::duplicate(DuplicateType type) const
       spriteCopy->setPalette(pal, true);
     }
   }
-
   switch (type) {
     case DuplicateExactCopy:
       // Copy the layer group
       copyLayerContent(sourceSprite->root(), documentCopy.get(), spriteCopy->root());
-
       ASSERT((spriteCopy->backgroundLayer() && sourceSprite->backgroundLayer()) ||
              (!spriteCopy->backgroundLayer() && !sourceSprite->backgroundLayer()));
       break;
-
     case DuplicateWithFlattenLayers: {
       // Flatten layers
       ASSERT(sourceSprite->root() != NULL);
-
       LayerImage* flatLayer = create_flatten_layer_copy(
         spriteCopy,
         sourceSprite->root(),
@@ -643,26 +531,21 @@ Doc* Doc::duplicate(DuplicateType type) const
         frame_t(0),
         sourceSprite->lastFrame(),
         Preferences::instance().experimental.newBlend());
-
       // Add and select the new flat layer
       spriteCopy->root()->addLayer(flatLayer);
-
       // Configure the layer as background only if the original
       // sprite has a background layer.
       if (sourceSprite->backgroundLayer() != NULL)
         flatLayer->configureAsBackground();
     } break;
   }
-
   // Copy only some flags
   documentCopy->m_flags = (m_flags & kMaskVisible);
   documentCopy->setFilename(filename());
   documentCopy->setMask(mask());
   documentCopy->generateMaskBoundaries();
-
   return documentCopy.release();
 }
-
 void Doc::close()
 {
   try {
@@ -671,30 +554,24 @@ void Doc::close()
   catch (...) {
     LOG(ERROR, "DOC: Exception on DocObserver::onCloseDocument()\n");
   }
-
   removeFromContext();
 }
-
 void Doc::onFileNameChange()
 {
   notify_observers(&DocObserver::onFileNameChanged, this);
 }
-
 void Doc::onContextChanged()
 {
   m_undo->setContext(context());
 }
-
 void Doc::removeFromContext()
 {
   if (m_ctx) {
     m_ctx->documents().remove(this);
     m_ctx = nullptr;
-
     onContextChanged();
   }
 }
-
 void Doc::updateOSColorSpace(bool appWideSignal)
 {
   auto system = os::instance();
@@ -703,16 +580,13 @@ void Doc::updateOSColorSpace(bool appWideSignal)
     if (!m_osColorSpace && system->defaultWindow())
       m_osColorSpace = system->defaultWindow()->colorSpace();
   }
-
   if (appWideSignal && context() && context()->activeDocument() == this) {
     App::instance()->ColorSpaceChange();
   }
 }
-
-// static
+ static
 gfx::Point Doc::NoLastDrawingPoint()
 {
   return gfx::Point(std::numeric_limits<int>::min(), std::numeric_limits<int>::min());
 }
-
 } // namespace app

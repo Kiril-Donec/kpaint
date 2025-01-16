@@ -1,52 +1,49 @@
-// Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
-// Copyright (C) 2001-2018  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifdef HAVE_CONFIG_H
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
+
+
+
+ ifdef HAVE_CONFIG_H
   #include "config.h"
-#endif
-
-#include "app/cmd/replace_tileset.h"
-#include "app/cmd/set_cel_bounds.h"
-#include "app/cmd/set_slice_key.h"
-#include "app/commands/command.h"
-#include "app/commands/new_params.h"
-#include "app/commands/params.h"
-#include "app/doc_api.h"
-#include "app/i18n/strings.h"
-#include "app/ini_file.h"
-#include "app/modules/gui.h"
-#include "app/modules/palettes.h"
-#include "app/sprite_job.h"
-#include "app/util/resize_image.h"
-#include "base/convert_to.h"
-#include "doc/algorithm/resize_image.h"
-#include "doc/cel.h"
-#include "doc/cels_range.h"
-#include "doc/image.h"
-#include "doc/layer.h"
-#include "doc/layer_tilemap.h"
-#include "doc/mask.h"
-#include "doc/primitives.h"
-#include "doc/slice.h"
-#include "doc/sprite.h"
-#include "doc/tilesets.h"
-#include "ui/ui.h"
-
-#include "sprite_size.xml.h"
-
-#include <algorithm>
-
-#define PERC_FORMAT "%.4g"
-
+ endif
+ include "app/cmd/replace_tileset.h"
+ include "app/cmd/set_cel_bounds.h"
+ include "app/cmd/set_slice_key.h"
+ include "app/commands/command.h"
+ include "app/commands/new_params.h"
+ include "app/commands/params.h"
+ include "app/doc_api.h"
+ include "app/i18n/strings.h"
+ include "app/ini_file.h"
+ include "app/modules/gui.h"
+ include "app/modules/palettes.h"
+ include "app/sprite_job.h"
+ include "app/util/resize_image.h"
+ include "base/convert_to.h"
+ include "doc/algorithm/resize_image.h"
+ include "doc/cel.h"
+ include "doc/cels_range.h"
+ include "doc/image.h"
+ include "doc/layer.h"
+ include "doc/layer_tilemap.h"
+ include "doc/mask.h"
+ include "doc/primitives.h"
+ include "doc/slice.h"
+ include "doc/sprite.h"
+ include "doc/tilesets.h"
+ include "sprite_size.xml.h"
+ include "ui/ui.h"
+ include <algorithm>
+ define PERC_FORMAT "%.4g"
 namespace app {
-
 using namespace ui;
 using doc::algorithm::ResizeMethod;
-
 struct SpriteSizeParams : public NewParams {
   Param<bool> ui{
     this,
@@ -65,24 +62,20 @@ struct SpriteSizeParams : public NewParams {
     { "method", "resize-method" }
   };
 };
-
 class SpriteSizeJob : public SpriteJob {
   int m_new_width;
   int m_new_height;
   ResizeMethod m_resize_method;
-
   template<typename T>
   T scale_x(T x) const
   {
     return x * T(m_new_width) / T(sprite()->width());
   }
-
   template<typename T>
   T scale_y(T y) const
   {
     return y * T(m_new_height) / T(sprite()->height());
   }
-
   template<typename T>
   gfx::RectT<T> scale_rect(const gfx::RectT<T>& rc) const
   {
@@ -111,7 +104,6 @@ protected:
   {
     DocApi api = document()->getApi(tx);
     Tilesets* tilesets = sprite()->tilesets();
-
     int img_count = 0;
     if (tilesets) {
       for (Tileset* tileset : *tilesets) {
@@ -123,18 +115,15 @@ protected:
       (void)cel;
       ++img_count;
     }
-
     int progress = 0;
     const gfx::SizeF scale(double(m_new_width) / double(sprite()->width()),
                            double(m_new_height) / double(sprite()->height()));
-
     // Resize tilesets
     if (tilesets) {
       for (tileset_index tsi = 0; tsi < tilesets->size(); ++tsi) {
         Tileset* tileset = tilesets->get(tsi);
         if (!tileset)
           continue;
-
         gfx::Size newGridSize = tileset->grid().tileSize();
         newGridSize.w *= scale.w;
         newGridSize.h *= scale.h;
@@ -143,7 +132,6 @@ protected:
         if (newGridSize.h < 1)
           newGridSize.h = 1;
         doc::Grid newGrid(newGridSize);
-
         auto newTileset = new doc::Tileset(sprite(), newGrid, tileset->size());
         doc::tile_index idx = 0;
         newTileset->setName(tileset->name());
@@ -155,23 +143,19 @@ protected:
                                                   m_resize_method,
                                                   sprite()->palette(0),
                                                   sprite()->rgbMap(0))); // TODO first frame?
-
             newTileset->set(idx, newTileImg);
             newTileset->setTileData(idx, tileset->getTileData(idx));
           }
-
           jobProgress((float)progress / img_count);
           ++progress;
           ++idx;
         }
         tx(new cmd::ReplaceTileset(sprite(), tsi, newTileset));
-
         // Cancel all the operation?
         if (isCanceled())
           return; // Tx destructor will undo all operations
       }
     }
-
     // For each cel...
     for (Cel* cel : sprite()->uniqueCels()) {
       // We need to adjust only the origin/position of tilemap cels
@@ -192,15 +176,12 @@ protected:
                          cel->layer()->isReference() ? -cel->boundsF().origin() :
                                                        gfx::PointF(-cel->bounds().origin()));
       }
-
       jobProgress((float)progress / img_count);
       ++progress;
-
       // Cancel all the operation?
       if (isCanceled())
         return; // Tx destructor will undo all operations
     }
-
     // Resize mask
     if (document()->isMaskVisible()) {
       ImageRef old_bitmap(crop_image(document()->mask()->bitmap(),
@@ -209,7 +190,6 @@ protected:
                                      document()->mask()->bitmap()->width() + 2,
                                      document()->mask()->bitmap()->height() + 2,
                                      0));
-
       int w = scale_x(old_bitmap->width());
       int h = scale_y(old_bitmap->height());
       std::unique_ptr<Mask> new_mask(new Mask);
@@ -217,7 +197,6 @@ protected:
                                   scale_y(document()->mask()->bounds().y - 1),
                                   std::max(1, w),
                                   std::max(1, h)));
-
       // Always use the nearest-neighbor method to resize the bitmap
       // mask.
       algorithm::resize_image(old_bitmap.get(),
@@ -226,39 +205,30 @@ protected:
                               sprite()->palette(0), // Ignored
                               sprite()->rgbMap(0),  // Ignored
                               -1);                  // Ignored
-
       // Reshrink
       new_mask->intersect(new_mask->bounds());
-
       // Copy new mask
       api.copyToCurrentMask(new_mask.get());
     }
-
     // Resize slices
     for (auto& slice : sprite()->slices()) {
       for (auto& k : *slice) {
         const SliceKey& key = *k.value();
         if (key.isEmpty())
           continue;
-
         SliceKey newKey = key;
         newKey.setBounds(scale_rect(newKey.bounds()));
-
         if (newKey.hasCenter())
           newKey.setCenter(scale_rect(newKey.center()));
-
         if (newKey.hasPivot())
           newKey.setPivot(gfx::Point(scale_x(newKey.pivot().x), scale_y(newKey.pivot().y)));
-
         tx(new cmd::SetSliceKey(slice, k.frame(), newKey));
       }
     }
-
     // Resize Sprite
     api.setSpriteSize(sprite(), m_new_width, m_new_height);
   }
 };
-
 class SpriteSizeWindow : public app::gen::SpriteSize {
 public:
   SpriteSizeWindow(Context* ctx, const SpriteSizeParams& params) : m_ctx(ctx)
@@ -268,12 +238,10 @@ public:
     heightPx()->Change.connect([this] { onHeightPxChange(); });
     widthPerc()->Change.connect([this] { onWidthPercChange(); });
     heightPerc()->Change.connect([this] { onHeightPercChange(); });
-
     widthPx()->setTextf("%d", params.width());
     heightPx()->setTextf("%d", params.height());
     widthPerc()->setTextf(PERC_FORMAT, params.scaleX() * 100.0);
     heightPerc()->setTextf(PERC_FORMAT, params.scaleY() * 100.0);
-
     static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
                     doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
                     doc::algorithm::RESIZE_METHOD_ROTSPRITE == 2,
@@ -300,68 +268,54 @@ private:
     const ContextReader reader(m_ctx);
     onWidthPxChange();
   }
-
   void onWidthPxChange()
   {
     const ContextReader reader(m_ctx);
     const Sprite* sprite(reader.sprite());
     int width = widthPx()->textInt();
     double perc = 100.0 * width / sprite->width();
-
     widthPerc()->setTextf(PERC_FORMAT, perc);
-
     if (lockRatio()->isSelected()) {
       heightPerc()->setTextf(PERC_FORMAT, perc);
       heightPx()->setTextf("%d", sprite->height() * width / sprite->width());
     }
   }
-
   void onHeightPxChange()
   {
     const ContextReader reader(m_ctx);
     const Sprite* sprite(reader.sprite());
     int height = heightPx()->textInt();
     double perc = 100.0 * height / sprite->height();
-
     heightPerc()->setTextf(PERC_FORMAT, perc);
-
     if (lockRatio()->isSelected()) {
       widthPerc()->setTextf(PERC_FORMAT, perc);
       widthPx()->setTextf("%d", sprite->width() * height / sprite->height());
     }
   }
-
   void onWidthPercChange()
   {
     const ContextReader reader(m_ctx);
     const Sprite* sprite(reader.sprite());
     double width = widthPerc()->textDouble();
-
     widthPx()->setTextf("%d", (int)(sprite->width() * width / 100));
-
     if (lockRatio()->isSelected()) {
       heightPx()->setTextf("%d", (int)(sprite->height() * width / 100));
       heightPerc()->setText(widthPerc()->text());
     }
   }
-
   void onHeightPercChange()
   {
     const ContextReader reader(m_ctx);
     const Sprite* sprite(reader.sprite());
     double height = heightPerc()->textDouble();
-
     heightPx()->setTextf("%d", (int)(sprite->height() * height / 100));
-
     if (lockRatio()->isSelected()) {
       widthPx()->setTextf("%d", (int)(sprite->width() * height / 100));
       widthPerc()->setText(heightPerc()->text());
     }
   }
-
   Context* m_ctx;
 };
-
 class SpriteSizeCommand : public CommandWithNewParams<SpriteSizeParams> {
 public:
   SpriteSizeCommand();
@@ -370,18 +324,15 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
-
 SpriteSizeCommand::SpriteSizeCommand()
   : CommandWithNewParams<SpriteSizeParams>(CommandId::SpriteSize(), CmdRecordableFlag)
 {
 }
-
 bool SpriteSizeCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite);
 }
-
 void SpriteSizeCommand::onExecute(Context* context)
 {
   const bool ui = (params().ui() && context->isUIAvailable());
@@ -389,7 +340,6 @@ void SpriteSizeCommand::onExecute(Context* context)
   Doc* doc = site.document();
   Sprite* sprite = site.sprite();
   auto& params = this->params();
-
   double ratio = sprite->width() / double(sprite->height());
   if (params.scale.isSet()) {
     params.width(int(sprite->width() * params.scale()));
@@ -446,43 +396,33 @@ void SpriteSizeCommand::onExecute(Context* context)
   int new_width = params.width();
   int new_height = params.height();
   ResizeMethod resize_method = params.method();
-
   if (ui) {
     SpriteSizeWindow window(context, params);
     window.remapWindow();
     window.centerWindow();
-
     load_window_pos(&window, "SpriteSize");
     window.setVisible(true);
     window.openWindowInForeground();
     save_window_pos(&window, "SpriteSize");
-
     if (window.closer() != window.ok())
       return;
-
     new_width = window.widthPx()->textInt();
     new_height = window.heightPx()->textInt();
     resize_method = (ResizeMethod)window.method()->getSelectedItemIndex();
-
     set_config_int("SpriteSize", "Method", resize_method);
     set_config_bool("SpriteSize", "LockRatio", window.lockRatio()->isSelected());
   }
-
   new_width = std::clamp(new_width, 1, DOC_SPRITE_MAX_WIDTH);
   new_height = std::clamp(new_height, 1, DOC_SPRITE_MAX_HEIGHT);
-
   {
     SpriteSizeJob job(context, doc, new_width, new_height, resize_method, ui);
     job.startJob();
     job.waitJob();
   }
-
   update_screen_for_document(doc);
 }
-
 Command* CommandFactory::createSpriteSizeCommand()
 {
   return new SpriteSizeCommand;
 }
-
 } // namespace app

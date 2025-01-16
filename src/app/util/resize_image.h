@@ -1,40 +1,38 @@
-// Aseprite
-// Copyright (c) 2019-2021  Igara Studio S.A.
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UTIL_RESIZE_CEL_IMAGE_H_INCLUDED
-#define APP_UTIL_RESIZE_CEL_IMAGE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "doc/algorithm/resize_image.h"
-#include "doc/color.h"
-#include "gfx/point.h"
-#include "gfx/size.h"
 
+
+ ifndef APP_UTIL_RESIZE_CEL_IMAGE_H_INCLUDED
+ define APP_UTIL_RESIZE_CEL_IMAGE_H_INCLUDED
+ pragma once
+ include "doc/algorithm/resize_image.h"
+ include "doc/color.h"
+ include "gfx/point.h"
+ include "gfx/size.h"
 namespace doc {
 class Cel;
 class Image;
 class Palette;
 class RgbMap;
 } // namespace doc
-
 namespace app {
 class Tx;
-
 doc::Image* resize_image(const doc::Image* image,
                          const gfx::SizeF& scale,
                          const doc::algorithm::ResizeMethod method,
                          const doc::Palette* pal,
                          const doc::RgbMap* rgbmap);
-
 void resize_cel_image(Tx& tx,
                       doc::Cel* cel,
                       const gfx::SizeF& scale,
                       const doc::algorithm::ResizeMethod method,
                       const gfx::PointF& pivot);
-
 } // namespace app
-
-#endif
+ endif

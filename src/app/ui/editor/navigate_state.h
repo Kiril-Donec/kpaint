@@ -1,18 +1,19 @@
-// Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
-// Copyright (C) 2001-2015  David Capello
-//
-// This program is distributed under the terms of
-// the End-User License Agreement for Aseprite.
+// KPaint
+// Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+// the End-User License Agreement for KPaint.
 
-#ifndef APP_UI_EDITOR_NAVIGATE_STATE_H_INCLUDED
-#define APP_UI_EDITOR_NAVIGATE_STATE_H_INCLUDED
-#pragma once
+Copyright (C) 2024-2025 KiriX Company
+// // This program is distributed under the terms of
+ the End-User License Agreement for KPaint.
 
-#include "app/ui/editor/state_with_wheel_behavior.h"
 
+
+ ifndef APP_UI_EDITOR_NAVIGATE_STATE_H_INCLUDED
+ define APP_UI_EDITOR_NAVIGATE_STATE_H_INCLUDED
+ pragma once
+ include "app/ui/editor/state_with_wheel_behavior.h"
 namespace app {
-
 class NavigateState : public StateWithWheelBehavior {
 public:
   NavigateState();
@@ -25,7 +26,5 @@ public:
 protected:
   void disableQuickTool() const override;
 };
-
 } // namespace app
-
-#endif
+ endif
