@@ -138,7 +138,7 @@ jobs:
           cp kpaint/kpaint "kpaint/KPaint.app/Contents/MacOS/"
           cp -r kpaint/data "kpaint/KPaint.app/Contents/Resources/"
           # Create Info.plist
-          cat > "kpaint/KPaint.app/Contents/Info.plist" << EOF
+          cat > "kpaint/KPaint.app/Contents/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -165,26 +165,27 @@ EOF
           security default-keychain -s build.keychain
           security unlock-keychain -p github_actions build.keychain
           # Create self-signed certificate
-          security add-certificates -k build.keychain <(echo "-----BEGIN CERTIFICATE-----
-          MIIEAzCCAuugAwIBAgIJALnVZWP9LJ2WMA0GCSqGSIb3DQEBCwUAMIGXMQswCQYD
-          VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5j
-          aXNjbzEUMBIGA1UECgwLS2lyaVggU3R1ZGlvMRQwEgYDVQQLDAtEZXZlbG9wbWVu
-          dDEPMA0GA1UEAwwGS1BhaW50MSQwIgYJKoZIhvcNAQkBFhVjb250YWN0QGtpcml4
-          LnN0dWRpbzAeFw0yNDAxMTYwMDAwMDBaFw0yNTAxMTUyMzU5NTlaMIGXMQswCQYD
-          VQQGEwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5j
-          aXNjbzEUMBIGA1UECgwLS2lyaVggU3R1ZGlvMRQwEgYDVQQLDAtEZXZlbG9wbWVu
-          dDEPMA0GA1UEAwwGS1BhaW50MSQwIgYJKoZIhvcNAQkBFhVjb250YWN0QGtpcml4
-          LnN0dWRpbzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANqL3X4Y4z7V
-          1J0f3w5Q0tQJ5Z5jK5x5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5
-          q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5
-          q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5
-          q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5
-          CAwEAAaNQME4wHQYDVR0OBBYEFHXs6v5q7q5q5q5q5q5q5q5q5qMB8GA1UdIwQY
-          MBaAFHXs6v5q7q5q5q5q5q5q5q5q5qMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcN
-          AQELBQADggEBAK8X8Y4Y4z7V1J0f3w5Q0tQJ5Z5jK5x5q5q5q5q5q5q5q5q5q5
-          q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5
-          -----END CERTIFICATE-----")
-          # Sign the app with the self-signed certificate
+          cat > certificate.pem << 'EOF'
+-----BEGIN CERTIFICATE-----
+MIIDYDCCAkigAwIBAgIJALnVZWP9LJ2WMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+aWRnaXRzIFB0eSBMdGQwHhcNMjQwMTE2MDAwMDAwWhcNMjUwMTE1MjM1OTU5WjBF
+MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+CgKCAQEA2ovdfhjjPtXUnR/fDlDS1AnlnmMrnHmrmrmrmrmrmrmrmrmrmrmrmrmr
+mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
+mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
+mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
+mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
+CAwEAAaNQME4wHQYDVR0OBBYEFHXs6v5q7q5q5q5q5q5q5q5q5qMB8GA1UdIwQY
+MBaAFHXs6v5q7q5q5q5q5q5q5q5q5qMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcN
+AQELBQADggEBAK8X8Y4Y4z7V1J0f3w5Q0tQJ5Z5jK5x5q5q5q5q5q5q5q5q5q5
+q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5
+-----END CERTIFICATE-----
+EOF
+          # Import certificate
+          security import certificate.pem -k build.keychain -T /usr/bin/codesign
+          # Sign the app
           codesign --force --sign "KPaint Development" --deep "kpaint/KPaint.app"
           # Create DMG
           hdiutil create -volname "KPaint" -srcfolder "kpaint/KPaint.app" -ov -format UDZO "kpaint-macos.dmg"
