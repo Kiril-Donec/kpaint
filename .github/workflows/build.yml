@@ -104,20 +104,28 @@ jobs:
       shell: bash
       run: |
         cd build
+        echo "Creating archive in $(pwd)"
+        echo "Listing contents of bin directory:"
+        ls -la bin/
         mkdir -p kpaint
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
+          echo "Creating Windows archive..."
           cp bin/aseprite.exe kpaint/kpaint.exe
           cp -r ../data kpaint/
           7z a kpaint-windows.zip kpaint
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
+          echo "Creating macOS archive..."
           cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
           zip -r kpaint-macos.zip kpaint
         else
+          echo "Creating Linux archive..."
           cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
           zip -r kpaint-linux.zip kpaint
         fi
+        echo "Archive created. Listing contents:"
+        ls -la kpaint-*.zip
     - name: Upload Build Artifacts
       if: matrix.ui == 'gui' && matrix.build_type == 'RelWithDebInfo'
       uses: actions/upload-artifact@v4
