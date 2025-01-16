@@ -1,11 +1,6 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title" help="preferences">
   <vbox>
@@ -32,8 +27,10 @@
           <listitem text="@general.reset" value="section_reset" />
         </listbox>
       </view>
+
       <panel id="panel" expansive="true">
-        <!---- General --->
+
+        <!-- General -->
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
           <grid columns="3">
@@ -48,6 +45,7 @@
               </hbox>
             </hbox>
             <boxfiller />
+
             <label text="@.screen_scaling" />
             <combobox id="screen_scale">
               <listitem text="100%" value="1" />
@@ -56,6 +54,7 @@
               <listitem text="400%" value="4" />
             </combobox>
             <boxfiller />
+
             <label text="@.ui_scaling" />
             <combobox id="ui_scale">
               <listitem text="100%" value="1" />
@@ -64,6 +63,7 @@
               <listitem text="400%" value="4" />
             </combobox>
             <boxfiller />
+
             <label text="@.language" />
             <combobox id="language" />
             <link text="@.download_translations" url="https://www.aseprite.org/languages/" />
@@ -87,11 +87,13 @@
           <check id="share_crashdb"
                  text="@home_view.share_crashdb"
                  tooltip="@home_view.share_crashdb_tooltip" />
+
           <separator horizontal="true" />
           <link id="locate_file" text="@.locate_file" />
           <link id="locate_crash_folder" text="@.locate_crash_folder" />
         </vbox>
-        <!---- Tablet --->
+
+        <!-- Tablet -->
         <vbox id="section_tablet">
           <separator text="@.section_tablet" horizontal="true" />
           <radio id="tablet_api_windows_pointer" text="@.tablet_api_windows_pointer" group="1" />
@@ -111,35 +113,42 @@
                      text="@.set_cursor_fix"
                      tooltip="@.set_cursor_fix_tooltip"
                      pref="tablet.set_cursor_fix" />
-              <link text="(#4539)" url="https://github.com/kpaint/kpaint/issues/4539" />
+              <link text="(#4539)" url="https://github.com/aseprite/aseprite/issues/4539" />
             </hbox>
           </vbox>
         </vbox>
-        <!---- Files --->
+
+        <!-- Files -->
         <vbox id="section_files">
           <separator text="@.section_files" horizontal="true" />
           <label text="@.default_extension_for" />
           <grid columns="2">
             <label text="@.save_default_extension" />
             <combobox id="default_extension" />
+
             <label text="@.export_image_default_extension" />
             <combobox id="export_image_default_extension" />
+
             <label text="@.export_animation_default_extension" />
             <combobox id="export_animation_default_extension" />
+
             <label text="@.export_sprite_sheet_default_extension" />
             <combobox id="export_sprite_sheet_default_extension" />
           </grid>
+
           <grid columns="2">
             <label text="@.recent_files" />
             <hbox>
               <slider min="0" max="100" id="recent_files" width="128" tooltip="@.recent_files_tooltip" />
               <button id="clear_recent_files" text="@.clear_recent_files" tooltip="@.clear_recent_files_tooltip" minwidth="60" />
             </hbox>
+
             <boxfiller />
             <check id="show_full_path"
                    text="@.show_full_path"
                    tooltip="@.show_full_path_tooltip" />
           </grid>
+
           <separator text="@.recover_files" horizontal="true" />
           <grid columns="2">
             <check id="enable_data_recovery"
@@ -183,11 +192,14 @@
               <listitem text="@.8_hours" value="480" />
             </combobox>
           </grid>
+
         </vbox>
-        <!---- Color --->
+
+        <!-- Color -->
         <vbox id="section_color">
           <separator text="@.section_color" horizontal="true" />
           <check text="@.color_management" id="color_management" pref="color.manage" />
+
           <grid columns="2">
             <label text="@.window_cs" id="window_cs_label" />
             <combobox id="window_cs">
@@ -195,10 +207,13 @@
               <listitem text="@.use_srgb_cs" />
               <listitem text="@.use_specific_cs" />
             </combobox>
+
             <boxfiller />
             <separator horizontal="true" />
+
             <label text="@.working_rgb_cs" id="working_rgb_cs_label" />
             <combobox id="working_rgb_cs" />
+
             <label text="@.files_with_cs" id="files_with_cs_label" />
             <combobox id="files_with_cs">
               <listitem text="@.disable_cs" />
@@ -207,6 +222,7 @@
               <listitem text="@.assign_cs" />
               <listitem text="@.ask_cs" />
             </combobox>
+
             <label text="@.missing_cs" id="missing_cs_label" />
             <combobox id="missing_cs">
               <listitem text="@.disable_cs" />
@@ -214,10 +230,12 @@
               <listitem text="@.ask_cs" />
             </combobox>
           </grid>
+
           <hbox>
             <hbox expansive="true" />
             <button id="reset_color_management" text="@general.reset" minwidth="60" />
           </hbox>
+
           <separator text="@.alpha_and_opacity" horizontal="true" />
           <grid columns="2">
             <label text="@.alpha_range" id="alpha_range_label" />
@@ -232,7 +250,8 @@
             </combobox>
           </grid>
         </vbox>
-        <!---- Editor --->
+
+        <!-- Editor -->
         <vbox id="section_editor">
           <separator text="@.section_editor" horizontal="true" />
           <check text="@.wheel_zoom" id="wheel_zoom"
@@ -253,7 +272,8 @@
             <combobox id="right_click_behavior" expansive="true" />
           </hbox>
         </vbox>
-        <!---- Selection --->
+
+        <!-- Selection -->
         <vbox id="section_selection">
           <separator text="@.editor_selection" horizontal="true" />
           <check text="@.auto_opaque" id="auto_opaque" tooltip="@.auto_opaque_tooltip" />
@@ -272,7 +292,8 @@
                  tooltip="@.multicel_when_layers_or_frames_tooltip"
                  pref="selection.multicel_when_layers_or_frames"/>
         </vbox>
-        <!---- Timeline --->
+
+        <!-- Timeline -->
         <vbox id="section_timeline">
           <separator text="@.section_timeline" horizontal="true" />
           <check text="@.autotimeline" id="autotimeline" tooltip="@.autotimeline_tooltip"
@@ -308,7 +329,8 @@
             <button id="reset_timeline_sel" text="@general.reset" minwidth="60" />
           </hbox>
         </vbox>
-        <!---- Cursors --->
+
+        <!-- Cursors -->
         <vbox id="section_cursors">
           <separator text="@.ui_mouse_cursor" horizontal="true" />
           <check id="native_cursor" text="@.native_cursor" />
@@ -321,13 +343,16 @@
               <listitem text="400%" value="4" />
             </combobox>
           </hbox>
+
           <separator text="@.painting_cursors" horizontal="true" />
+
           <grid columns="2">
             <label text="@.crosshair_type" />
             <combobox id="painting_cursor_type">
               <listitem text="@.simple_crosshair" value="0" />
               <listitem text="@.crosshair_on_sprite" value="1" />
             </combobox>
+
             <label text="@.brush_preview" />
             <combobox id="brush_preview">
               <listitem text="@.brush_preview_none" value="0" />
@@ -336,20 +361,25 @@
               <listitem text="@.brush_preview_fullall" value="3" />
               <listitem text="@.brush_preview_fullnedges" value="4" />
             </combobox>
+
             <label text="@.cursor_color_type" />
             <combobox id="cursor_color_type">
               <listitem text="@.cursor_neg_bw" value="0" />
               <listitem text="@.cursor_specific_color" value="1" />
             </combobox>
+
             <boxfiller />
             <colorpicker id="cursor_color" rgba="true" />
+
             <check text="@.snap_cursor_to_grid"
                    pref="cursor.snap_to_grid" cell_hspan="2" />
           </grid>
         </vbox>
-        <!---- Background --->
+
+        <!-- Background -->
         <vbox id="section_bg">
           <combobox id="bg_scope" />
+
           <separator text="@.bg_checkered" horizontal="true" />
           <grid columns="2">
             <label text="@.bg_size" />
@@ -359,42 +389,50 @@
               <expr id="checkered_bg_custom_h" />
               <check text="@.bg_apply_zoom" id="checkered_bg_zoom" />
             </hbox>
+
             <label text="@.bg_colors" />
             <hbox>
               <colorpicker id="checkered_bg_color1" rgba="true" />
               <colorpicker id="checkered_bg_color2" rgba="true" />
             </hbox>
           </grid>
+
           <hbox>
             <hbox expansive="true" />
             <button id="reset_bg" text="@general.reset" minwidth="60" />
           </hbox>
         </vbox>
-        <!---- Grid --->
+
+        <!-- Grid -->
         <vbox id="section_grid">
           <combobox id="grid_scope" />
           <hbox>
             <check id="grid_visible" text="@.grid_visible" />
             <separator horizontal="true" expansive="true" />
           </hbox>
+
           <grid columns="5">
             <label text="@.grid_x" />
             <expr id="grid_x" text="" />
             <label text="@.grid_y" />
             <expr id="grid_y" text="" />
             <hbox />
+
             <label text="@.grid_width" />
             <expr id="grid_w" text="" />
             <label text="@.grid_height" />
             <expr id="grid_h" text="" />
             <hbox />
+
             <label text="@.grid_color" />
             <colorpicker id="grid_color" rgba="true" cell_hspan="3" />
             <hbox />
+
             <label text="@.grid_opacity" />
             <slider id="grid_opacity" cell_hspan="3" min="1" max="255" width="128" />
             <check id="grid_auto_opacity" text="@.grid_auto" />
           </grid>
+
           <hbox>
             <check id="pixel_grid_visible" text="@.grid_pixel_grid_visible" />
             <separator horizontal="true" expansive="true" />
@@ -403,16 +441,19 @@
             <label text="@.grid_color" />
             <colorpicker id="pixel_grid_color" rgba="true" />
             <hbox />
+
             <label text="@.grid_opacity" />
             <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
             <check id="pixel_grid_auto_opacity" text="@.grid_auto" />
           </grid>
+
           <hbox>
             <hbox expansive="true" />
             <button id="reset_grid" text="@general.reset" minwidth="60" />
           </hbox>
         </vbox>
-        <!---- Guides --->
+
+        <!-- Guides -->
         <vbox id="section_guides_and_slices">
           <separator text="@.guides" horizontal="true" />
           <grid columns="2">
@@ -421,13 +462,15 @@
             <label text="@.auto_guides_color" />
             <colorpicker id="auto_guides_color" rgba="true" />
           </grid>
+
           <separator text="@.slices" horizontal="true" />
           <hbox>
             <label text="@.default_slice_color" />
             <colorpicker id="default_slice_color" rgba="true" />
           </hbox>
         </vbox>
-        <!---- Undo --->
+
+        <!-- Undo -->
         <vbox id="section_undo">
           <separator text="@.section_undo" horizontal="true" />
           <hbox>
@@ -435,6 +478,7 @@
             <expr id="undo_size_limit" tooltip="@.undo_size_limit_tooltip" />
             <label text="@.undo_mb" />
           </hbox>
+
           <vbox>
             <check id="undo_goto_modified"
                    text="@.undo_goto_modified"
@@ -445,7 +489,8 @@
                    pref="undo.show_tooltip" />
           </vbox>
         </vbox>
-        <!---- Alerts --->
+
+        <!-- Alerts -->
         <vbox id="section_alerts">
           <separator text="@.section_alerts" horizontal="true" />
           <hbox>
@@ -488,7 +533,8 @@
             <button id="reset_alerts" text="@.reset_alerts" />
           </hbox>
         </vbox>
-        <!---- Theme --->
+
+        <!-- Theme -->
         <vbox id="section_theme">
           <separator text="@.available_themes" horizontal="true" />
           <view expansive="true" maxsize="true">
@@ -501,7 +547,8 @@
             <button id="open_theme_folder" text="@.open_theme_folder" minwidth="100" />
           </hbox>
         </vbox>
-        <!---- Extensions --->
+
+        <!-- Extensions -->
         <vbox id="section_extensions">
           <view expansive="true" maxsize="true">
             <listbox id="extensions_list" />
@@ -514,7 +561,8 @@
             <button id="open_extension_folder" text="@.open_extension_folder" minwidth="60" />
           </hbox>
         </vbox>
-        <!---- Experimental --->
+
+        <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="@.user_interface" horizontal="true" />
           <check id="multiple_windows" text="@.multiple_windows"
@@ -523,12 +571,12 @@
             <check id="new_render_engine"
                    text="@.new_render_engine"
                    pref="experimental.new_render_engine" />
-            <link text="(#1671)" url="https://github.com/kpaint/kpaint/issues/1671" />
+            <link text="(#1671)" url="https://github.com/aseprite/aseprite/issues/1671" />
           </hbox>
           <hbox>
             <check text="@.new_blend"
                    pref="experimental.new_blend" />
-            <link text="(#1096)" url="https://github.com/kpaint/kpaint/issues/1096" />
+            <link text="(#1096)" url="https://github.com/aseprite/aseprite/issues/1096" />
           </hbox>
           <check id="native_clipboard" text="@.native_clipboard"
                  pref="experimental.use_native_clipboard" />
@@ -554,13 +602,14 @@
             <check id="shaders_for_color_selectors"
                    text="@.shaders_for_color_selectors"
                    pref="experimental.use_shaders_for_color_selectors" />
-            <link text="(#960)" url="https://github.com/kpaint/kpaint/issues/960" />
+            <link text="(#960)" url="https://github.com/aseprite/aseprite/issues/960" />
           </hbox>
           <check id="cache_compressed_tilesets"
                  text="@.cache_compressed_tilesets"
                  pref="tileset.cache_compressed_tilesets" />
         </vbox>
-        <!---- Reset --->
+
+        <!-- Reset -->
         <vbox id="section_reset">
           <separator text="@.reset_title" horizontal="true" />
           <check id="default_reset" text="@.reset_default" />

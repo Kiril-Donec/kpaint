@@ -1,20 +1,19 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2001-2015  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_MODULES_H_INCLUDED
+#define APP_MODULES_H_INCLUDED
+#pragma once
 
+#include "ui/base.h"
 
+#define REQUIRE_INTERFACE 1
 
- ifndef APP_MODULES_H_INCLUDED
- define APP_MODULES_H_INCLUDED
- pragma once
- include "ui/base.h"
- define REQUIRE_INTERFACE 1
 namespace app {
+
 /**
  * Class to install and uninstall old modules.
  *
@@ -26,5 +25,7 @@ public:
   LegacyModules(int requirements);
   ~LegacyModules();
 };
+
 } // namespace app
- endif
+
+#endif

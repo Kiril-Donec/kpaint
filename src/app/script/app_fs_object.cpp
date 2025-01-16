@@ -1,31 +1,32 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2020  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/resource_finder.h"
- include "app/script/luacpp.h"
- include "app/script/security.h"
- include "base/fs.h"
+#endif
+
+#include "app/app.h"
+#include "app/resource_finder.h"
+#include "app/script/luacpp.h"
+#include "app/script/security.h"
+#include "base/fs.h"
+
 namespace app { namespace script {
+
 namespace {
+
 struct AppFS {};
+
 int AppFS_pathSeparator(lua_State* L)
 {
   const char sep[2] = { base::path_separator, 0 };
   lua_pushstring(L, sep);
   return 1;
 }
+
 template<std::string (*Func)(const std::string& path)>
 int AppFS_pathElement(lua_State* L)
 {
@@ -36,6 +37,7 @@ int AppFS_pathElement(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
+
 int AppFS_joinPath(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
@@ -43,6 +45,7 @@ int AppFS_joinPath(lua_State* L)
     lua_pushnil(L);
     return 1;
   }
+
   std::string result(fn);
   const int n = lua_gettop(L);
   for (int i = 2; i <= n; ++i) {
@@ -53,12 +56,14 @@ int AppFS_joinPath(lua_State* L)
   lua_pushstring(L, result.c_str());
   return 1;
 }
+
 template<std::string (*Func)()>
 int AppFS_get_specialPath(lua_State* L)
 {
   lua_pushstring(L, Func().c_str());
   return 1;
 }
+
 int AppFS_get_userConfigPath(lua_State* L)
 {
   ResourceFinder rf(false);
@@ -67,6 +72,7 @@ int AppFS_get_userConfigPath(lua_State* L)
   lua_pushstring(L, dir.c_str());
   return 1;
 }
+
 int AppFS_isFile(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
@@ -76,6 +82,7 @@ int AppFS_isFile(lua_State* L)
     lua_pushboolean(L, false);
   return 1;
 }
+
 int AppFS_isDirectory(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
@@ -85,6 +92,7 @@ int AppFS_isDirectory(lua_State* L)
     lua_pushboolean(L, false);
   return 1;
 }
+
 int AppFS_fileSize(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
@@ -94,6 +102,7 @@ int AppFS_fileSize(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
+
 int AppFS_listFiles(lua_State* L)
 {
   const char* path = lua_tostring(L, 1);
@@ -107,6 +116,7 @@ int AppFS_listFiles(lua_State* L)
   }
   return 1;
 }
+
 int AppFS_makeDirectory(lua_State* L)
 {
   const char* path = luaL_checkstring(L, 1);
@@ -114,8 +124,10 @@ int AppFS_makeDirectory(lua_State* L)
     lua_pushboolean(L, true);
     return 1;
   }
+
   if (!ask_access(L, path, FileAccessMode::Full, ResourceType::File))
     return luaL_error(L, "the script doesn't have access to create the directory '%s'", path);
+
   try {
     // TODO don't throw exception from base::make_directory() function
     base::make_directory(path);
@@ -126,6 +138,7 @@ int AppFS_makeDirectory(lua_State* L)
   lua_pushboolean(L, base::is_directory(path));
   return 1;
 }
+
 int AppFS_makeAllDirectories(lua_State* L)
 {
   const char* path = luaL_checkstring(L, 1);
@@ -133,8 +146,10 @@ int AppFS_makeAllDirectories(lua_State* L)
     lua_pushboolean(L, true);
     return 1;
   }
+
   if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
     return luaL_error(L, "the script doesn't have access to create all directories '%s'", path);
+
   try {
     base::make_all_directories(path);
   }
@@ -144,6 +159,7 @@ int AppFS_makeAllDirectories(lua_State* L)
   lua_pushboolean(L, base::is_directory(path));
   return 1;
 }
+
 int AppFS_removeDirectory(lua_State* L)
 {
   const char* path = luaL_checkstring(L, 1);
@@ -153,8 +169,10 @@ int AppFS_removeDirectory(lua_State* L)
                                            true));                     // The directory is already removed
     return 1;
   }
+
   if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
     return luaL_error(L, "the script doesn't have access to remove the directory '%s'", path);
+
   try {
     base::remove_directory(path);
   }
@@ -164,6 +182,7 @@ int AppFS_removeDirectory(lua_State* L)
   lua_pushboolean(L, !base::is_directory(path));
   return 1;
 }
+
 const Property AppFS_properties[] = {
   { "pathSeparator",  AppFS_pathSeparator,                               nullptr },
   // Special folder names
@@ -174,6 +193,7 @@ const Property AppFS_properties[] = {
   { "userConfigPath", AppFS_get_userConfigPath,                          nullptr },
   { nullptr,          nullptr,                                           nullptr }
 };
+
 const luaL_Reg AppFS_methods[] = {
   // Path manipulation
   { "filePath",           AppFS_pathElement<base::get_file_path>            },
@@ -194,16 +214,21 @@ const luaL_Reg AppFS_methods[] = {
   { "removeDirectory",    AppFS_removeDirectory                             },
   { nullptr,              nullptr                                           }
 };
+
 } // anonymous namespace
+
 DEF_MTNAME(AppFS);
+
 void register_app_fs_object(lua_State* L)
 {
   REG_CLASS(L, AppFS);
   REG_CLASS_PROPERTIES(L, AppFS);
+
   lua_getglobal(L, "app");
   lua_pushstring(L, "fs");
   push_new<AppFS>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
 }
+
 }} // namespace app::script

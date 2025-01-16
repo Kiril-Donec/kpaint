@@ -1,15 +1,10 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018  David Capello -->
 <gui i18nwarnings="false">
 <window id="about" text="About KPaint">
   <vbox>
-    <label text="" id="title" />
+    <label text="KPaint Belko Edition" id="title" />
     <label text="Animated sprite editor &amp;&amp; pixel art tool" />
     <hbox homogeneous="true">
       <hbox>
@@ -29,7 +24,8 @@
     </hbox>
     <separator horizontal="true" />
     <hbox>
-      <link text="" url="" />
+      <label text="Copyright (C) 2024-2025" />
+      <link text="KiriX Studio" url="" />
     </hbox>
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />
     <hbox>

@@ -1,35 +1,38 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_KEY_H_INCLUDED
+#define APP_UI_KEY_H_INCLUDED
+#pragma once
 
+#include "app/commands/params.h"
+#include "app/ui/key_context.h"
+#include "base/convert_to.h"
+#include "base/vector2d.h"
+#include "ui/accelerator.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
 
- ifndef APP_UI_KEY_H_INCLUDED
- define APP_UI_KEY_H_INCLUDED
- pragma once
- include "app/commands/params.h"
- include "app/ui/key_context.h"
- include "base/convert_to.h"
- include "base/vector2d.h"
- include "ui/accelerator.h"
- include <memory>
- include <utility>
- include <vector>
 namespace ui {
 class Message;
 }
+
 namespace app {
 class Command;
 class KeyboardShortcuts;
+
 namespace tools {
 class Tool;
 }
+
 enum class KeySource { Original, ExtensionDefined, UserDefined };
+
 enum class KeyType {
   Command,
   Tool,
@@ -38,7 +41,8 @@ enum class KeyType {
   WheelAction,
   DragAction,
 };
- TODO This should be called "KeyActionModifier" or something similar
+
+// TODO This should be called "KeyActionModifier" or something similar
 enum class KeyAction {
   None = 0x00000000,
   CopySelection = 0x00000001,
@@ -61,6 +65,7 @@ enum class KeyAction {
   RotateShape = 0x00020000,
   FineControl = 0x00040000,
 };
+
 enum class WheelAction {
   None,
   Zoom,
@@ -87,19 +92,23 @@ enum class WheelAction {
   HsvHue,
   HsvSaturation,
   HsvValue,
+
   // Range
   First = Zoom,
   Last = HsvValue,
 };
+
 inline KeyAction operator&(KeyAction a, KeyAction b)
 {
   return KeyAction(int(a) & int(b));
 }
+
 class Key;
 using KeyPtr = std::shared_ptr<Key>;
 using Keys = std::vector<KeyPtr>;
 using KeySourceAccelList = std::vector<std::pair<KeySource, ui::Accelerator>>;
 using DragVector = base::Vector2d<double>;
+
 class Key {
 public:
   Key(const Key& key);
@@ -108,10 +117,12 @@ public:
   explicit Key(const KeyAction action, const KeyContext keyContext);
   explicit Key(const WheelAction action);
   static KeyPtr MakeDragAction(WheelAction dragAction);
+
   KeyType type() const { return m_type; }
   const ui::Accelerators& accels() const;
   const KeySourceAccelList addsKeys() const { return m_adds; }
   const KeySourceAccelList delsKeys() const { return m_dels; }
+
   void add(const ui::Accelerator& accel, const KeySource source, KeyboardShortcuts& globalKeys);
   const ui::Accelerator* isPressed(const ui::Message* msg,
                                    const KeyboardShortcuts& globalKeys,
@@ -121,15 +132,20 @@ public:
   bool isPressed() const;
   bool isLooselyPressed() const;
   bool isCommandListed() const;
+
   bool hasAccel(const ui::Accelerator& accel) const;
   bool hasUserDefinedAccels() const;
+
   // The KeySource indicates from where the key was disabled
   // (e.g. if it was removed from an extension-defined file, or from
   // user-defined).
   void disableAccel(const ui::Accelerator& accel, const KeySource source);
+
   // Resets user accelerators to the original & extension-defined ones.
   void reset();
+
   void copyOriginalToUser();
+
   // for KeyType::Command
   Command* command() const { return m_command; }
   const Params& params() const { return m_params; }
@@ -143,6 +159,7 @@ public:
   // for KeyType::DragAction
   DragVector dragVector() const { return m_dragVector; }
   void setDragVector(const DragVector& v) { m_dragVector = v; }
+
   std::string triggerString() const;
 
 private:
@@ -153,24 +170,33 @@ private:
   // addition/deletion of extension-defined & user-defined keys.
   mutable std::unique_ptr<ui::Accelerators> m_accels;
   KeyContext m_keycontext;
+
   // for KeyType::Command
   Command* m_command;
   Params m_params;
+
   tools::Tool* m_tool;       // for KeyType::Tool or Quicktool
   KeyAction m_action;        // for KeyType::Action
   WheelAction m_wheelAction; // for KeyType::WheelAction / DragAction
   DragVector m_dragVector;   // for KeyType::DragAction
 };
+
 std::string convertKeyContextToUserFriendlyString(KeyContext keyContext);
+
 } // namespace app
+
 namespace base {
+
 template<>
 app::KeyAction convert_to(const std::string& from);
 template<>
 std::string convert_to(const app::KeyAction& from);
+
 template<>
 app::WheelAction convert_to(const std::string& from);
 template<>
 std::string convert_to(const app::WheelAction& from);
+
 } // namespace base
- endif
+
+#endif

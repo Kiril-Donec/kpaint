@@ -1,28 +1,28 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/cmd/set_tileset_base_index.h"
- include "app/doc.h"
- include "app/doc_event.h"
- include "doc/tileset.h"
+#endif
+
+#include "app/cmd/set_tileset_base_index.h"
+
+#include "app/doc.h"
+#include "app/doc_event.h"
+#include "doc/tileset.h"
+
 namespace app { namespace cmd {
+
 SetTilesetBaseIndex::SetTilesetBaseIndex(Tileset* tileset, int baseIndex)
   : WithTileset(tileset)
   , m_oldBaseIndex(tileset->baseIndex())
   , m_newBaseIndex(baseIndex)
 {
 }
+
 void SetTilesetBaseIndex::onExecute()
 {
   auto ts = tileset();
@@ -30,6 +30,7 @@ void SetTilesetBaseIndex::onExecute()
   ts->incrementVersion();
   ts->sprite()->incrementVersion();
 }
+
 void SetTilesetBaseIndex::onUndo()
 {
   auto ts = tileset();
@@ -37,4 +38,5 @@ void SetTilesetBaseIndex::onUndo()
   ts->incrementVersion();
   ts->sprite()->incrementVersion();
 }
+
 }} // namespace app::cmd

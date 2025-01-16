@@ -1,26 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "about.xml.h"
- include "app/app.h"
- include "app/commands/command.h"
- include "app/modules/gui.h"
- include "app/ui/main_window.h"
- include "fmt/format.h"
- include "ver/info.h"
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/modules/gui.h"
+#include "app/ui/main_window.h"
+#include "fmt/format.h"
+#include "ver/info.h"
+
+#include "about.xml.h"
+
 namespace app {
+
 using namespace ui;
+
 class AboutCommand : public Command {
 public:
   AboutCommand();
@@ -28,9 +29,11 @@ public:
 protected:
   void onExecute(Context* context) override;
 };
+
 AboutCommand::AboutCommand() : Command(CommandId::About(), CmdUIOnlyFlag)
 {
 }
+
 void AboutCommand::onExecute(Context* context)
 {
   gen::About window;
@@ -49,8 +52,10 @@ void AboutCommand::onExecute(Context* context)
   });
   window.openWindowInForeground();
 }
+
 Command* CommandFactory::createAboutCommand()
 {
   return new AboutCommand;
 }
+
 } // namespace app

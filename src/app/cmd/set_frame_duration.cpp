@@ -1,22 +1,21 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/cmd/set_frame_duration.h"
- include "app/doc.h"
- include "app/doc_event.h"
- include "doc/sprite.h"
+#endif
+
+#include "app/cmd/set_frame_duration.h"
+
+#include "app/doc.h"
+#include "app/doc_event.h"
+#include "doc/sprite.h"
+
 namespace app { namespace cmd {
+
 SetFrameDuration::SetFrameDuration(Sprite* sprite, frame_t frame, int duration)
   : WithSprite(sprite)
   , m_frame(frame)
@@ -24,16 +23,19 @@ SetFrameDuration::SetFrameDuration(Sprite* sprite, frame_t frame, int duration)
   , m_newDuration(duration)
 {
 }
+
 void SetFrameDuration::onExecute()
 {
   sprite()->setFrameDuration(m_frame, m_newDuration);
   sprite()->incrementVersion();
 }
+
 void SetFrameDuration::onUndo()
 {
   sprite()->setFrameDuration(m_frame, m_oldDuration);
   sprite()->incrementVersion();
 }
+
 void SetFrameDuration::onFireNotifications()
 {
   Sprite* sprite = this->sprite();
@@ -43,4 +45,5 @@ void SetFrameDuration::onFireNotifications()
   ev.frame(m_frame);
   doc->notify_observers<DocEvent&>(&DocObserver::onFrameDurationChanged, ev);
 }
+
 }} // namespace app::cmd

@@ -1,47 +1,50 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/commands/command.h"
- include "app/commands/commands.h"
- include "app/commands/params.h"
- include "app/tools/controller.h"
- include "app/tools/ink.h"
- include "app/tools/tool.h"
- include "app/tools/tool_loop.h"
- include "app/tools/tool_loop_manager.h"
- include "app/ui/editor/drawing_state.h"
- include "app/ui/editor/editor.h"
- include "app/ui/editor/editor_customization_delegate.h"
- include "app/ui/editor/editor_render.h"
- include "app/ui/editor/glue.h"
- include "app/ui/keyboard_shortcuts.h"
- include "app/ui/skin/skin_theme.h"
- include "app/ui_context.h"
- include "base/scoped_value.h"
- include "doc/layer.h"
- include "ui/message.h"
- include "ui/system.h"
- TODO remove these headers and make this state observable by the timeline.
- include "app/app.h"
- include "app/ui/main_window.h"
- include "app/ui/timeline/timeline.h"
- include <algorithm>
- include <cmath>
- include <cstdlib>
- include <cstring>
+#endif
+
+#include "app/ui/editor/drawing_state.h"
+
+#include "app/commands/command.h"
+#include "app/commands/commands.h"
+#include "app/commands/params.h"
+#include "app/tools/controller.h"
+#include "app/tools/ink.h"
+#include "app/tools/tool.h"
+#include "app/tools/tool_loop.h"
+#include "app/tools/tool_loop_manager.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_customization_delegate.h"
+#include "app/ui/editor/editor_render.h"
+#include "app/ui/editor/glue.h"
+#include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
+#include "base/scoped_value.h"
+#include "doc/layer.h"
+#include "ui/message.h"
+#include "ui/system.h"
+
+// TODO remove these headers and make this state observable by the timeline.
+#include "app/app.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline/timeline.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+
 namespace app {
+
 using namespace ui;
+
 static int get_delay_interval_for_tool_loop(tools::ToolLoop* toolLoop)
 {
   if (toolLoop->getTracePolicy() == tools::TracePolicy::Last) {
@@ -55,6 +58,7 @@ static int get_delay_interval_for_tool_loop(tools::ToolLoop* toolLoop)
     return 0;
   }
 }
+
 DrawingState::DrawingState(Editor* editor, tools::ToolLoop* toolLoop, const DrawingType type)
   : m_editor(editor)
   , m_type(type)
@@ -69,10 +73,12 @@ DrawingState::DrawingState(Editor* editor, tools::ToolLoop* toolLoop, const Draw
     &DrawingState::onBeforeCommandExecution,
     this);
 }
+
 DrawingState::~DrawingState()
 {
   destroyLoop(nullptr);
 }
+
 void DrawingState::initToolLoop(Editor* editor,
                                 const ui::MouseMessage* msg,
                                 const tools::Pointer& pointer)
@@ -81,13 +87,16 @@ void DrawingState::initToolLoop(Editor* editor,
     m_delayedMouseMove.onMouseDown(msg);
   else
     m_delayedMouseMove.initSpritePos(gfx::PointF(pointer.point()));
+
   Tileset* tileset = m_toolLoop->getDstTileset();
+
   // For selection inks we don't use a "the selected layer" for
   // preview purposes, because we want the selection feedback to be at
   // the top of all layers.
   Layer* previewLayer = (m_toolLoop->getInk()->isSelection() || m_toolLoop->getInk()->isSlice() ?
                            nullptr :
                            m_toolLoop->getLayer());
+
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
   editor->renderEngine().setPreviewImage(
@@ -100,46 +109,60 @@ void DrawingState::initToolLoop(Editor* editor,
        static_cast<LayerImage*>(m_toolLoop->getLayer())->blendMode() :
        doc::BlendMode::NEG_BW)); // To preview the selection ink we use the negative black & white
                                  // blender
+
   ASSERT(!m_toolLoopManager->isCanceled());
+
   m_velocity.reset();
   m_lastPointer = pointer;
   m_mouseDownPos = (msg ? msg->position() : editor->editorToScreen(pointer.point()));
   m_mouseDownTime = base::current_tick();
+
   m_toolLoopManager->prepareLoop(pointer);
   m_toolLoopManager->pressButton(pointer);
+
   ASSERT(!m_toolLoopManager->isCanceled());
+
   editor->captureMouse();
 }
+
 void DrawingState::disableMouseStabilizer()
 {
   ASSERT(m_toolLoopManager);
   m_toolLoopManager->disableMouseStabilizer();
 }
+
 void DrawingState::sendMovementToToolLoop(const tools::Pointer& pointer)
 {
   ASSERT(m_toolLoopManager);
   m_lastPointer = pointer;
   m_toolLoopManager->movement(pointer);
 }
+
 void DrawingState::notifyToolLoopModifiersChange(Editor* editor)
 {
   if (!m_toolLoopManager->isCanceled())
     m_toolLoopManager->notifyToolLoopModifiersChange();
 }
+
 void DrawingState::onBeforePopState(Editor* editor)
 {
   m_beforeCmdConn.disconnect();
   StandbyState::onBeforePopState(editor);
 }
+
 bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   // Drawing loop
   ASSERT(m_toolLoopManager != NULL);
+
   if (!editor->hasCapture())
     editor->captureMouse();
+
   tools::Pointer pointer = pointer_from_msg(editor, msg, m_velocity.velocity());
   m_lastPointer = pointer;
+
   m_delayedMouseMove.onMouseDown(msg);
+
   // Check if this drawing state was started with a Shift+Pencil tool
   // and now the user pressed the right button to draw the straight
   // line with the background color.
@@ -147,16 +170,21 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (m_type == DrawingType::LineFreehand && !m_mousePressedReceived) {
     recreateLoop = true;
   }
+
   m_mousePressedReceived = true;
+
   // Notify the mouse button down to the tool loop manager.
   m_toolLoopManager->pressButton(pointer);
+
   // Store the isCanceled flag, because destroyLoopIfCanceled might
   // destroy the tool loop manager.
   ASSERT(m_toolLoopManager);
   const bool isCanceled = m_toolLoopManager->isCanceled();
+
   // The user might have canceled by the tool loop clicking with the
   // secondary mouse button.
   destroyLoopIfCanceled(editor);
+
   // In this case, the user canceled the straight line preview
   // (Shift+Pencil) pressing the right-click (other mouse button). Now
   // we have to restart the loop calling
@@ -165,13 +193,17 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
     ASSERT(!m_toolLoopManager);
     checkStartDrawingStraightLine(editor, msg, &pointer);
   }
+
   return true;
 }
+
 bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
+
   m_lastPointer = pointer_from_msg(editor, msg, m_velocity.velocity());
   m_delayedMouseMove.onMouseUp(msg);
+
   // Selection tools with Replace mode are cancelled with a simple click.
   // ("one point" controller selection tool i.e. the magic wand, and
   // selection tools with Add or Subtract mode aren't cancelled with
@@ -190,20 +222,26 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
     if (m_toolLoopManager->releaseButton(m_lastPointer))
       return true;
   }
+
   destroyLoop(editor);
+
   // Back to standby state.
   editor->backToPreviousState();
   editor->releaseMouse();
+
   // Update the timeline. TODO make this state observable by the timeline.
   App::instance()->timeline()->updateUsingEditor(editor);
+
   // Restart again? Here we handle the case to draw multiple lines
   // using Shift+click with the Pencil tool. When we release the mouse
   // button, if the Shift key is pressed, the whole ToolLoop starts
   // again.
   if (Preferences::instance().editor.straightLinePreview())
     checkStartDrawingStraightLine(editor, msg, &m_lastPointer);
+
   return true;
 }
+
 bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   // It's needed to avoid some glitches with brush boundaries.
@@ -211,17 +249,21 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   // TODO we should be able to avoid this if we correctly invalidate
   // the BrushPreview::m_clippingRegion
   HideBrushPreview hide(editor->brushPreview());
+
   // Don't process onScrollChange() messages if autoScroll() changes
   // the scroll.
   base::ScopedValue disableScroll(m_processScrollChange, false);
+
   // Update velocity sensor.
   m_velocity.updateWithDisplayPoint(msg->position());
+
   // Update pointer with new mouse position
   m_lastPointer = tools::Pointer(gfx::Point(m_delayedMouseMove.spritePos()),
                                  m_velocity.velocity(),
                                  button_from_msg(msg),
                                  msg->pointerType(),
                                  msg->pressure());
+
   // Indicate that we've received a real mouse movement event here
   // (used in the Rectangular Marquee to deselect when we just do a
   // simple click without moving the mouse).
@@ -229,18 +271,21 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   gfx::Point delta = (msg->position() - m_mouseDownPos);
   m_mouseMaxDelta.x = std::max(m_mouseMaxDelta.x, std::abs(delta.x));
   m_mouseMaxDelta.y = std::max(m_mouseMaxDelta.y, std::abs(delta.y));
+
   // Use DelayedMouseMove for tools like line, rectangle, etc. (that
   // use the only the last mouse position) to filter out rapid mouse
   // movement.
   m_delayedMouseMove.onMouseMove(msg);
   return true;
 }
+
 void DrawingState::onCommitMouseMove(Editor* editor, const gfx::PointF& spritePos)
 {
   if (m_toolLoop && m_toolLoopManager && !m_toolLoopManager->isCanceled()) {
     handleMouseMovement();
   }
 }
+
 bool DrawingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (m_toolLoop->getInk()->isEyedropper()) {
@@ -252,6 +297,7 @@ bool DrawingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   }
   return true;
 }
+
 bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   Command* command = NULL;
@@ -264,10 +310,12 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
       return true;
     }
   }
+
   // Return true when we cannot execute commands (true = the onKeyDown
   // event was used, so the key is not used to run a command).
   return !canExecuteCommands();
 }
+
 bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   // Cancel loop pressing Esc key...
@@ -278,16 +326,20 @@ bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
        !editor->startStraightLineWithFreehandTool(nullptr))) {
     m_toolLoopManager->cancel();
   }
+
   // The user might have canceled the tool loop pressing the 'Esc' key.
   destroyLoopIfCanceled(editor);
   return true;
 }
+
 bool DrawingState::onScrollChange(Editor* editor)
 {
   if (m_processScrollChange) {
     gfx::Point mousePos = editor->mousePosInDisplay();
+
     // Update velocity sensor.
     m_velocity.updateWithDisplayPoint(mousePos); // TODO add scroll as velocity?
+
     m_lastPointer = tools::Pointer(editor->screenToEditor(mousePos),
                                    m_velocity.velocity(),
                                    m_lastPointer.button(),
@@ -297,17 +349,20 @@ bool DrawingState::onScrollChange(Editor* editor)
   }
   return true;
 }
+
 bool DrawingState::onUpdateStatusBar(Editor* editor)
 {
   // The status bar is updated by ToolLoopImpl::updateStatusBar()
   // method called by the ToolLoopManager.
   return false;
 }
+
 void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
 {
   if (m_toolLoop)
     m_toolLoop->validateDstImage(rgn);
 }
+
 bool DrawingState::getGridBounds(Editor* editor, gfx::Rect& gridBounds)
 {
   if (m_toolLoop) {
@@ -317,12 +372,14 @@ bool DrawingState::getGridBounds(Editor* editor, gfx::Rect& gridBounds)
   else
     return false;
 }
+
 void DrawingState::handleMouseMovement()
 {
   // Notify mouse movement to the tool
   ASSERT(m_toolLoopManager);
   m_toolLoopManager->movement(m_lastPointer);
 }
+
 bool DrawingState::canInterpretMouseMovementAsJustOneClick()
 {
   // If the user clicked (pressed and released the mouse button) in
@@ -331,6 +388,7 @@ bool DrawingState::canInterpretMouseMovementAsJustOneClick()
   return !m_mouseMoveReceived || (m_mouseMaxDelta.x < 4 && m_mouseMaxDelta.y < 4 &&
                                   (base::current_tick() - m_mouseDownTime < 250));
 }
+
 bool DrawingState::canExecuteCommands()
 {
   // Returning true here means that the user can trigger commands with
@@ -340,10 +398,12 @@ bool DrawingState::canExecuteCommands()
   // pencil (freehand) tool.
   return (m_type == DrawingType::LineFreehand && !m_mousePressedReceived);
 }
+
 void DrawingState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
   if (!m_toolLoop)
     return;
+
   if (canExecuteCommands() ||
       // Undo/Redo/Cancel will cancel the ToolLoop
       ev.command()->id() == CommandId::Undo() || ev.command()->id() == CommandId::Redo() ||
@@ -353,28 +413,36 @@ void DrawingState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       // simulated it here
       ev.cancel();
     }
+
     m_toolLoopManager->cancel();
     destroyLoopIfCanceled(m_editor);
   }
 }
+
 void DrawingState::destroyLoopIfCanceled(Editor* editor)
 {
   // Cancel drawing loop
   if (m_toolLoopManager->isCanceled()) {
     destroyLoop(editor);
+
     // Change to standby state
     editor->backToPreviousState();
     editor->releaseMouse();
   }
 }
+
 void DrawingState::destroyLoop(Editor* editor)
 {
   if (editor)
     editor->renderEngine().removePreviewImage();
+
   if (m_toolLoopManager)
     m_toolLoopManager->end();
+
   m_toolLoopManager.reset(nullptr);
   m_toolLoop.reset(nullptr);
+
   app_rebuild_documents_tabs();
 }
+
 } // namespace app

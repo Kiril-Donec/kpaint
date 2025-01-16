@@ -1,43 +1,45 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/console.h"
- include "app/i18n/strings.h"
- include "app/resource_finder.h"
- include "app/send_crash.h"
- include "app/task.h"
- include "base/fs.h"
- include "base/launcher.h"
- include "fmt/format.h"
- include "send_crash.xml.h"
- include "ui/alert.h"
- include "ui/system.h"
- include "ver/info.h"
+#endif
+
+#include "app/send_crash.h"
+
+#include "app/app.h"
+#include "app/console.h"
+#include "app/i18n/strings.h"
+#include "app/resource_finder.h"
+#include "app/task.h"
+#include "base/fs.h"
+#include "base/launcher.h"
+#include "fmt/format.h"
+#include "ui/alert.h"
+#include "ui/system.h"
+#include "ver/info.h"
+
+#include "send_crash.xml.h"
+
 namespace app {
- static
+
+// static
 std::string SendCrash::DefaultMemoryDumpFilename()
 {
- ifdef _WIN32
+#ifdef _WIN32
   std::string kDefaultCrashName = fmt::format("{}-crash-{}.dmp", get_app_name(), get_app_version());
   ResourceFinder rf;
   rf.includeUserDir(kDefaultCrashName.c_str());
   return rf.getFirstOrCreateDefault();
- else
+#else
   return std::string();
- endif
+#endif
 }
+
 SendCrash::~SendCrash()
 {
   if (m_task.running()) {
@@ -45,22 +47,26 @@ SendCrash::~SendCrash()
     m_task.wait();
   }
 }
+
 void SendCrash::search()
 {
- ifdef _WIN32
+#ifdef _WIN32
   // On Windows we use one mini-dump to report bugs, then we can open
   // this .dmp file locally along with the .exe + .pdb to check the
   // stack trace and detect the cause of the bug.
+
   m_dumpFilename = SendCrash::DefaultMemoryDumpFilename();
   if (!m_dumpFilename.empty() && base::is_file(m_dumpFilename)) {
     auto app = App::instance();
     app->memoryDumpFilename(m_dumpFilename);
     app->showNotification(this);
   }
- elif defined(__APPLE__)
+
+#elif defined(__APPLE__)
   // On macOS we can show the possibility to send the latest crash
   // report from ~/Library/Logs/DiagnosticReports which is the
   // location where crash reports (.crash files) are located.
+
   m_task.run([this](base::task_token&) {
     ResourceFinder rf;
     rf.includeHomeDir("Library/Logs/DiagnosticReports");
@@ -72,6 +78,7 @@ void SendCrash::search()
         // Cancel everything
         if (m_task.canceled())
           return;
+
         if (base::utf8_icmp(get_app_name(), fn, n) == 0) {
           candidates.push_back(fn);
         }
@@ -91,25 +98,31 @@ void SendCrash::search()
       }
     }
   });
- endif
+
+#endif
 }
+
 std::string SendCrash::notificationText()
 {
   return "Report last crash";
 }
+
 void SendCrash::notificationClick()
 {
   if (m_dumpFilename.empty()) {
     ui::Alert::show(Strings::alerts_nothing_to_report());
     return;
   }
+
   app::gen::SendCrash dlg;
- if _WIN32
+
+#if _WIN32
   // Only on Windows, if the current version is a development version
   // (i.e. the get_app_version() contains "-dev"), the .dmp
   // file is useless for us. This is because we need the .exe + .pdb +
   // source code used in the compilation process to make some sense of
   // the .dmp file.
+
   bool isDev = (std::string(get_app_version()).find("-dev") != std::string::npos);
   if (isDev) {
     dlg.official()->setVisible(false);
@@ -117,7 +130,7 @@ void SendCrash::notificationClick()
     dlg.devFilename()->Click.connect([this] { onClickDevFilename(); });
   }
   else
-// endif // On other platforms the crash file might be useful even in
+#endif // On other platforms the crash file might be useful even in
        // the "-dev" version (e.g. on macOS it's a text file with
        // stack traces).
   {
@@ -125,6 +138,7 @@ void SendCrash::notificationClick()
     dlg.filename()->setText(m_dumpFilename);
     dlg.filename()->Click.connect([this] { onClickFilename(); });
   }
+
   dlg.openWindowInForeground();
   if (dlg.closer() == dlg.deleteFile()) {
     try {
@@ -136,12 +150,15 @@ void SendCrash::notificationClick()
     }
   }
 }
+
 void SendCrash::onClickFilename()
 {
   base::launcher::open_folder(m_dumpFilename);
 }
+
 void SendCrash::onClickDevFilename()
 {
   base::launcher::open_file(m_dumpFilename);
 }
+
 } // namespace app

@@ -1,26 +1,29 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2023 Igara Studio S.A.
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/frames_sequence.h"
- include <algorithm>
- include <gtest/gtest.h>
- include <iterator>
+#endif
+
+#include <gtest/gtest.h>
+
+#include "doc/frames_sequence.h"
+
+#include <algorithm>
+#include <iterator>
+
 using namespace doc;
+
 static std::vector<frame_t> to_vector(const FramesSequence& f)
 {
   std::vector<frame_t> v;
   std::copy(f.begin(), f.end(), std::back_inserter(v));
   return v;
 }
+
 TEST(FramesSequence, BasicOneRange)
 {
   FramesSequence f;
@@ -31,12 +34,14 @@ TEST(FramesSequence, BasicOneRange)
   EXPECT_FALSE(f.empty());
   EXPECT_EQ(3, f.size());
   EXPECT_EQ(1, f.ranges());
+
   auto res = to_vector(f);
   ASSERT_EQ(3, res.size());
   EXPECT_EQ(1, res[0]);
   EXPECT_EQ(2, res[1]);
   EXPECT_EQ(3, res[2]);
 }
+
 TEST(FramesSequence, BasicThreeRanges)
 {
   FramesSequence f;
@@ -45,12 +50,14 @@ TEST(FramesSequence, BasicThreeRanges)
   f.insert(5);
   EXPECT_EQ(3, f.size());
   EXPECT_EQ(3, f.ranges());
+
   auto res = to_vector(f);
   ASSERT_EQ(3, res.size());
   EXPECT_EQ(1, res[0]);
   EXPECT_EQ(3, res[1]);
   EXPECT_EQ(5, res[2]);
 }
+
 TEST(FramesSequence, InsertDecreasingFramesSequenceAfterIncreasingSequence)
 {
   FramesSequence f;
@@ -65,6 +72,7 @@ TEST(FramesSequence, InsertDecreasingFramesSequenceAfterIncreasingSequence)
   EXPECT_EQ(3, f.firstFrame());
   EXPECT_EQ(2, f.lastFrame());
   EXPECT_EQ(1, f.lowestFrame());
+
   auto res = to_vector(f);
   ASSERT_EQ(12, res.size());
   EXPECT_EQ(3, res[0]);
@@ -80,6 +88,7 @@ TEST(FramesSequence, InsertDecreasingFramesSequenceAfterIncreasingSequence)
   EXPECT_EQ(1, res[10]);
   EXPECT_EQ(2, res[11]);
 }
+
 TEST(FramesSequence, Contains)
 {
   FramesSequence f;
@@ -88,6 +97,7 @@ TEST(FramesSequence, Contains)
   f.insert(9, 7);
   EXPECT_EQ(6, f.size());
   EXPECT_EQ(3, f.ranges());
+
   EXPECT_FALSE(f.contains(0));
   EXPECT_TRUE(f.contains(1));
   EXPECT_FALSE(f.contains(2));
@@ -100,6 +110,7 @@ TEST(FramesSequence, Contains)
   EXPECT_TRUE(f.contains(9));
   EXPECT_FALSE(f.contains(10));
 }
+
 TEST(FramesSequence, ReverseIterators)
 {
   FramesSequence f;
@@ -108,8 +119,10 @@ TEST(FramesSequence, ReverseIterators)
   f.insert(8, 2);
   EXPECT_EQ(11, f.size());
   EXPECT_EQ(3, f.ranges());
+
   std::vector<frame_t> res;
   std::copy(f.rbegin(), f.rend(), std::back_inserter(res));
+
   ASSERT_EQ(11, res.size());
   EXPECT_EQ(2, res[0]);
   EXPECT_EQ(3, res[1]);
@@ -122,20 +135,25 @@ TEST(FramesSequence, ReverseIterators)
   EXPECT_EQ(6, res[8]);
   EXPECT_EQ(5, res[9]);
   EXPECT_EQ(1, res[10]);
+
   std::vector<frame_t> res2;
   for (frame_t frame : f.reversed())
     res2.push_back(frame);
+
   EXPECT_EQ(res, res2);
 }
+
 TEST(FramesSequence, MakeReverseSimple)
 {
   FramesSequence f;
   f.insert(4, 9);
   EXPECT_EQ(6, f.size());
   EXPECT_EQ(1, f.ranges());
+
   f = f.makeReverse();
   EXPECT_EQ(6, f.size());
   EXPECT_EQ(1, f.ranges());
+
   auto res = to_vector(f);
   ASSERT_EQ(6, res.size());
   EXPECT_EQ(9, res[0]);
@@ -145,6 +163,7 @@ TEST(FramesSequence, MakeReverseSimple)
   EXPECT_EQ(5, res[4]);
   EXPECT_EQ(4, res[5]);
 }
+
 TEST(FramesSequence, MakeReverse)
 {
   FramesSequence f;
@@ -155,8 +174,10 @@ TEST(FramesSequence, MakeReverse)
   f.insert(9, 5);
   EXPECT_EQ(14, f.size());
   EXPECT_EQ(5, f.ranges());
+
   f = f.makeReverse();
   EXPECT_EQ(5, f.ranges());
+
   auto res = to_vector(f);
   ASSERT_EQ(14, res.size());
   EXPECT_EQ(5, res[0]);
@@ -174,6 +195,7 @@ TEST(FramesSequence, MakeReverse)
   EXPECT_EQ(4, res[12]);
   EXPECT_EQ(1, res[13]);
 }
+
 TEST(FramesSequence, MakePingPong)
 {
   FramesSequence f;
@@ -183,6 +205,7 @@ TEST(FramesSequence, MakePingPong)
   f = f.makePingPong();
   EXPECT_EQ(4, f.size());
   EXPECT_EQ(2, f.ranges());
+
   FramesSequence f2;
   f2.insert(1, 2);
   EXPECT_EQ(2, f2.size());
@@ -190,6 +213,7 @@ TEST(FramesSequence, MakePingPong)
   f2 = f2.makePingPong();
   EXPECT_EQ(2, f2.size());
   EXPECT_EQ(1, f2.ranges());
+
   FramesSequence f3;
   f3.insert(1, 1);
   EXPECT_EQ(1, f3.size());
@@ -198,6 +222,7 @@ TEST(FramesSequence, MakePingPong)
   EXPECT_EQ(1, f3.size());
   EXPECT_EQ(1, f3.ranges());
 }
+
 TEST(FramesSequence, MakePingPongAndFilter)
 {
   FramesSequence f;
@@ -207,8 +232,10 @@ TEST(FramesSequence, MakePingPongAndFilter)
   f.insert(8);
   EXPECT_EQ(7, f.size());
   EXPECT_EQ(4, f.ranges());
+
   f = f.makePingPong();
   EXPECT_EQ(6, f.ranges());
+
   auto res = to_vector(f);
   ASSERT_EQ(12, res.size());
   EXPECT_EQ(1, res[0]);
@@ -223,6 +250,7 @@ TEST(FramesSequence, MakePingPongAndFilter)
   EXPECT_EQ(9, res[9]);
   EXPECT_EQ(5, res[10]);
   EXPECT_EQ(4, res[11]);
+
   f = f.filter(5, 8);
   EXPECT_EQ(5, f.ranges());
   res = to_vector(f);
@@ -234,6 +262,7 @@ TEST(FramesSequence, MakePingPongAndFilter)
   EXPECT_EQ(7, res[4]);
   EXPECT_EQ(8, res[5]);
   EXPECT_EQ(5, res[6]);
+
   f = f.filter(7, 7);
   EXPECT_EQ(2, f.ranges());
   res = to_vector(f);
@@ -241,6 +270,7 @@ TEST(FramesSequence, MakePingPongAndFilter)
   EXPECT_EQ(7, res[0]);
   EXPECT_EQ(7, res[1]);
 }
+
 TEST(FramesSequence, RangeMerging)
 {
   FramesSequence f;
@@ -255,7 +285,9 @@ TEST(FramesSequence, RangeMerging)
   f.insert(1);
   EXPECT_EQ(17, f.size());
   EXPECT_EQ(2, f.ranges());
+
   f.clear();
+
   f.insert(10, 8);
   f.insert(7);
   f.insert(6, 4);
@@ -269,6 +301,7 @@ TEST(FramesSequence, RangeMerging)
   EXPECT_EQ(19, f.size());
   EXPECT_EQ(2, f.ranges());
 }
+
 TEST(FramesSequence, SelectedFramesConversion)
 {
   SelectedFrames sf;
@@ -280,11 +313,13 @@ TEST(FramesSequence, SelectedFramesConversion)
   EXPECT_EQ(2, sf.ranges());
   EXPECT_EQ(3, sf.firstFrame());
   EXPECT_EQ(9, sf.lastFrame());
+
   FramesSequence f(sf);
   EXPECT_EQ(sf.size(), f.size());
   EXPECT_EQ(sf.ranges(), f.ranges());
   EXPECT_EQ(sf.firstFrame(), f.firstFrame());
   EXPECT_EQ(sf.lastFrame(), f.lastFrame());
+
   auto ressf = to_vector(sf);
   auto resf = to_vector(f);
   EXPECT_EQ(ressf.size(), resf.size());
@@ -292,6 +327,7 @@ TEST(FramesSequence, SelectedFramesConversion)
     EXPECT_EQ(ressf[i], resf[i]);
   }
 }
+
 TEST(FramesSequence, Displace)
 {
   FramesSequence f;
@@ -301,6 +337,7 @@ TEST(FramesSequence, Displace)
   f.insert(8);
   EXPECT_EQ(7, f.size());
   EXPECT_EQ(4, f.ranges());
+
   f.displace(4);
   auto res = to_vector(f);
   ASSERT_EQ(7, res.size());
@@ -311,13 +348,16 @@ TEST(FramesSequence, Displace)
   EXPECT_EQ(12, res[4]);
   EXPECT_EQ(11, res[5]);
   EXPECT_EQ(12, res[6]);
+
   f.clear();
+
   f.insert(3);
   f.insert(4, 5);
   f.insert(9, 7);
   f.insert(2);
   EXPECT_EQ(7, f.size());
   EXPECT_EQ(3, f.ranges());
+
   f.displace(-4);
   // Check that it was displaced just -2 frames because it is the lowest frame
   // in the sequence.
@@ -331,6 +371,7 @@ TEST(FramesSequence, Displace)
   EXPECT_EQ(5, res[5]);
   EXPECT_EQ(0, res[6]);
 }
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

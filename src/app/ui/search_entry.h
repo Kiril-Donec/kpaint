@@ -1,19 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2001-2015  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_SEARCH_ENTRY_H_INCLUDED
+#define APP_UI_SEARCH_ENTRY_H_INCLUDED
+#pragma once
 
+#include "ui/entry.h"
 
-
- ifndef APP_UI_SEARCH_ENTRY_H_INCLUDED
- define APP_UI_SEARCH_ENTRY_H_INCLUDED
- pragma once
- include "ui/entry.h"
 namespace app {
+
 class SearchEntry : public ui::Entry {
 public:
   SearchEntry();
@@ -23,7 +21,10 @@ private:
   void onPaint(ui::PaintEvent& ev) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
   gfx::Rect onGetEntryTextBounds() const override;
+
   gfx::Rect getCloseIconBounds() const;
 };
+
 } // namespace app
- endif
+
+#endif

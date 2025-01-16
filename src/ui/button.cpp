@@ -1,25 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "ui/button.h"
- include "ui/manager.h"
- include "ui/message.h"
- include "ui/size_hint_event.h"
- include "ui/theme.h"
- include "ui/widget.h"
- include "ui/window.h"
- include <cstring>
- include <queue>
+#endif
+
+#include "ui/button.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/size_hint_event.h"
+#include "ui/theme.h"
+#include "ui/widget.h"
+#include "ui/window.h"
+
+#include <cstring>
+#include <queue>
+
 namespace ui {
+
 ButtonBase::ButtonBase(const std::string& text,
                        const WidgetType type,
                        const WidgetType behaviorType,
@@ -32,27 +34,33 @@ ButtonBase::ButtonBase(const std::string& text,
   setAlign(CENTER | MIDDLE);
   setText(text);
   setFocusStop(true);
+
   // Initialize theme
   setType(drawType); // TODO Fix this nasty trick
   initTheme();
   setType(type);
 }
+
 ButtonBase::~ButtonBase()
 {
 }
+
 WidgetType ButtonBase::behaviorType() const
 {
   return m_behaviorType;
 }
+
 void ButtonBase::onClick()
 {
   // Fire Click() signal
   Click();
 }
+
 void ButtonBase::onRightClick()
 {
   RightClick();
 }
+
 bool ButtonBase::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -65,15 +73,19 @@ bool ButtonBase::onProcessMessage(Message* msg)
           if (isSelected())
             setSelected(false);
         }
+
         // TODO theme specific stuff
         invalidate();
       }
       break;
+
     case kKeyDownMessage: {
       KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
       KeyScancode scancode = keymsg->scancode();
+
       if (isEnabled() && isVisible()) {
         const bool mnemonicPressed = isMnemonicPressedWithModifiers(keymsg);
+
         // For kButtonWidget
         if (m_behaviorType == kButtonWidget) {
           // Has focus and press enter/space
@@ -83,14 +95,17 @@ bool ButtonBase::onProcessMessage(Message* msg)
               return true;
             }
           }
+
           if ( // Check if the user pressed mnemonic
             mnemonicPressed ||
             // Magnetic widget catches ENTERs
             (isFocusMagnet() && ((scancode == kKeyEnter) || (scancode == kKeyEnterPad)))) {
             manager()->setFocus(this);
+
             // Dispatch focus movement messages (because the buttons
             // process them)
             manager()->dispatchMessages();
+
             setSelected(true);
             return true;
           }
@@ -116,6 +131,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
       }
       break;
     }
+
     case kKeyUpMessage:
       if (isEnabled() && hasFocus()) {
         switch (m_behaviorType) {
@@ -125,10 +141,12 @@ bool ButtonBase::onProcessMessage(Message* msg)
               return true;
             }
             break;
+
           case kCheckWidget: {
             KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
             KeyScancode scancode = keymsg->scancode();
             const bool mnemonicPressed = isMnemonicPressedWithModifiers(keymsg);
+
             // Fire the onClick() event only if the user pressed space or
             // Alt+the underscored letter of the checkbox label.
             if (scancode == kKeySpace || mnemonicPressed) {
@@ -140,43 +158,55 @@ bool ButtonBase::onProcessMessage(Message* msg)
         }
       }
       break;
+
     case kMouseDownMessage:
       switch (m_behaviorType) {
         case kButtonWidget:
           if (isEnabled()) {
             setSelected(true);
+
             m_pressedStatus = isSelected();
             captureMouse();
+
             onStartDrag();
           }
           return true;
+
         case kCheckWidget:
           if (isEnabled()) {
             setSelected(!isSelected());
+
             m_pressedStatus = isSelected();
             captureMouse();
+
             onStartDrag();
           }
           return true;
+
         case kRadioWidget:
           if (isEnabled()) {
             if (!isSelected()) {
               m_handleSelect = false;
               setSelected(true);
               m_handleSelect = true;
+
               m_pressedStatus = isSelected();
               captureMouse();
+
               onStartDrag();
             }
           }
           return true;
       }
       break;
+
     case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
+
         if (hasMouse()) {
           MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
           switch (m_behaviorType) {
             case kButtonWidget: {
               if (mouseMsg->right())
@@ -184,14 +214,18 @@ bool ButtonBase::onProcessMessage(Message* msg)
               else
                 generateButtonSelectSignal();
             } break;
+
             case kCheckWidget: {
               // Fire onClick() event
               onClick();
+
               invalidate();
             } break;
+
             case kRadioWidget: {
               setSelected(false);
               setSelected(true);
+
               // Fire onClick() event
               onClick();
             } break;
@@ -200,6 +234,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
         return true;
       }
       break;
+
     case kMouseMoveMessage:
       if (isEnabled() && hasCapture()) {
         m_handleSelect = false;
@@ -207,6 +242,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
         m_handleSelect = true;
       }
       break;
+
     case kMouseEnterMessage:
     case kMouseLeaveMessage:
       // TODO theme stuff
@@ -214,22 +250,28 @@ bool ButtonBase::onProcessMessage(Message* msg)
         invalidate();
       break;
   }
+
   return Widget::onProcessMessage(msg);
 }
+
 void ButtonBase::generateButtonSelectSignal()
 {
   // Deselect
   setSelected(false);
+
   // Fire onClick() event
   onClick();
 }
+
 void ButtonBase::onStartDrag()
 {
   // Do nothing
 }
+
 void ButtonBase::onSelectWhenDragging()
 {
   const bool hasMouse = this->hasMouse();
+
   // Switch state when the mouse go out
   if ((hasMouse && isSelected() != m_pressedStatus) ||
       (!hasMouse && isSelected() == m_pressedStatus)) {
@@ -239,71 +281,90 @@ void ButtonBase::onSelectWhenDragging()
       setSelected(!m_pressedStatus);
   }
 }
- ======================================================================
- Button class
- ======================================================================
+
+// ======================================================================
+// Button class
+// ======================================================================
+
 Button::Button(const std::string& text)
   : ButtonBase(text, kButtonWidget, kButtonWidget, kButtonWidget)
 {
   setAlign(CENTER | MIDDLE);
 }
- ======================================================================
- CheckBox class
- ======================================================================
+
+// ======================================================================
+// CheckBox class
+// ======================================================================
+
 CheckBox::CheckBox(const std::string& text, const WidgetType drawType)
   : ButtonBase(text, kCheckWidget, kCheckWidget, drawType)
 {
   setAlign(LEFT | MIDDLE);
 }
- ======================================================================
- RadioButton class
- ======================================================================
+
+// ======================================================================
+// RadioButton class
+// ======================================================================
+
 RadioButton::RadioButton(const std::string& text, const int radioGroup, const WidgetType drawType)
   : ButtonBase(text, kRadioWidget, kRadioWidget, drawType)
 {
   setAlign(LEFT | MIDDLE);
   setRadioGroup(radioGroup);
 }
+
 void RadioButton::setRadioGroup(int radioGroup)
 {
   m_radioGroup = radioGroup;
+
   // TODO: Update old and new groups
 }
+
 int RadioButton::getRadioGroup() const
 {
   return m_radioGroup;
 }
+
 void RadioButton::deselectRadioGroup()
 {
   Widget* widget = window();
   if (!widget)
     return;
+
   std::queue<Widget*> allChildrens;
   allChildrens.push(widget);
+
   while (!allChildrens.empty()) {
     widget = allChildrens.front();
     allChildrens.pop();
+
     if (RadioButton* radioButton = dynamic_cast<RadioButton*>(widget)) {
       if (radioButton->getRadioGroup() == m_radioGroup)
         radioButton->setSelected(false);
     }
+
     for (auto child : widget->children()) {
       allChildrens.push(child);
     }
   }
 }
+
 void RadioButton::onSelect(bool selected)
 {
   ButtonBase::onSelect(selected);
   if (!selected)
     return;
+
   if (!m_handleSelect)
     return;
+
   if (behaviorType() == kRadioWidget) {
     deselectRadioGroup();
+
     m_handleSelect = false;
     setSelected(true);
     m_handleSelect = true;
   }
 }
+
 } // namespace ui

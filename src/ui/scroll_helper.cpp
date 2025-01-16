@@ -1,36 +1,42 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "ui/scroll_bar.h"
+#endif
+
+#include "ui/scroll_bar.h"
+
 namespace ui {
+
 void setup_scrollbars(const gfx::Size& scrollableSize,
                       gfx::Rect& viewportArea,
                       Widget& parent,
                       ScrollBar& hbar,
                       ScrollBar& vbar)
 {
- define NEED_BAR(w, h)                                                                             \
+#define NEED_BAR(w, h)                                                                             \
   ((scrollableSize.w > viewportArea.w) && (vbar.getBarWidth() < fullViewportArea.w) &&             \
    (hbar.getBarWidth() < fullViewportArea.h))
+
   const gfx::Rect fullViewportArea = viewportArea;
+
   hbar.setSize(scrollableSize.w);
   vbar.setSize(scrollableSize.h);
+
   if (hbar.parent())
     parent.removeChild(&hbar);
   if (vbar.parent())
     parent.removeChild(&vbar);
+
   if (NEED_BAR(w, h)) {
     viewportArea.h -= hbar.getBarWidth();
     parent.addChild(&hbar);
+
     if (NEED_BAR(h, w)) {
       viewportArea.w -= vbar.getBarWidth();
       if (NEED_BAR(w, h))
@@ -45,6 +51,7 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
   else if (NEED_BAR(h, w)) {
     viewportArea.w -= vbar.getBarWidth();
     parent.addChild(&vbar);
+
     if (NEED_BAR(w, h)) {
       viewportArea.h -= hbar.getBarWidth();
       if (NEED_BAR(h, w))
@@ -56,6 +63,7 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
       }
     }
   }
+
   if (parent.hasChild(&hbar)) {
     hbar.setBounds(
       gfx::Rect(viewportArea.x, viewportArea.y2(), viewportArea.w, hbar.getBarWidth()));
@@ -63,6 +71,7 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
   }
   else
     hbar.setVisible(false);
+
   if (parent.hasChild(&vbar)) {
     vbar.setBounds(
       gfx::Rect(viewportArea.x2(), viewportArea.y, vbar.getBarWidth(), viewportArea.h));
@@ -71,4 +80,5 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
   else
     vbar.setVisible(false);
 }
+
 } // namespace ui

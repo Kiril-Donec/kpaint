@@ -1,41 +1,44 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_PREVIEW_EDITOR_H_INCLUDED
+#define APP_UI_PREVIEW_EDITOR_H_INCLUDED
+#pragma once
 
+#include "app/pref/preferences.h"
+#include "app/ui/doc_view.h"
+#include "app/ui/editor/editor_observer.h"
+#include "doc/frame.h"
+#include "ui/window.h"
 
-
- ifndef APP_UI_PREVIEW_EDITOR_H_INCLUDED
- define APP_UI_PREVIEW_EDITOR_H_INCLUDED
- pragma once
- include "app/pref/preferences.h"
- include "app/ui/doc_view.h"
- include "app/ui/editor/editor_observer.h"
- include "doc/frame.h"
- include "ui/window.h"
 namespace app {
 class MiniCenterButton;
 class MiniPlayButton;
+
 class PreviewEditorWindow : public ui::Window,
                             public EditorObserver,
                             public DocViewPreviewDelegate {
 public:
   PreviewEditorWindow();
   ~PreviewEditorWindow();
+
   bool isPreviewEnabled() const { return m_isEnabled; }
   void setPreviewEnabled(bool state);
   void pressPlayButton();
+
   void updateUsingEditor(Editor* editor);
   Editor* previewEditor() const;
   Editor* relatedEditor() const { return m_relatedEditor; }
+
   // EditorObserver impl
   void onStateChanged(Editor* editor) override;
   void onScrollChanged(Editor* editor) override;
   void onZoomChanged(Editor* editor) override;
+
   // DocViewPreviewDelegate impl
   void onScrollOtherEditor(Editor* editor) override;
   void onDisposeOtherEditor(Editor* editor) override;
@@ -59,6 +62,7 @@ private:
   void destroyDocView();
   void saveScrollPref();
   void adjustPlayingTag();
+
   bool m_isEnabled;
   DocView* m_docView;
   MiniCenterButton* m_centerButton;
@@ -71,5 +75,7 @@ private:
   // openWindow() method.
   bool m_opening;
 };
+
 } // namespace app
- endif
+
+#endif

@@ -1,42 +1,45 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_PALETTE_VIEW_H_INCLUDED
+#define APP_UI_PALETTE_VIEW_H_INCLUDED
+#pragma once
 
+#include "app/color.h"
+#include "app/context_observer.h"
+#include "app/ui/color_source.h"
+#include "app/ui/marching_ants.h"
+#include "app/ui/tile_source.h"
+#include "doc/palette_picks.h"
+#include "doc/tile.h"
+#include "obs/connection.h"
+#include "obs/signal.h"
+#include "ui/event.h"
+#include "ui/mouse_button.h"
+#include "ui/widget.h"
 
+#include <memory>
+#include <vector>
 
- ifndef APP_UI_PALETTE_VIEW_H_INCLUDED
- define APP_UI_PALETTE_VIEW_H_INCLUDED
- pragma once
- include "app/color.h"
- include "app/context_observer.h"
- include "app/ui/color_source.h"
- include "app/ui/marching_ants.h"
- include "app/ui/tile_source.h"
- include "doc/palette_picks.h"
- include "doc/tile.h"
- include "obs/connection.h"
- include "obs/signal.h"
- include "ui/event.h"
- include "ui/mouse_button.h"
- include "ui/widget.h"
- include <memory>
- include <vector>
 namespace doc {
 class Palette;
 class Tileset;
 } // namespace doc
+
 namespace app {
+
 enum class PaletteViewModification {
   CLEAR,
   DRAGANDDROP,
   RESIZE,
 };
+
 class PaletteView;
+
 class PaletteViewDelegate {
 public:
   virtual ~PaletteViewDelegate() {}
@@ -67,9 +70,11 @@ public:
   }
   virtual void onTilesViewIndexChange(int index, ui::MouseButton button) {}
 };
+
 class AbstractPaletteViewAdapter;
 class PaletteViewAdapter;
 class TilesetViewAdapter;
+
 class PaletteView : public ui::Widget,
                     public MarchingAnts,
                     public IColorSource,
@@ -84,37 +89,50 @@ public:
     FgBgColors,
     FgBgTiles,
   };
+
   PaletteView(bool editable, PaletteViewStyle style, PaletteViewDelegate* delegate, int boxsize);
   ~PaletteView();
+
   PaletteViewDelegate* delegate() { return m_delegate; }
+
   bool isEditable() const { return m_editable; }
   bool isPalette() const { return m_style != FgBgTiles; }
   bool isTiles() const { return m_style == FgBgTiles; }
+
   int getColumns() const { return m_columns; }
   void setColumns(int columns);
+
   void deselect();
   void selectColor(int index);
   void selectExactMatchColor(const app::Color& color);
   void selectRange(int index1, int index2);
+
   int getSelectedEntry() const;
   bool getSelectedRange(int& index1, int& index2) const;
   void getSelectedEntries(doc::PalettePicks& entries) const;
   int getSelectedEntriesCount() const;
   void setSelectedEntries(const doc::PalettePicks& entries);
+
   doc::Tileset* tileset() const;
+
   // IColorSource
   app::Color getColorByPosition(const gfx::Point& pos) override;
+
   // ITileSource
   doc::tile_t getTileByPosition(const gfx::Point& pos) override;
+
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override;
+
   int getBoxSize() const;
   void setBoxSize(double boxsize);
+
   void clearSelection();
   void cutToClipboard();
   void copyToClipboard();
   void pasteFromClipboard();
   void discardClipboardSelection();
+
   obs::signal<void(ui::Message*)> FocusOrClick;
 
 protected:
@@ -131,6 +149,7 @@ private:
     DRAGGING_OUTLINE,
     RESIZING_PALETTE,
   };
+
   struct Hit {
     enum Part {
       NONE,
@@ -141,10 +160,13 @@ private:
     };
     Part part;
     int color;
+
     Hit(Part part, int color = -1) : part(part), color(color) {}
+
     bool operator==(const Hit& hit) const { return (part == hit.part && color == hit.color); }
     bool operator!=(const Hit& hit) const { return !operator==(hit); }
   };
+
   void update_scroll(int color);
   void onAppPaletteChange();
   gfx::Rect getPaletteEntryBounds(int index) const;
@@ -166,6 +188,7 @@ private:
                      PaletteViewModification mod);
   int boxSizePx() const;
   void updateBorderAndChildSpacing();
+
   State m_state;
   bool m_editable;
   PaletteViewStyle m_style;
@@ -184,5 +207,7 @@ private:
   bool m_copy;
   bool m_withSeparator;
 };
+
 } // namespace app
- endif
+
+#endif

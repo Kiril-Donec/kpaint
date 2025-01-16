@@ -1,23 +1,23 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/color.h"
- include "app/color_utils.h"
- include "app/script/luacpp.h"
+#endif
+
+#include "app/app.h"
+#include "app/color.h"
+#include "app/color_utils.h"
+#include "app/script/luacpp.h"
+
 namespace app { namespace script {
+
 namespace {
+
 app::Color Color_new(lua_State* L, int index)
 {
   app::Color color;
@@ -41,6 +41,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { red, green, blue } into a Color
     if (lua_getfield(L, index, "red") != LUA_TNIL) {
       lua_getfield(L, index, "green");
@@ -55,6 +56,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { h, s, v } into a Color
     if (lua_getfield(L, index, "v") != LUA_TNIL) {
       lua_getfield(L, index, "s");
@@ -68,6 +70,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { hue, saturation, value } into a Color
     if (lua_getfield(L, index, "value") != LUA_TNIL) {
       lua_getfield(L, index, "saturation");
@@ -81,6 +84,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { h, s, l } into a Color
     if (lua_getfield(L, index, "l") != LUA_TNIL) {
       lua_getfield(L, index, "s");
@@ -94,6 +98,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { hue, saturation, lightness } into a Color
     if (lua_getfield(L, index, "lightness") != LUA_TNIL) {
       lua_getfield(L, index, "saturation");
@@ -107,6 +112,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { gray } into a Color
     if (lua_getfield(L, index, "gray") != LUA_TNIL) {
       int a = 255;
@@ -118,6 +124,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { index } into a Color
     if (lua_getfield(L, index, "index") != LUA_TNIL) {
       int i = lua_tointeger(L, -1);
@@ -127,6 +134,7 @@ app::Color Color_new(lua_State* L, int index)
     }
     else
       lua_pop(L, 1);
+
     // Convert { tile } into a Color
     if (lua_getfield(L, index, "tile") != LUA_TNIL) {
       tile_t t = lua_tointeger(L, -1);
@@ -141,6 +149,7 @@ app::Color Color_new(lua_State* L, int index)
   else if (!lua_isnone(L, index)) {
     if (lua_isinteger(L, index) && (index < 0 || lua_isnone(L, index + 1))) {
       doc::color_t docColor = lua_tointeger(L, index);
+
       // TODO depending on current pixel format?
       switch (app_get_current_pixel_format()) {
         case IMAGE_RGB:
@@ -164,16 +173,19 @@ app::Color Color_new(lua_State* L, int index)
   }
   return color;
 }
+
 int Color_new(lua_State* L)
 {
   push_obj(L, Color_new(L, 1));
   return 1;
 }
+
 int Color_gc(lua_State* L)
 {
   get_obj<app::Color>(L, 1)->~Color();
   return 0;
 }
+
 int Color_eq(lua_State* L)
 {
   const auto a = get_obj<app::Color>(L, 1);
@@ -181,66 +193,77 @@ int Color_eq(lua_State* L)
   lua_pushboolean(L, *a == *b);
   return 1;
 }
+
 int Color_get_red(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getRed());
   return 1;
 }
+
 int Color_get_green(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getGreen());
   return 1;
 }
+
 int Color_get_blue(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getBlue());
   return 1;
 }
+
 int Color_get_alpha(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getAlpha());
   return 1;
 }
+
 int Color_get_hsvHue(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHsvHue());
   return 1;
 }
+
 int Color_get_hsvSaturation(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHsvSaturation());
   return 1;
 }
+
 int Color_get_hsvValue(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHsvValue());
   return 1;
 }
+
 int Color_get_hslHue(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHslHue());
   return 1;
 }
+
 int Color_get_hslSaturation(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHslSaturation());
   return 1;
 }
+
 int Color_get_hslLightness(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHslLightness());
   return 1;
 }
+
 int Color_get_hue(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
@@ -249,6 +272,7 @@ int Color_get_hue(lua_State* L)
   else
     return Color_get_hsvHue(L);
 }
+
 int Color_get_saturation(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
@@ -257,18 +281,21 @@ int Color_get_saturation(lua_State* L)
   else
     return Color_get_hsvSaturation(L);
 }
+
 int Color_get_gray(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getGray());
   return 1;
 }
+
 int Color_get_index(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getIndex());
   return 1;
 }
+
 int Color_get_rgbaPixel(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -278,6 +305,7 @@ int Color_get_rgbaPixel(lua_State* L)
   lua_pushinteger(L, pixelColor);
   return 1;
 }
+
 int Color_get_grayPixel(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -287,6 +315,7 @@ int Color_get_grayPixel(lua_State* L)
   lua_pushinteger(L, pixelColor);
   return 1;
 }
+
 int Color_set_red(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -296,6 +325,7 @@ int Color_set_red(lua_State* L)
                                color->getAlpha());
   return 0;
 }
+
 int Color_set_green(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -303,6 +333,7 @@ int Color_set_green(lua_State* L)
     app::Color::fromRgb(color->getRed(), lua_tointeger(L, 2), color->getBlue(), color->getAlpha());
   return 0;
 }
+
 int Color_set_blue(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -310,12 +341,14 @@ int Color_set_blue(lua_State* L)
     app::Color::fromRgb(color->getRed(), color->getGreen(), lua_tointeger(L, 2), color->getAlpha());
   return 0;
 }
+
 int Color_set_alpha(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
   color->setAlpha(lua_tointeger(L, 2));
   return 0;
 }
+
 int Color_set_hsvHue(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -325,6 +358,7 @@ int Color_set_hsvHue(lua_State* L)
                                color->getAlpha());
   return 0;
 }
+
 int Color_set_hsvSaturation(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -334,6 +368,7 @@ int Color_set_hsvSaturation(lua_State* L)
                                color->getAlpha());
   return 0;
 }
+
 int Color_set_hsvValue(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -343,6 +378,7 @@ int Color_set_hsvValue(lua_State* L)
                                color->getAlpha());
   return 0;
 }
+
 int Color_set_hslHue(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -352,6 +388,7 @@ int Color_set_hslHue(lua_State* L)
                                color->getAlpha());
   return 0;
 }
+
 int Color_set_hslSaturation(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -361,6 +398,7 @@ int Color_set_hslSaturation(lua_State* L)
                                color->getAlpha());
   return 0;
 }
+
 int Color_set_hslLightness(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
@@ -370,6 +408,7 @@ int Color_set_hslLightness(lua_State* L)
                                color->getAlpha());
   return 0;
 }
+
 int Color_set_hue(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
@@ -378,6 +417,7 @@ int Color_set_hue(lua_State* L)
   else
     return Color_set_hsvHue(L);
 }
+
 int Color_set_saturation(lua_State* L)
 {
   const auto color = get_obj<app::Color>(L, 1);
@@ -386,23 +426,27 @@ int Color_set_saturation(lua_State* L)
   else
     return Color_set_hsvSaturation(L);
 }
+
 int Color_set_gray(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromGray(lua_tointeger(L, 2), color->getAlpha());
   return 0;
 }
+
 int Color_set_index(lua_State* L)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromIndex(lua_tointeger(L, 2));
   return 0;
 }
+
 const luaL_Reg Color_methods[] = {
   { "__gc",  Color_gc },
   { "__eq",  Color_eq },
   { nullptr, nullptr  }
 };
+
 const Property Color_properties[] = {
   { "red",           Color_get_red,           Color_set_red           },
   { "green",         Color_get_green,         Color_set_green         },
@@ -424,18 +468,23 @@ const Property Color_properties[] = {
   { "grayPixel",     Color_get_grayPixel,     nullptr                 },
   { nullptr,         nullptr,                 nullptr                 }
 };
+
 } // anonymous namespace
+
 DEF_MTNAME(app::Color);
+
 void register_color_class(lua_State* L)
 {
   REG_CLASS(L, Color);
   REG_CLASS_NEW(L, Color);
   REG_CLASS_PROPERTIES(L, Color);
 }
+
 app::Color convert_args_into_color(lua_State* L, int index)
 {
   return Color_new(L, index);
 }
+
 doc::color_t convert_args_into_pixel_color(lua_State* L,
                                            int index,
                                            const doc::PixelFormat pixelFormat)
@@ -443,4 +492,5 @@ doc::color_t convert_args_into_pixel_color(lua_State* L,
   app::Color color = convert_args_into_color(L, index);
   return color_utils::color_for_image(color, pixelFormat);
 }
+
 }} // namespace app::script

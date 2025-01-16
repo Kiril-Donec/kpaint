@@ -1,17 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2001-2017 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef DOC_BLEND_MODE_H_INCLUDED
- define DOC_BLEND_MODE_H_INCLUDED
- pragma once
- include <string>
+#ifndef DOC_BLEND_MODE_H_INCLUDED
+#define DOC_BLEND_MODE_H_INCLUDED
+#pragma once
+
+#include <string>
+
 namespace doc {
+
 enum class BlendMode {
   // Special internal/undocumented alpha compositing and blend modes
   UNSPECIFIED = -1,
@@ -21,7 +21,8 @@ enum class BlendMode {
   RED_TINT = -5,
   BLUE_TINT = -6,
   DST_OVER = -7,
-  // KPaint (.ase files) blend modes
+
+  // Aseprite (.ase files) blend modes
   NORMAL = 0,
   MULTIPLY = 1,
   SCREEN = 2,
@@ -42,6 +43,9 @@ enum class BlendMode {
   SUBTRACT = 17,
   DIVIDE = 18
 };
+
 std::string blend_mode_to_string(BlendMode blendMode);
+
 } // namespace doc
- endif
+
+#endif

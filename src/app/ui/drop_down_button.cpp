@@ -1,26 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/modules/gui.h"
- include "app/ui/drop_down_button.h"
- include "app/ui/skin/skin_property.h"
- include "app/ui/skin/skin_theme.h"
- include "ui/button.h"
- include "ui/theme.h"
+#endif
+
+#include "app/ui/drop_down_button.h"
+
+#include "app/modules/gui.h"
+#include "app/ui/skin/skin_property.h"
+#include "app/ui/skin/skin_theme.h"
+#include "ui/button.h"
+#include "ui/theme.h"
+
 namespace app {
+
 using namespace app::skin;
 using namespace ui;
+
 DropDownButton::DropDownButton(const char* text)
   : HBox()
   , m_button(new Button(text))
@@ -29,8 +30,10 @@ DropDownButton::DropDownButton(const char* text)
   m_button->setExpansive(true);
   m_button->Click.connect(&DropDownButton::onButtonClick, this);
   m_dropDown->Click.connect(&DropDownButton::onDropDownButtonClick, this);
+
   addChild(m_button);
   addChild(m_dropDown);
+
   InitTheme.connect([this] {
     auto theme = SkinTheme::get(this);
     m_button->setStyle(theme->styles.dropDownButton());
@@ -39,13 +42,16 @@ DropDownButton::DropDownButton(const char* text)
   });
   initTheme();
 }
+
 void DropDownButton::onButtonClick()
 {
   // Fire "Click" signal.
   Click();
 }
+
 void DropDownButton::onDropDownButtonClick()
 {
   DropDownClick();
 }
+
 } // namespace app

@@ -1,19 +1,21 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (c) 2001-2017 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef DOC_BLEND_FUNCS_H_INCLUDED
- define DOC_BLEND_FUNCS_H_INCLUDED
- pragma once
- include "doc/blend_mode.h"
- include "doc/color.h"
+#ifndef DOC_BLEND_FUNCS_H_INCLUDED
+#define DOC_BLEND_FUNCS_H_INCLUDED
+#pragma once
+
+#include "doc/blend_mode.h"
+#include "doc/color.h"
+
 namespace doc {
+
 typedef color_t (*BlendFunc)(color_t backdrop, color_t src, int opacity);
+
 color_t rgba_blender_src(color_t backdrop, color_t src, int opacity);
 color_t rgba_blender_merge(color_t backdrop, color_t src, int opacity);
 color_t rgba_blender_neg_bw(color_t backdrop, color_t src, int opacity);
@@ -39,6 +41,7 @@ color_t rgba_blender_hsl_luminosity(color_t backdrop, color_t src, int opacity);
 color_t rgba_blender_addition(color_t backdrop, color_t src, int opacity);
 color_t rgba_blender_subtract(color_t backdrop, color_t src, int opacity);
 color_t rgba_blender_divide(color_t backdrop, color_t src, int opacity);
+
 color_t graya_blender_src(color_t backdrop, color_t src, int opacity);
 color_t graya_blender_merge(color_t backdrop, color_t src, int opacity);
 color_t graya_blender_neg_bw(color_t backdrop, color_t src, int opacity);
@@ -58,9 +61,13 @@ color_t graya_blender_exclusion(color_t backdrop, color_t src, int opacity);
 color_t graya_blender_addition(color_t backdrop, color_t src, int opacity);
 color_t graya_blender_subtract(color_t backdrop, color_t src, int opacity);
 color_t graya_blender_divide(color_t backdrop, color_t src, int opacity);
+
 color_t indexed_blender_src(color_t dst, color_t src, int opacity);
+
 BlendFunc get_rgba_blender(BlendMode blendmode, const bool newBlend);
 BlendFunc get_graya_blender(BlendMode blendmode, const bool newBlend);
 BlendFunc get_indexed_blender(BlendMode blendmode, const bool newBlend);
+
 } // namespace doc
- endif
+
+#endif

@@ -1,70 +1,78 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/console.h"
- include "app/doc_exporter.h"
- include "app/doc_range.h"
- include "app/pref/preferences.h"
- include "app/script/blend_mode.h"
- include "app/script/engine.h"
- include "app/script/luacpp.h"
- include "app/script/require.h"
- include "app/script/security.h"
- include "app/sprite_sheet_type.h"
- include "app/tilemap_mode.h"
- include "app/tileset_mode.h"
- include "app/tools/ink_type.h"
- include "base/chrono.h"
- include "base/file_handle.h"
- include "base/fs.h"
- include "base/fstream_path.h"
- include "doc/algorithm/flip_type.h"
- include "doc/anidir.h"
- include "doc/color_mode.h"
- include "filters/target.h"
- include "fmt/format.h"
- include "ui/base.h"
- include "ui/cursor_type.h"
- include "ui/mouse_button.h"
- include <fstream>
- include <sstream>
- include <stack>
- include <string>
- We use our own fopen() that supports Unicode filename on Windows
- extern "C"
+#endif
+
+#include "app/script/engine.h"
+
+#include "app/app.h"
+#include "app/console.h"
+#include "app/doc_exporter.h"
+#include "app/doc_range.h"
+#include "app/pref/preferences.h"
+#include "app/script/blend_mode.h"
+#include "app/script/luacpp.h"
+#include "app/script/require.h"
+#include "app/script/security.h"
+#include "app/sprite_sheet_type.h"
+#include "app/tilemap_mode.h"
+#include "app/tileset_mode.h"
+#include "app/tools/ink_type.h"
+#include "base/chrono.h"
+#include "base/file_handle.h"
+#include "base/fs.h"
+#include "base/fstream_path.h"
+#include "doc/algorithm/flip_type.h"
+#include "doc/anidir.h"
+#include "doc/color_mode.h"
+#include "filters/target.h"
+#include "fmt/format.h"
+#include "ui/base.h"
+#include "ui/cursor_type.h"
+#include "ui/mouse_button.h"
+
+#include <fstream>
+#include <sstream>
+#include <stack>
+#include <string>
+
+// We use our own fopen() that supports Unicode filename on Windows
+// extern "C"
 FILE* lua_user_fopen(const char* fname, const char* mode)
 {
   return base::open_file_raw(fname, mode);
 }
+
 FILE* lua_user_freopen(const char* fname, const char* mode, FILE* stream)
 {
   return base::reopen_file_raw(fname, mode, stream);
 }
+
 namespace app { namespace script {
+
 namespace {
- High precision clock.
+
+// High precision clock.
 base::Chrono luaClock;
- Stack of script filenames that are being executed.
+
+// Stack of script filenames that are being executed.
 std::stack<std::string> current_script_dirs;
- Just one debugger delegate is possible.
+
+// Just one debugger delegate is possible.
 DebuggerDelegate* g_debuggerDelegate = nullptr;
+
 class AddScriptFilename {
 public:
   AddScriptFilename(const std::string& fn) { current_script_dirs.push(fn); }
   ~AddScriptFilename() { current_script_dirs.pop(); }
 };
+
 int print(lua_State* L)
 {
   std::string output;
@@ -95,22 +103,26 @@ int print(lua_State* L)
   }
   return 0;
 }
+
 static int dofilecont(lua_State* L, int d1, lua_KContext d2)
 {
   (void)d1;
   (void)d2;
   return lua_gettop(L) - 1;
 }
+
 int dofile(lua_State* L)
 {
   const char* argFname = luaL_optstring(L, 1, NULL);
   std::string fname = argFname;
+
   if (!base::is_file(fname) && !current_script_dirs.empty()) {
     // Try to complete a relative filename
     std::string altFname = base::join_path(base::get_file_path(current_script_dirs.top()), fname);
     if (base::is_file(altFname))
       fname = altFname;
   }
+
   lua_settop(L, 1);
   if (luaL_loadfile(L, fname.c_str()) != LUA_OK)
     return lua_error(L);
@@ -120,25 +132,31 @@ int dofile(lua_State* L)
   }
   return dofilecont(L, 0, 0);
 }
+
 lua_CFunction orig_loadfile = nullptr;
 int loadfile(lua_State* L)
 {
   ASSERT(orig_loadfile);
   if (!orig_loadfile)
     return luaL_error(L, "no original loadfile()?");
+
   // fname is not optional if we are running in GUI mode as it blocks
   // the program.
   if (auto app = App::instance(); app && app->isGui() && !lua_isstring(L, 1)) {
     return luaL_error(L, "loadfile() for stdin cannot be used running in GUI mode");
   }
+
   return orig_loadfile(L);
 }
+
 int os_clock(lua_State* L)
 {
   lua_pushnumber(L, luaClock.elapsed());
   return 1;
 }
+
 } // anonymous namespace
+
 void register_app_object(lua_State* L);
 void register_app_pixel_color_object(lua_State* L);
 void register_app_fs_object(lua_State* L);
@@ -146,6 +164,7 @@ void register_app_os_object(lua_State* L);
 void register_app_command_object(lua_State* L);
 void register_app_preferences_object(lua_State* L);
 void register_json_object(lua_State* L);
+
 void register_brush_class(lua_State* L);
 void register_cel_class(lua_State* L);
 void register_cels_class(lua_State* L);
@@ -190,33 +209,43 @@ void register_tool_class(lua_State* L);
 void register_uuid_class(lua_State* L);
 void register_version_class(lua_State* L);
 void register_websocket_class(lua_State* L);
+
 void set_app_params(lua_State* L, const Params& params);
+
 Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(false)
 {
- if _DEBUG
+#if _DEBUG
   int top = lua_gettop(L);
- endif
+#endif
+
   // Standard Lua libraries
   luaL_openlibs(L);
+
   // Secure Lua functions
   overwrite_unsecure_functions(L);
+
   // Overwrite Lua functions with custom implementations
   lua_register(L, "print", print);
   lua_register(L, "dofile", dofile);
+
   if (!orig_loadfile) {
     lua_getglobal(L, "loadfile");
     orig_loadfile = lua_tocfunction(L, -1);
     lua_pop(L, 1);
   }
   lua_register(L, "loadfile", loadfile);
+
   lua_getglobal(L, "os");
   lua_pushcfunction(L, os_clock);
   lua_setfield(L, -2, "clock");
   lua_pop(L, 1);
+
   // Enhance require() function for plugins
   custom_require_function(L);
+
   // Generic code used by metatables
   run_mt_index_code(L);
+
   // Register global objects (app, json)
   register_app_object(L);
   register_app_pixel_color_object(L);
@@ -225,6 +254,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   register_app_command_object(L);
   register_app_preferences_object(L);
   register_json_object(L);
+
   // Register constants
   lua_newtable(L);
   lua_pushvalue(L, -1);
@@ -235,6 +265,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "INDEXED", doc::ColorMode::INDEXED);
   setfield_integer(L, "TILEMAP", doc::ColorMode::TILEMAP);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "AniDir");
@@ -243,6 +274,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "PING_PONG", doc::AniDir::PING_PONG);
   setfield_integer(L, "PING_PONG_REVERSE", doc::AniDir::PING_PONG_REVERSE);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "BlendMode");
@@ -285,6 +317,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "HSL_COLOR", app::script::BlendMode::COLOR);
   setfield_integer(L, "HSL_LUMINOSITY", app::script::BlendMode::LUMINOSITY);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "RangeType");
@@ -293,6 +326,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "FRAMES", DocRange::kFrames);
   setfield_integer(L, "CELS", DocRange::kCels);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "SpriteSheetType");
@@ -302,12 +336,14 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "COLUMNS", SpriteSheetType::Columns);
   setfield_integer(L, "PACKED", SpriteSheetType::Packed);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "SpriteSheetDataFormat");
   setfield_integer(L, "JSON_HASH", SpriteSheetDataFormat::JsonHash);
   setfield_integer(L, "JSON_ARRAY", SpriteSheetDataFormat::JsonArray);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "BrushType");
@@ -316,6 +352,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "LINE", doc::kLineBrushType);
   setfield_integer(L, "IMAGE", doc::kImageBrushType);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "BrushPattern");
@@ -323,6 +360,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "TARGET", doc::BrushPattern::ALIGNED_TO_DST);
   setfield_integer(L, "NONE", doc::BrushPattern::PAINT_BRUSH);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "Ink");
@@ -332,6 +370,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "LOCK_ALPHA", app::tools::InkType::LOCK_ALPHA);
   setfield_integer(L, "SHADING", app::tools::InkType::SHADING);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "FilterChannels");
@@ -348,6 +387,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
     TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
   setfield_integer(L, "GRAYA", TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "MouseCursor");
@@ -370,6 +410,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "W_RESIZE", (int)ui::kSizeWCursor);
   setfield_integer(L, "NW_RESIZE", (int)ui::kSizeNWCursor);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "MouseButton");
@@ -380,12 +421,14 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "X1", (int)ui::kButtonX1);
   setfield_integer(L, "X2", (int)ui::kButtonX2);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "TilemapMode");
   setfield_integer(L, "PIXELS", TilemapMode::Pixels);
   setfield_integer(L, "TILES", TilemapMode::Tiles);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "TilesetMode");
@@ -393,6 +436,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "AUTO", TilesetMode::Auto);
   setfield_integer(L, "STACK", TilesetMode::Stack);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "SelectionMode");
@@ -401,12 +445,14 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "SUBTRACT", (int)gen::SelectionMode::SUBTRACT);
   setfield_integer(L, "INTERSECT", (int)gen::SelectionMode::INTERSECT);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "FlipType");
   setfield_integer(L, "HORIZONTAL", doc::algorithm::FlipType::FlipHorizontal);
   setfield_integer(L, "VERTICAL", doc::algorithm::FlipType::FlipVertical);
   lua_pop(L, 1);
+
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "Align");
@@ -415,7 +461,9 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "RIGHT", ui::RIGHT);
   setfield_integer(L, "TOP", ui::TOP);
   setfield_integer(L, "BOTTOM", ui::BOTTOM);
+
   lua_pop(L, 1);
+
   // Register classes/prototypes
   register_brush_class(L);
   register_cel_class(L);
@@ -460,22 +508,26 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   register_tool_class(L);
   register_uuid_class(L);
   register_version_class(L);
- if ENABLE_WEBSOCKET
+#if ENABLE_WEBSOCKET
   register_websocket_class(L);
- endif
+#endif
+
   // Check that we have a clean start (without dirty in the stack)
   ASSERT(lua_gettop(L) == top);
 }
+
 Engine::~Engine()
 {
   ASSERT(L == nullptr);
 }
+
 void Engine::destroy()
 {
   close_all_dialogs();
   lua_close(L);
   L = nullptr;
 }
+
 void Engine::notifyRunningGui()
 {
   // Mark stdin file handle as closed so the following statements
@@ -485,16 +537,20 @@ void Engine::notifyRunningGui()
   // - io.stdin:read('a')
   lua_getglobal(L, "io");
   lua_getfield(L, -1, "stdin");
+
   auto p = ((luaL_Stream*)luaL_checkudata(L, -1, LUA_FILEHANDLE));
   ASSERT(p);
   p->f = nullptr;
   p->closef = nullptr;
+
   lua_pop(L, 2);
 }
+
 void Engine::printLastResult()
 {
   m_printLastResult = true;
 }
+
 bool Engine::evalCode(const std::string& code, const std::string& filename)
 {
   bool ok = true;
@@ -512,6 +568,7 @@ bool Engine::evalCode(const std::string& code, const std::string& filename)
         m_returnCode = lua_tointeger(L, -1);
       else
         m_returnCode = 0;
+
       // Code was executed correctly
       if (m_printLastResult) {
         if (!lua_isnone(L, -1)) {
@@ -528,10 +585,12 @@ bool Engine::evalCode(const std::string& code, const std::string& filename)
     ok = false;
     m_returnCode = -1;
   }
+
   // Collect script garbage.
   lua_gc(L, LUA_GCCOLLECT);
   return ok;
 }
+
 void Engine::handleException(const std::exception& ex)
 {
   luaL_where(L, 1);
@@ -540,8 +599,10 @@ void Engine::handleException(const std::exception& ex)
   const char* traceback = lua_tostring(L, -1);
   std::string msg(fmt::format("{}{}", where, traceback));
   lua_pop(L, 2);
+
   onConsoleError(msg.c_str());
 }
+
 bool Engine::evalFile(const std::string& filename, const Params& params)
 {
   std::stringstream buf;
@@ -553,15 +614,21 @@ bool Engine::evalFile(const std::string& filename, const Params& params)
     buf << s.rdbuf();
   }
   std::string absFilename = base::get_absolute_path(filename);
+
   AddScriptFilename addScript(absFilename);
   set_app_params(L, params);
+
   if (g_debuggerDelegate)
     g_debuggerDelegate->startFile(absFilename, buf.str());
+
   bool result = evalCode(buf.str(), "@" + absFilename);
+
   if (g_debuggerDelegate)
     g_debuggerDelegate->endFile(absFilename);
+
   return result;
 }
+
 bool Engine::evalUserFile(const std::string& filename, const Params& params)
 {
   // Set the _SCRIPT_PATH global so require() can find .lua files from
@@ -570,21 +637,27 @@ bool Engine::evalUserFile(const std::string& filename, const Params& params)
   SetScriptForRequire setScript(L, path.c_str());
   return evalFile(filename, params);
 }
+
 void Engine::startDebugger(DebuggerDelegate* debuggerDelegate)
 {
   g_debuggerDelegate = debuggerDelegate;
+
   lua_Hook hook = [](lua_State* L, lua_Debug* ar) {
     int ret = lua_getinfo(L, "l", ar);
     if (ret == 0 || ar->currentline < 0)
       return;
+
     g_debuggerDelegate->hook(L, ar);
   };
+
   lua_sethook(L, hook, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKCOUNT, 1);
 }
+
 void Engine::stopDebugger()
 {
   lua_sethook(L, nullptr, 0, 0);
 }
+
 void Engine::onConsoleError(const char* text)
 {
   if (text && m_delegate)
@@ -592,10 +665,12 @@ void Engine::onConsoleError(const char* text)
   else
     onConsolePrint(text);
 }
+
 void Engine::onConsolePrint(const char* text)
 {
   if (!text)
     return;
+
   if (m_delegate)
     m_delegate->onConsolePrint(text);
   else {
@@ -603,4 +678,5 @@ void Engine::onConsolePrint(const char* text)
     std::fflush(stdout);
   }
 }
+
 }} // namespace app::script

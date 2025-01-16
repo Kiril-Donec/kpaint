@@ -1,20 +1,19 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2022-2024  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#include "app/script/tabs_widget.h"
+#include "tabs_widget.h"
 
+#define TAB_CONTENT_ID(tabid) (tabid + "_content")
 
-
- include "app/script/tabs_widget.h"
- include "tabs_widget.h"
- define TAB_CONTENT_ID(tabid) (tabid + "_content")
 using namespace ui;
+
 namespace app { namespace script {
- static
+
+// static
 ui::WidgetType Tabs::Type()
 {
   static ui::WidgetType type = ui::kGenericWidget;
@@ -22,6 +21,7 @@ ui::WidgetType Tabs::Type()
     type = ui::register_widget_type();
   return type;
 }
+
 Tabs::Tabs(int selectorFlags) : m_selectorFlags(selectorFlags)
 {
   m_sepL.setExpansive(true);
@@ -30,6 +30,7 @@ Tabs::Tabs(int selectorFlags) : m_selectorFlags(selectorFlags)
   setType(Type());
   layoutChilds();
 }
+
 Tab* Tabs::addTab(const std::string& id, const std::string& text)
 {
   auto content = new ui::Grid(2, false);
@@ -37,6 +38,7 @@ Tab* Tabs::addTab(const std::string& id, const std::string& text)
   content->setVisible(false);
   content->setId(TAB_CONTENT_ID(id).c_str());
   m_pages.addChild(content);
+
   if (m_buttons.children().empty()) {
     m_buttonsBox.addChild(&m_buttons);
     m_buttons.ItemChange.connect([this](ButtonSet::Item* tab) {
@@ -65,9 +67,12 @@ Tab* Tabs::addTab(const std::string& id, const std::string& text)
   if (m_buttons.children().size() == 1) {
     selectTab(0);
   }
+
   m_buttons.initTheme();
+
   return tab;
 }
+
 void Tabs::selectTab(int index)
 {
   if (index >= 0 && index < m_pages.children().size()) {
@@ -78,6 +83,7 @@ void Tabs::selectTab(int index)
     m_selectedTab = index;
   }
 }
+
 void Tabs::setSelectorFlags(int selectorFlags)
 {
   if (selectorFlags != m_selectorFlags) {
@@ -85,6 +91,7 @@ void Tabs::setSelectorFlags(int selectorFlags)
     layoutChilds();
   }
 }
+
 int Tabs::tabIndexById(const std::string& id) const
 {
   for (int i = 0; i < m_buttons.children().size(); ++i) {
@@ -93,6 +100,7 @@ int Tabs::tabIndexById(const std::string& id) const
   }
   return -1;
 }
+
 int Tabs::tabIndexByText(const std::string& text) const
 {
   for (int i = 0; i < m_buttons.children().size(); ++i) {
@@ -101,20 +109,24 @@ int Tabs::tabIndexByText(const std::string& text) const
   }
   return -1;
 }
+
 std::string Tabs::tabId(int index) const
 {
   return index >= 0 && index < m_buttons.children().size() ? m_buttons.children()[index]->id() :
                                                              std::string();
 }
+
 std::string Tabs::tabText(int index) const
 {
   return index >= 0 && index < m_buttons.children().size() ? m_buttons.children()[index]->text() :
                                                              std::string();
 }
+
 int Tabs::selectedTab() const
 {
   return m_selectedTab;
 }
+
 void Tabs::layoutChilds()
 {
   // Put the tab selector at the bottom or at the top.
@@ -129,6 +141,7 @@ void Tabs::layoutChilds()
     addChild(&m_pages);
     addChild(&m_sepTB);
   }
+
   // Align the selector buttons.
   m_selector.removeAllChildren();
   if (m_selectorFlags & ui::LEFT) {
@@ -145,6 +158,7 @@ void Tabs::layoutChilds()
     m_selector.addChild(&m_sepR);
   }
 }
+
 void Pages::onSizeHint(ui::SizeHintEvent& ev)
 {
   gfx::Size prefSize(0, 0);
@@ -155,14 +169,18 @@ void Pages::onSizeHint(ui::SizeHintEvent& ev)
   }
   prefSize.w += border().width();
   prefSize.h += border().height();
+
   ev.setSizeHint(prefSize);
 }
+
 Tab::Tab(ui::Grid* content) : m_content(content)
 {
 }
+
 void Tab::onClick()
 {
   Click();
   ButtonSet::Item::onClick();
 }
+
 }} // namespace app::script

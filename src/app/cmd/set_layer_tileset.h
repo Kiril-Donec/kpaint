@@ -1,25 +1,24 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_CMD_SET_LAYER_TILESET_H_INCLUDED
+#define APP_CMD_SET_LAYER_TILESET_H_INCLUDED
+#pragma once
 
+#include "app/cmd.h"
+#include "app/cmd/with_layer.h"
+#include "doc/tile.h"
 
-
- ifndef APP_CMD_SET_LAYER_TILESET_H_INCLUDED
- define APP_CMD_SET_LAYER_TILESET_H_INCLUDED
- pragma once
- include "app/cmd.h"
- include "app/cmd/with_layer.h"
- include "doc/tile.h"
 namespace doc {
 class LayerTilemap;
 }
+
 namespace app { namespace cmd {
 using namespace doc;
+
 class SetLayerTileset : public Cmd,
                         public WithLayer {
 public:
@@ -29,11 +28,14 @@ protected:
   void onExecute() override;
   void onUndo() override;
   void onFireNotifications() override;
+
   size_t onMemSize() const override { return sizeof(*this); }
 
 private:
   doc::tileset_index m_oldTsi;
   doc::tileset_index m_newTsi;
 };
+
 }} // namespace app::cmd
- endif
+
+#endif

@@ -1,20 +1,19 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_SEPARATOR_IN_VIEW_H_INCLUDED
+#define APP_UI_SEPARATOR_IN_VIEW_H_INCLUDED
+#pragma once
 
+#include "app/ui/skin/skin_theme.h"
+#include "ui/separator.h"
 
-
- ifndef APP_UI_SEPARATOR_IN_VIEW_H_INCLUDED
- define APP_UI_SEPARATOR_IN_VIEW_H_INCLUDED
- pragma once
- include "app/ui/skin/skin_theme.h"
- include "ui/separator.h"
 namespace app {
+
 class SeparatorInView : public ui::Separator {
 public:
   SeparatorInView(const std::string& text = std::string(), int align = ui::HORIZONTAL)
@@ -29,5 +28,7 @@ public:
     initTheme();
   }
 };
+
 } // namespace app
- endif
+
+#endif

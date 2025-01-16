@@ -1,19 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2001-2016  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_WRAP_VALUE_H_INCLUDED
+#define APP_WRAP_VALUE_H_INCLUDED
+#pragma once
 
+#include <cmath>
 
-
- ifndef APP_WRAP_VALUE_H_INCLUDED
- define APP_WRAP_VALUE_H_INCLUDED
- pragma once
- include <cmath>
 namespace app {
+
 template<typename T>
 inline T wrap_value(const T x, const T size)
 {
@@ -22,6 +20,7 @@ inline T wrap_value(const T x, const T size)
   else
     return x % size;
 }
+
 template<>
 inline double wrap_value(const double x, const double size)
 {
@@ -30,5 +29,7 @@ inline double wrap_value(const double x, const double size)
   else
     return std::fmod(x, size);
 }
+
 } // namespace app
- endif
+
+#endif

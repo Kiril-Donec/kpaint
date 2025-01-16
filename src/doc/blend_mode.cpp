@@ -1,17 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2001-2017 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/blend_mode.h"
+#endif
+
+#include "doc/blend_mode.h"
+
 namespace doc {
+
 std::string blend_mode_to_string(BlendMode blendMode)
 {
   switch (blendMode) {
@@ -37,4 +37,5 @@ std::string blend_mode_to_string(BlendMode blendMode)
     default:                        return "unknown";
   }
 }
+
 } // namespace doc

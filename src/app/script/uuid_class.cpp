@@ -1,24 +1,24 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/script/engine.h"
- include "app/script/luacpp.h"
- include "base/convert_to.h"
- include "base/uuid.h"
+#endif
+
+#include "app/script/engine.h"
+#include "app/script/luacpp.h"
+#include "base/convert_to.h"
+#include "base/uuid.h"
+
 namespace app { namespace script {
+
 using Uuid = base::Uuid;
+
 namespace {
+
 Uuid Uuid_new(lua_State* L, int index)
 {
   // Copy other uuid
@@ -31,16 +31,19 @@ Uuid Uuid_new(lua_State* L, int index)
   else
     return Uuid::Generate();
 }
+
 int Uuid_new(lua_State* L)
 {
   push_obj(L, Uuid_new(L, 1));
   return 1;
 }
+
 int Uuid_gc(lua_State* L)
 {
   get_obj<Uuid>(L, 1)->~Uuid();
   return 0;
 }
+
 int Uuid_eq(lua_State* L)
 {
   const auto a = get_obj<Uuid>(L, 1);
@@ -48,12 +51,14 @@ int Uuid_eq(lua_State* L)
   lua_pushboolean(L, *a == *b);
   return 1;
 }
+
 int Uuid_tostring(lua_State* L)
 {
   const auto uuid = get_obj<Uuid>(L, 1);
   lua_pushstring(L, base::convert_to<std::string>(*uuid).c_str());
   return 1;
 }
+
 int Uuid_index(lua_State* L)
 {
   const auto uuid = get_obj<Uuid>(L, 1);
@@ -64,6 +69,7 @@ int Uuid_index(lua_State* L)
     lua_pushnil(L);
   return 1;
 }
+
 const luaL_Reg Uuid_methods[] = {
   { "__gc",       Uuid_gc       },
   { "__eq",       Uuid_eq       },
@@ -71,15 +77,20 @@ const luaL_Reg Uuid_methods[] = {
   { "__index",    Uuid_index    },
   { nullptr,      nullptr       }
 };
+
 } // anonymous namespace
+
 DEF_MTNAME(Uuid);
+
 void register_uuid_class(lua_State* L)
 {
   REG_CLASS(L, Uuid);
   REG_CLASS_NEW(L, Uuid);
 }
+
 base::Uuid convert_args_into_uuid(lua_State* L, int index)
 {
   return Uuid_new(L, index);
 }
+
 }} // namespace app::script

@@ -1,24 +1,25 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- if SK_ENABLE_SKSL
+#endif
+
+#if SK_ENABLE_SKSL
+
   #include "app/util/shader_helpers.h"
+
   #include "base/exception.h"
   #include "doc/image.h"
   #include "fmt/format.h"
+
   #include "include/effects/SkRuntimeEffect.h"
+
 namespace app {
+
 sk_sp<SkRuntimeEffect> make_shader(const char* code)
 {
   auto result = SkRuntimeEffect::MakeForShader(SkString(code));
@@ -31,6 +32,7 @@ sk_sp<SkRuntimeEffect> make_shader(const char* code)
   }
   return result.effect;
 }
+
 SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img)
 {
   switch (img->colorMode()) {
@@ -39,12 +41,14 @@ SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img)
                                img->height(),
                                kRGBA_8888_SkColorType,
                                kUnpremul_SkAlphaType);
+
     case doc::ColorMode::GRAYSCALE:
       // We use kR8G8_unorm_SkColorType to access gray and alpha
       return SkImageInfo::Make(img->width(),
                                img->height(),
                                kR8G8_unorm_SkColorType,
                                kOpaque_SkAlphaType);
+
     case doc::ColorMode::INDEXED: {
       // We use kAlpha_8_SkColorType to access to the index value through the alpha channel
       return SkImageInfo::Make(img->width(),
@@ -55,6 +59,7 @@ SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img)
   }
   return SkImageInfo();
 }
+
 sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img)
 {
   switch (img->colorMode()) {
@@ -63,16 +68,20 @@ sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img)
     case doc::ColorMode::INDEXED:   {
       auto skData = SkData::MakeWithoutCopy((const void*)img->getPixelAddress(0, 0),
                                             img->rowBytes() * img->height());
+
       return SkImage::MakeRasterData(get_skimageinfo_for_docimage(img), skData, img->rowBytes());
     }
   }
   return nullptr;
 }
+
 std::unique_ptr<SkCanvas> make_skcanvas_for_docimage(const doc::Image* img)
 {
   return SkCanvas::MakeRasterDirect(get_skimageinfo_for_docimage(img),
                                     (void*)img->getPixelAddress(0, 0),
                                     img->rowBytes());
 }
+
 } // namespace app
-// endif // SK_ENABLE_SKSL
+
+#endif // SK_ENABLE_SKSL

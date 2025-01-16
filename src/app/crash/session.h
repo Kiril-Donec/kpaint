@@ -1,31 +1,31 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_CRASH_SESSION_H_INCLUDED
+#define APP_CRASH_SESSION_H_INCLUDED
+#pragma once
 
+#include "app/crash/raw_images_as.h"
+#include "base/disable_copying.h"
+#include "base/process.h"
+#include "base/task.h"
+#include "doc/object_id.h"
 
+#include <fstream>
+#include <memory>
+#include <string>
+#include <vector>
 
- ifndef APP_CRASH_SESSION_H_INCLUDED
- define APP_CRASH_SESSION_H_INCLUDED
- pragma once
- include "app/crash/raw_images_as.h"
- include "base/disable_copying.h"
- include "base/process.h"
- include "base/task.h"
- include "doc/object_id.h"
- include <fstream>
- include <memory>
- include <string>
- include <vector>
 namespace app {
 class Doc;
 namespace crash {
 struct RecoveryConfig;
- A class to record/restore session information.
+
+// A class to record/restore session information.
 class Session {
 public:
   class Backup {
@@ -41,20 +41,26 @@ public:
   };
   using BackupPtr = std::shared_ptr<Backup>;
   using Backups = std::vector<BackupPtr>;
+
   Session(RecoveryConfig* config, const std::string& path);
   ~Session();
+
   std::string name() const;
   std::string version();
   const Backups& backups();
+
   bool isRunning();
   bool isCrashedSession();
   bool isOldSession();
   bool isEmpty();
+
   void create(base::pid pid);
   void close();
   void removeFromDisk();
+
   bool saveDocumentChanges(Doc* doc);
   void removeDocument(Doc* doc);
+
   Doc* restoreBackupDoc(const BackupPtr& backup, base::task_token* t);
   Doc* restoreBackupById(const doc::ObjectId id, base::task_token* t);
   Doc* restoreBackupDocById(const doc::ObjectId id, base::task_token* t);
@@ -70,14 +76,19 @@ private:
   void deleteDirectory(const std::string& dir);
   void fixFilename(Doc* doc);
   int filenamePartToInt(const std::string& part) const;
+
   base::pid m_pid;
   std::string m_path;
   std::string m_version;
   Backups m_backups;
   RecoveryConfig* m_config;
+
   DISABLE_COPYING(Session);
 };
+
 typedef std::shared_ptr<Session> SessionPtr;
+
 } // namespace crash
 } // namespace app
- endif
+
+#endif

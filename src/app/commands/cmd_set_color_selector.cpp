@@ -1,23 +1,22 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2016-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/commands/params.h"
- include "app/i18n/strings.h"
- include "app/ui/color_bar.h"
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/commands/params.h"
+#include "app/i18n/strings.h"
+#include "app/ui/color_bar.h"
+
 namespace app {
+
 class SetColorSelectorCommand : public Command {
 public:
   SetColorSelectorCommand();
@@ -32,14 +31,17 @@ protected:
 private:
   ColorBar::ColorSelector m_type;
 };
+
 SetColorSelectorCommand::SetColorSelectorCommand()
   : Command(CommandId::SetColorSelector(), CmdUIOnlyFlag)
   , m_type(ColorBar::ColorSelector::SPECTRUM)
 {
 }
+
 void SetColorSelectorCommand::onLoadParams(const Params& params)
 {
   std::string type = params.get("type");
+
   if (type == "spectrum") {
     m_type = ColorBar::ColorSelector::SPECTRUM;
   }
@@ -56,14 +58,17 @@ void SetColorSelectorCommand::onLoadParams(const Params& params)
     m_type = ColorBar::ColorSelector::NORMAL_MAP_WHEEL;
   }
 }
+
 bool SetColorSelectorCommand::onChecked(Context* context)
 {
   return (ColorBar::instance()->getColorSelector() == m_type);
 }
+
 void SetColorSelectorCommand::onExecute(Context* context)
 {
   ColorBar::instance()->setColorSelector(m_type);
 }
+
 std::string SetColorSelectorCommand::onGetFriendlyName() const
 {
   std::string type;
@@ -86,8 +91,10 @@ std::string SetColorSelectorCommand::onGetFriendlyName() const
   }
   return fmt::format("{0}: {1}", Command::onGetFriendlyName(), type);
 }
+
 Command* CommandFactory::createSetColorSelectorCommand()
 {
   return new SetColorSelectorCommand;
 }
+
 } // namespace app

@@ -1,22 +1,20 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2001-2015  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_CMD_CLEAR_CEL_H_INCLUDED
+#define APP_CMD_CLEAR_CEL_H_INCLUDED
+#pragma once
 
+#include "app/cmd.h"
+#include "app/cmd/with_cel.h"
+#include "app/cmd_sequence.h"
 
-
- ifndef APP_CMD_CLEAR_CEL_H_INCLUDED
- define APP_CMD_CLEAR_CEL_H_INCLUDED
- pragma once
- include "app/cmd.h"
- include "app/cmd/with_cel.h"
- include "app/cmd_sequence.h"
 namespace app { namespace cmd {
 using namespace doc;
+
 class ClearCel : public Cmd,
                  public WithCel {
 public:
@@ -31,5 +29,7 @@ protected:
 private:
   CmdSequence m_seq;
 };
+
 }} // namespace app::cmd
- endif
+
+#endif

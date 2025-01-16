@@ -1,75 +1,85 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2001-2015 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/image_impl.h"
- include "doc/mask_boundaries.h"
+#endif
+
+#include "doc/mask_boundaries.h"
+
+#include "doc/image_impl.h"
+
 namespace doc {
+
 void MaskBoundaries::reset()
 {
   m_segs.clear();
   if (!m_path.isEmpty())
     m_path.rewind();
 }
+
 void MaskBoundaries::regen(const Image* bitmap)
 {
   reset();
+
   int x, y, w = bitmap->width(), h = bitmap->height();
+
   const LockImageBits<BitmapTraits> bits(bitmap);
   auto it = bits.begin(); // Current pixel iterator
- if _DEBUG
+#if _DEBUG
   auto prevIt = bits.begin(); // Previous row iterator (same X pos)
- endif
+#endif
+
   // Vertical segments being expanded from the previous row.
   std::vector<int> vertSegs(w + 1, -1);
+
   // Horizontal segment being expanded from the previous column.
   int horzSeg;
- define new_hseg(open)                                                                             \
+
+#define new_hseg(open)                                                                             \
   {                                                                                                \
     m_segs.push_back(Segment(open, gfx::Rect(x, y, 1, 0)));                                        \
     horzSeg = int(m_segs.size() - 1);                                                              \
   }
- define new_vseg(open)                                                                             \
+#define new_vseg(open)                                                                             \
   {                                                                                                \
     m_segs.push_back(Segment(open, gfx::Rect(x, y, 0, 1)));                                        \
     vertSegs[x] = int(m_segs.size() - 1);                                                          \
   }
- define expand_hseg()                                                                              \
+#define expand_hseg()                                                                              \
   {                                                                                                \
     ASSERT(hseg);                                                                                  \
     ++hseg->m_bounds.w;                                                                            \
   }
- define expand_vseg()                                                                              \
+#define expand_vseg()                                                                              \
   {                                                                                                \
     ASSERT(vseg);                                                                                  \
     ++vseg->m_bounds.h;                                                                            \
   }
- define stop_expanding_hseg()                                                                      \
+#define stop_expanding_hseg()                                                                      \
   {                                                                                                \
     horzSeg = -1;                                                                                  \
   }
- define stop_expanding_vseg()                                                                      \
+#define stop_expanding_vseg()                                                                      \
   {                                                                                                \
     vertSegs[x] = -1;                                                                              \
   }
+
   for (y = 0; y <= h; ++y) {
     bool prevColor = false; // Previous color (X-1) same Y row
     horzSeg = -1;
+
     for (x = 0; x <= w; ++x) {
       bool color = (x < w && y < h && *it ? true : false);
- if _DEBUG
+#if _DEBUG
       bool prevRowColor = (x < w && y > 0 && *prevIt ? true : false);
- endif
+#endif
       Segment* hseg = (horzSeg >= 0 ? &m_segs[horzSeg] : nullptr);
       Segment* vseg = (vertSegs[x] >= 0 ? &m_segs[vertSegs[x]] : nullptr);
+
       //
       // -   -
       //
@@ -89,6 +99,7 @@ void MaskBoundaries::regen(const Image* bitmap)
           //
           if (vseg->open()) {
             ASSERT(prevRowColor);
+
             //
             // 0 | 1
             // --x
@@ -117,6 +128,7 @@ void MaskBoundaries::regen(const Image* bitmap)
           //
           else {
             ASSERT(!prevRowColor);
+
             //
             // 1 | 0
             // --x--o
@@ -213,6 +225,7 @@ void MaskBoundaries::regen(const Image* bitmap)
           //
           if (vseg->open()) {
             ASSERT(prevRowColor);
+
             //
             // 0 | 1
             // --x--o
@@ -242,6 +255,7 @@ void MaskBoundaries::regen(const Image* bitmap)
           //
           else {
             ASSERT(!prevRowColor);
+
             //
             // 1 | 0
             // --x
@@ -316,37 +330,45 @@ void MaskBoundaries::regen(const Image* bitmap)
           }
         }
       }
+
       prevColor = color;
       if (x < w) {
- if _DEBUG
+#if _DEBUG
         if (y > 0)
           ++prevIt;
- endif
+#endif
         if (y < h)
           ++it;
       }
     }
   }
+
   ASSERT(it == bits.end());
   ASSERT(prevIt == bits.end());
 }
+
 void MaskBoundaries::offset(int x, int y)
 {
   for (Segment& seg : m_segs)
     seg.offset(x, y);
+
   m_path.offset(x, y);
 }
+
 void MaskBoundaries::createPathIfNeeeded()
 {
   if (!m_path.isEmpty())
     return;
+
   for (const auto& seg : m_segs) {
     gfx::Rect rc = seg.bounds();
     m_path.moveTo(rc.x, rc.y);
+
     if (seg.vertical())
       m_path.lineTo(rc.x, rc.y2());
     else
       m_path.lineTo(rc.x2(), rc.y);
   }
 }
+
 } // namespace doc

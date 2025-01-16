@@ -1,34 +1,39 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/ui/input_chain.h"
- include "app/ui/input_chain_element.h"
- include <algorithm>
+#endif
+
+#include "app/ui/input_chain.h"
+
+#include "app/ui/input_chain_element.h"
+
+#include <algorithm>
+
 namespace app {
+
 void InputChain::prioritize(InputChainElement* element, const ui::Message* msg)
 {
   const bool alreadyInFront = (!m_elements.empty() && m_elements.front() == element);
+
   if (!alreadyInFront) {
     auto it = std::find(m_elements.begin(), m_elements.end(), element);
     if (it != m_elements.end())
       m_elements.erase(it);
   }
+
   for (auto e : m_elements)
     e->onNewInputPriority(element, msg);
+
   if (!alreadyInFront)
     m_elements.insert(m_elements.begin(), element);
 }
+
 bool InputChain::canCut(Context* ctx)
 {
   for (auto e : m_elements) {
@@ -37,6 +42,7 @@ bool InputChain::canCut(Context* ctx)
   }
   return false;
 }
+
 bool InputChain::canCopy(Context* ctx)
 {
   for (auto e : m_elements) {
@@ -45,6 +51,7 @@ bool InputChain::canCopy(Context* ctx)
   }
   return false;
 }
+
 bool InputChain::canPaste(Context* ctx)
 {
   for (auto e : m_elements) {
@@ -53,6 +60,7 @@ bool InputChain::canPaste(Context* ctx)
   }
   return false;
 }
+
 bool InputChain::canClear(Context* ctx)
 {
   for (auto e : m_elements) {
@@ -61,6 +69,7 @@ bool InputChain::canClear(Context* ctx)
   }
   return false;
 }
+
 void InputChain::cut(Context* ctx)
 {
   for (auto e : m_elements) {
@@ -68,6 +77,7 @@ void InputChain::cut(Context* ctx)
       break;
   }
 }
+
 void InputChain::copy(Context* ctx)
 {
   for (auto e : m_elements) {
@@ -75,6 +85,7 @@ void InputChain::copy(Context* ctx)
       break;
   }
 }
+
 void InputChain::paste(Context* ctx, const gfx::Point* position)
 {
   for (auto e : m_elements) {
@@ -82,6 +93,7 @@ void InputChain::paste(Context* ctx, const gfx::Point* position)
       break;
   }
 }
+
 void InputChain::clear(Context* ctx)
 {
   for (auto e : m_elements) {
@@ -89,9 +101,11 @@ void InputChain::clear(Context* ctx)
       break;
   }
 }
+
 void InputChain::cancel(Context* ctx)
 {
   for (auto e : m_elements)
     e->onCancel(ctx);
 }
+
 } // namespace app

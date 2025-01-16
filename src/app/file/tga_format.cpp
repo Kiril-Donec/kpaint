@@ -1,38 +1,42 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/console.h"
- include "app/context.h"
- include "app/doc.h"
- include "app/file/file.h"
- include "app/file/file_format.h"
- include "app/file/tga_options.h"
- include "base/cfile.h"
- include "base/convert_to.h"
- include "base/file_handle.h"
- include "doc/doc.h"
- include "doc/image_bits.h"
- include "tga/tga.h"
- include "tga_options.xml.h"
- include "ui/combobox.h"
- include "ui/listitem.h"
+#endif
+
+#include "app/console.h"
+#include "app/context.h"
+#include "app/doc.h"
+#include "app/file/file.h"
+#include "app/file/file_format.h"
+#include "app/file/tga_options.h"
+#include "base/cfile.h"
+#include "base/convert_to.h"
+#include "base/file_handle.h"
+#include "doc/doc.h"
+#include "doc/image_bits.h"
+#include "tga/tga.h"
+#include "ui/combobox.h"
+#include "ui/listitem.h"
+
+#include "tga_options.xml.h"
+
 namespace app {
+
 using namespace base;
+
 class TgaFormat : public FileFormat {
   const char* onGetName() const override { return "tga"; }
+
   void onGetExtensions(base::paths& exts) const override { exts.push_back("tga"); }
+
   dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::TARGA_IMAGE; }
+
   int onGetFlags() const override
   {
     return FILE_SUPPORT_LOAD | FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA |
@@ -40,17 +44,22 @@ class TgaFormat : public FileFormat {
            FILE_SUPPORT_GET_FORMAT_OPTIONS | FILE_SUPPORT_PALETTE_WITH_ALPHA |
            FILE_ENCODE_ABSTRACT_IMAGE;
   }
+
   bool onLoad(FileOp* fop) override;
- ifdef ENABLE_SAVE
+#ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
- endif
+#endif
+
   FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
+
 FileFormat* CreateTgaFormat()
 {
   return new TgaFormat;
 }
+
 namespace {
+
 class TgaDelegate : public tga::Delegate {
 public:
   TgaDelegate(FileOp* fop) : m_fop(fop) {}
@@ -63,6 +72,7 @@ public:
 private:
   FileOp* m_fop;
 };
+
 bool get_image_spec(const tga::Header& header, ImageSpec& spec)
 {
   switch (header.imageType) {
@@ -72,6 +82,7 @@ bool get_image_spec(const tga::Header& header, ImageSpec& spec)
         return false;
       spec = ImageSpec(ColorMode::INDEXED, header.width, header.height);
       return true;
+
     case tga::UncompressedRgb:
     case tga::RleRgb:
       if (header.bitsPerPixel != 15 && header.bitsPerPixel != 16 && header.bitsPerPixel != 24 &&
@@ -79,6 +90,7 @@ bool get_image_spec(const tga::Header& header, ImageSpec& spec)
         return false;
       spec = ImageSpec(ColorMode::RGB, header.width, header.height);
       return true;
+
     case tga::UncompressedGray:
     case tga::RleGray:
       if (header.bitsPerPixel != 8)
@@ -88,7 +100,9 @@ bool get_image_spec(const tga::Header& header, ImageSpec& spec)
   }
   return false;
 }
+
 } // anonymous namespace
+
 bool TgaFormat::onLoad(FileOp* fop)
 {
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
@@ -99,6 +113,7 @@ bool TgaFormat::onLoad(FileOp* fop)
     fop->setError("Invalid TGA header\n");
     return false;
   }
+
   ImageSpec spec(ColorMode::RGB, 1, 1);
   if (!get_image_spec(header, spec)) {
     fop->setError("Unsupported color depth in TGA file: %d bpp, image type=%d.\n",
@@ -106,6 +121,7 @@ bool TgaFormat::onLoad(FileOp* fop)
                   header.imageType);
     return false;
   }
+
   // Palette from TGA file
   if (header.hasColormap()) {
     const tga::Colormap& pal = header.colormap;
@@ -123,24 +139,30 @@ bool TgaFormat::onLoad(FileOp* fop)
     for (int i = 0; i < 256; ++i)
       fop->sequenceSetColor(i, i, i, i);
   }
+
   if (decoder.hasAlpha())
     fop->sequenceSetHasAlpha(true);
+
   ImageRef image =
     fop->sequenceImageToLoad((doc::PixelFormat)spec.colorMode(), spec.width(), spec.height());
   if (!image)
     return false;
+
   tga::Image tgaImage;
   tgaImage.pixels = image->getPixelAddress(0, 0);
   tgaImage.rowstride = image->rowBytes();
   tgaImage.bytesPerPixel = image->bytesPerPixel();
+
   // Read image
   TgaDelegate delegate(fop);
   if (!decoder.readImage(header, tgaImage, &delegate)) {
     fop->setError("Error loading image data from TGA file.\n");
     return false;
   }
+
   // Fix alpha values for RGB images
   decoder.postProcessImage(header, tgaImage);
+
   // Post process gray image pixels (because we use grayscale images
   // with alpha).
   if (header.isGray()) {
@@ -149,13 +171,16 @@ bool TgaFormat::onLoad(FileOp* fop)
       *it = doc::graya(*it, 255);
     }
   }
+
   if (decoder.hasAlpha())
     fop->sequenceSetHasAlpha(true);
+
   // Set default options for this TGA
   auto opts = std::make_shared<TgaOptions>();
   opts->bitsPerPixel(header.bitsPerPixel);
   opts->compress(header.isRle());
   fop->setLoadedFormatOptions(opts);
+
   if (ferror(handle.get())) {
     fop->setError("Error reading file.\n");
     return false;
@@ -164,8 +189,11 @@ bool TgaFormat::onLoad(FileOp* fop)
     return true;
   }
 }
- ifdef ENABLE_SAVE
+
+#ifdef ENABLE_SAVE
+
 namespace {
+
 void prepare_header(tga::Header& header,
                     const doc::ImageSpec& spec,
                     const doc::Palette* palette,
@@ -186,6 +214,7 @@ void prepare_header(tga::Header& header,
   header.bitsPerPixel = 0;
   // TODO make this option configurable
   header.imageDescriptor = 0x20; // Top-to-bottom
+
   switch (spec.colorMode()) {
     case ColorMode::RGB:
       header.imageType = (compressed ? tga::RleRgb : tga::UncompressedRgb);
@@ -207,6 +236,7 @@ void prepare_header(tga::Header& header,
       break;
     case ColorMode::INDEXED:
       ASSERT(palette);
+
       header.imageType = (compressed ? tga::RleIndexed : tga::UncompressedIndexed);
       header.bitsPerPixel = 8;
       header.colormapType = 1;
@@ -215,6 +245,7 @@ void prepare_header(tga::Header& header,
         header.colormapDepth = 32;
       else
         header.colormapDepth = 24;
+
       header.colormap = tga::Colormap(palette->size());
       for (int i = 0; i < palette->size(); ++i) {
         doc::color_t c = palette->getEntry(i);
@@ -224,15 +255,19 @@ void prepare_header(tga::Header& header,
       break;
   }
 }
+
 } // anonymous namespace
+
 bool TgaFormat::onSave(FileOp* fop)
 {
   const FileAbstractImage* img = fop->abstractImageToSave();
   const Palette* palette = fop->sequenceGetPalette();
+
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   tga::StdioFileInterface finterface(handle.get());
   tga::Encoder encoder(&finterface);
   tga::Header header;
+
   const auto tgaOptions = std::static_pointer_cast<TgaOptions>(fop->formatOptions());
   prepare_header(header,
                  img->spec(),
@@ -243,15 +278,19 @@ bool TgaFormat::onSave(FileOp* fop)
                  (tgaOptions ? tgaOptions->compress() : true),
                  // Bits per pixel (0 means "calculate what is best")
                  (tgaOptions ? tgaOptions->bitsPerPixel() : 0));
+
   encoder.writeHeader(header);
+
   doc::ImageRef image = img->getScaledImage();
   tga::Image tgaImage;
   tgaImage.pixels = image->getPixelAddress(0, 0);
   tgaImage.rowstride = image->rowBytes();
   tgaImage.bytesPerPixel = image->bytesPerPixel();
+
   TgaDelegate delegate(fop);
   encoder.writeImage(header, tgaImage);
   encoder.writeFooter();
+
   if (ferror(handle.get())) {
     fop->setError("Error writing file.\n");
     return false;
@@ -260,7 +299,9 @@ bool TgaFormat::onSave(FileOp* fop)
     return true;
   }
 }
-// endif // ENABLE_SAVE
+
+#endif // ENABLE_SAVE
+
 FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   const bool origOpts = fop->hasFormatOptionsOfDocument();
@@ -268,6 +309,7 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
+
       // If the TGA options are not original from a TGA file, we can
       // use the default options from the preferences.
       if (!origOpts) {
@@ -276,10 +318,12 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
         if (pref.isSet(pref.tga.compress))
           opts->compress(pref.tga.compress());
       }
+
       if (pref.tga.showAlert()) {
         const bool isOpaque = fop->document()->sprite()->isOpaque();
         const std::string defBitsPerPixel = (isOpaque ? "24" : "32");
         app::gen::TgaOptions win;
+
         if (fop->document()->colorMode() == doc::ColorMode::RGB) {
           // TODO implement a better way to create ListItems with values
           auto newItem = [](const char* s) -> ui::ListItem* {
@@ -287,9 +331,11 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
             item->setValue(s);
             return item;
           };
+
           win.bitsPerPixel()->addItem(newItem("16"));
           win.bitsPerPixel()->addItem(newItem("24"));
           win.bitsPerPixel()->addItem(newItem("32"));
+
           std::string v = defBitsPerPixel;
           if (opts->bitsPerPixel() > 0)
             v = base::convert_to<std::string>(opts->bitsPerPixel());
@@ -300,12 +346,16 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
           win.bitsPerPixel()->setVisible(false);
         }
         win.compress()->setSelected(opts->compress());
+
         win.openWindowInForeground();
+
         if (win.closer() == win.ok()) {
           int bpp = base::convert_to<int>(win.bitsPerPixel()->getValue());
+
           pref.tga.bitsPerPixel(bpp);
           pref.tga.compress(win.compress()->isSelected());
           pref.tga.showAlert(!win.dontShow()->isSelected());
+
           opts->bitsPerPixel(pref.tga.bitsPerPixel());
           opts->compress(pref.tga.compress());
         }
@@ -321,4 +371,5 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
   }
   return opts;
 }
+
 } // namespace app

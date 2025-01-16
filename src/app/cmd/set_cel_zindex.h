@@ -1,21 +1,19 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_CMD_SET_CEL_ZINDEX_H_INCLUDED
+#define APP_CMD_SET_CEL_ZINDEX_H_INCLUDED
+#pragma once
 
+#include "app/cmd.h"
+#include "app/cmd/with_cel.h"
 
-
- ifndef APP_CMD_SET_CEL_ZINDEX_H_INCLUDED
- define APP_CMD_SET_CEL_ZINDEX_H_INCLUDED
- pragma once
- include "app/cmd.h"
- include "app/cmd/with_cel.h"
 namespace app { namespace cmd {
 using namespace doc;
+
 class SetCelZIndex : public Cmd,
                      public WithCel {
 public:
@@ -31,5 +29,7 @@ private:
   int m_oldZIndex;
   int m_newZIndex;
 };
+
 }} // namespace app::cmd
- endif
+
+#endif

@@ -1,40 +1,41 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2023-2024  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/commands/params.h"
- include "app/context.h"
- include "app/i18n/strings.h"
- include "app/pref/preferences.h"
- include "app/tilemap_mode.h"
- include "app/tools/active_tool.h"
- include "app/tools/ink.h"
- include "app/tools/tool.h"
- include "app/ui/context_bar.h"
- include "app/ui/main_window.h"
- include "base/convert_to.h"
- include "doc/algorithm/flip_image.h"
- include "doc/brush.h"
- include "doc/image_ref.h"
- include "doc/primitives.h"
- include "doc/tile.h"
- include <algorithm>
- include <string>
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/commands/params.h"
+#include "app/context.h"
+#include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
+#include "app/tilemap_mode.h"
+#include "app/tools/active_tool.h"
+#include "app/tools/ink.h"
+#include "app/tools/tool.h"
+#include "app/ui/context_bar.h"
+#include "app/ui/main_window.h"
+#include "base/convert_to.h"
+#include "doc/algorithm/flip_image.h"
+#include "doc/brush.h"
+#include "doc/image_ref.h"
+#include "doc/primitives.h"
+#include "doc/tile.h"
+
+#include <algorithm>
+#include <string>
+
 namespace app {
+
 using namespace doc;
 using namespace doc::algorithm;
+
 class ChangeBrushCommand : public Command {
   enum Change {
     None,
@@ -62,11 +63,13 @@ private:
   Change m_change;
   int m_slot;
 };
+
 ChangeBrushCommand::ChangeBrushCommand() : Command(CommandId::ChangeBrush(), CmdUIOnlyFlag)
 {
   m_change = None;
   m_slot = 0;
 }
+
 void ChangeBrushCommand::onLoadParams(const Params& params)
 {
   std::string change = params.get("change");
@@ -88,11 +91,13 @@ void ChangeBrushCommand::onLoadParams(const Params& params)
     m_change = Rotate90CW;
   else if (change == "custom")
     m_change = CustomBrush;
+
   if (m_change == CustomBrush)
     m_slot = params.get_as<int>("slot");
   else
     m_slot = 0;
 }
+
 void ChangeBrushCommand::onExecute(Context* context)
 {
   auto app = App::instance();
@@ -102,6 +107,7 @@ void ChangeBrushCommand::onExecute(Context* context)
   auto contextBar = (app->mainWindow() ? app->mainWindow()->getContextBar() : nullptr);
   const BrushRef brush = (contextBar ? contextBar->activeBrush() : nullptr);
   const bool isImageBrush = (brush && brush->type() == kImageBrushType);
+
   // Change the brush of the active tool (i.e. quick tool) only if the
   // active tool is of paint/eraser (e.g. proximity tool for eraser),
   // in other case (e.g. if the active tool is the Hand tool because
@@ -112,11 +118,14 @@ void ChangeBrushCommand::onExecute(Context* context)
       !tool->getInk(0)->isShading()) {
     tool = atm->selectedTool();
   }
+
   ToolPreferences::Brush& brushPref = pref.tool(tool).brush;
+
   switch (m_change) {
     case None:
       // Do nothing
       break;
+
     case IncrementSize:
     case DecrementSize:
       // Resize x2 or x0.5 when resizing image brushes
@@ -126,26 +135,32 @@ void ChangeBrushCommand::onExecute(Context* context)
           case IncrementSize: scale = 2.0; break;
           case DecrementSize: scale = 0.5; break;
         }
+
         gfx::Size size = brush->bounds().size();
         size = gfx::Size(std::max<int>(1, size.w * scale), std::max<int>(1, size.h * scale));
+
         ImageRef newImg(Image::create(brush->image()->pixelFormat(), size.w, size.h));
         ImageRef newMsk(Image::create(IMAGE_BITMAP, size.w, size.h));
         const color_t bg = brush->image()->maskColor();
         newImg->setMaskColor(bg);
+
         newImg->clear(bg);
         newMsk->clear(0);
+
         resize_image(brush->image(),
                      newImg.get(),
                      RESIZE_METHOD_NEAREST_NEIGHBOR,
                      nullptr,
                      nullptr,
                      bg);
+
         resize_image(brush->maskBitmap(),
                      newMsk.get(),
                      RESIZE_METHOD_NEAREST_NEIGHBOR,
                      nullptr,
                      nullptr,
                      0);
+
         // Create a copy of the brush (to avoid modifying the original
         // brush from the AppBrushes stock)
         BrushRef newBrush = brush->cloneWithExistingImages(newImg, newMsk);
@@ -164,14 +179,17 @@ void ChangeBrushCommand::onExecute(Context* context)
         }
       }
       break;
+
     case IncrementAngle:
       if (brushPref.angle() < 180)
         brushPref.angle(brushPref.angle() + 1);
       break;
+
     case DecrementAngle:
       if (brushPref.angle() > 0)
         brushPref.angle(brushPref.angle() - 1);
       break;
+
     case FlipX:
     case FlipY:
       if (colorBar && colorBar->tilemapMode() == TilemapMode::Tiles) {
@@ -185,6 +203,7 @@ void ChangeBrushCommand::onExecute(Context* context)
         ImageRef newImg(Image::createCopy(brush->image()));
         ImageRef newMsk(Image::createCopy(brush->maskBitmap()));
         const gfx::Rect bounds = newImg->bounds();
+
         switch (m_change) {
           case FlipX:
             flip_image(newImg.get(), bounds, FlipType::FlipHorizontal);
@@ -195,6 +214,7 @@ void ChangeBrushCommand::onExecute(Context* context)
             flip_image(newMsk.get(), bounds, FlipType::FlipVertical);
             break;
         }
+
         BrushRef newBrush = brush->cloneWithExistingImages(newImg, newMsk);
         contextBar->setActiveBrush(newBrush);
       }
@@ -208,6 +228,7 @@ void ChangeBrushCommand::onExecute(Context* context)
         }
       }
       break;
+
     case FlipD:
     case Rotate90CW:
       if (colorBar && colorBar->tilemapMode() == TilemapMode::Tiles) {
@@ -233,18 +254,23 @@ void ChangeBrushCommand::onExecute(Context* context)
         ImageRef newMsk(Image::create(IMAGE_BITMAP, m, m));
         const color_t bg = brush->image()->maskColor();
         newImg->setMaskColor(bg);
+
         newImg->clear(bg);
         newMsk->clear(0);
+
         const gfx::Clip clip(0, 0, 0, 0, origBounds.w, origBounds.h);
         newImg->copy(brush->image(), clip);
         newMsk->copy(brush->maskBitmap(), clip);
+
         gfx::Rect cropBounds;
+
         switch (m_change) {
           case FlipD:
             flip_image(newImg.get(), maxBounds, FlipType::FlipDiagonal);
             flip_image(newMsk.get(), maxBounds, FlipType::FlipDiagonal);
             cropBounds = gfx::Rect(0, 0, origBounds.h, origBounds.w);
             break;
+
           case Rotate90CW:
             // To rotate 90cw:
             //
@@ -260,20 +286,24 @@ void ChangeBrushCommand::onExecute(Context* context)
             flip_image(newImg.get(), maxBounds, FlipType::FlipDiagonal);
             flip_image(newMsk.get(), maxBounds, FlipType::FlipVertical);
             flip_image(newMsk.get(), maxBounds, FlipType::FlipDiagonal);
+
             cropBounds = gfx::Rect(m - origBounds.h, 0, origBounds.h, origBounds.w);
             break;
         }
+
         ImageRef newImg2(crop_image(newImg.get(), cropBounds, bg));
         ImageRef newMsk2(crop_image(newMsk.get(), cropBounds, bg));
         BrushRef newBrush = brush->cloneWithExistingImages(newImg2, newMsk2);
         contextBar->setActiveBrush(newBrush);
       }
       break;
+
     case CustomBrush:
       if (contextBar)
         contextBar->setActiveBrushBySlot(tool, m_slot);
       break;
   }
+
   // Notify the ActiveToolManager that the active brush changed, so we
   // can show the new brush in the real (non-quick) active tool.
   //
@@ -283,6 +313,7 @@ void ChangeBrushCommand::onExecute(Context* context)
   // brush.
   atm->brushChanged();
 }
+
 std::string ChangeBrushCommand::onGetFriendlyName() const
 {
   std::string change;
@@ -300,8 +331,10 @@ std::string ChangeBrushCommand::onGetFriendlyName() const
   }
   return Strings::commands_ChangeBrush(change);
 }
+
 Command* CommandFactory::createChangeBrushCommand()
 {
   return new ChangeBrushCommand;
 }
+
 } // namespace app

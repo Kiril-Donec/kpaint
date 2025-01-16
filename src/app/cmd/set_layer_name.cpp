@@ -1,39 +1,41 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/cmd/set_layer_name.h"
- include "app/doc.h"
- include "app/doc_event.h"
- include "doc/layer.h"
- include "doc/sprite.h"
+#endif
+
+#include "app/cmd/set_layer_name.h"
+
+#include "app/doc.h"
+#include "app/doc_event.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
+
 namespace app { namespace cmd {
+
 SetLayerName::SetLayerName(Layer* layer, const std::string& name)
   : WithLayer(layer)
   , m_oldName(layer->name())
   , m_newName(name)
 {
 }
+
 void SetLayerName::onExecute()
 {
   layer()->setName(m_newName);
   layer()->incrementVersion();
 }
+
 void SetLayerName::onUndo()
 {
   layer()->setName(m_oldName);
   layer()->incrementVersion();
 }
+
 void SetLayerName::onFireNotifications()
 {
   Layer* layer = this->layer();
@@ -43,4 +45,5 @@ void SetLayerName::onFireNotifications()
   ev.layer(layer);
   doc->notify_observers<DocEvent&>(&DocObserver::onLayerNameChange, ev);
 }
+
 }} // namespace app::cmd

@@ -1,59 +1,65 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/cli/app_options.h"
- include "app/cli/cli_delegate.h"
- include "app/cli/cli_processor.h"
- include "app/commands/commands.h"
- include "app/commands/params.h"
- include "app/console.h"
- include "app/doc.h"
- include "app/doc_exporter.h"
- include "app/doc_undo.h"
- include "app/file/file.h"
- include "app/filename_formatter.h"
- include "app/restore_visible_layers.h"
- include "app/ui_context.h"
- include "app/util/layer_utils.h"
- include "base/convert_to.h"
- include "base/fs.h"
- include "base/split_string.h"
- include "doc/layer.h"
- include "doc/selected_frames.h"
- include "doc/selected_layers.h"
- include "doc/slice.h"
- include "doc/tag.h"
- include "doc/tags.h"
- include "os/system.h"
- include "render/dithering_algorithm.h"
- include <algorithm>
- include <queue>
- include <vector>
+#endif
+
+#include "app/cli/cli_processor.h"
+
+#include "app/cli/app_options.h"
+#include "app/cli/cli_delegate.h"
+#include "app/commands/commands.h"
+#include "app/commands/params.h"
+#include "app/console.h"
+#include "app/doc.h"
+#include "app/doc_exporter.h"
+#include "app/doc_undo.h"
+#include "app/file/file.h"
+#include "app/filename_formatter.h"
+#include "app/restore_visible_layers.h"
+#include "app/ui_context.h"
+#include "app/util/layer_utils.h"
+#include "base/convert_to.h"
+#include "base/fs.h"
+#include "base/split_string.h"
+#include "doc/layer.h"
+#include "doc/selected_frames.h"
+#include "doc/selected_layers.h"
+#include "doc/slice.h"
+#include "doc/tag.h"
+#include "doc/tags.h"
+#include "os/system.h"
+#include "render/dithering_algorithm.h"
+
+#include <algorithm>
+#include <queue>
+#include <vector>
+
 namespace app {
+
 namespace {
+
 bool match_path(const std::string& filter, const std::string& layer_path, const bool exclude)
 {
   if (filter == layer_path)
     return true;
+
   std::vector<std::string> a, b;
   base::split_string(filter, a, "/");
   base::split_string(layer_path, b, "/");
+
   for (std::size_t i = 0; i < a.size() && i < b.size(); ++i) {
     if (a[i] != b[i] && a[i] != "*")
       return false;
   }
+
   const bool wildcard = (!a.empty() && a[a.size() - 1] == "*");
+
   // Exclude group itself when all children are excluded. This special
   // case is only for exclusion because if we leave the group
   // selected, the propagation of the selection will include all
@@ -61,6 +67,7 @@ bool match_path(const std::string& filter, const std::string& layer_path, const 
   if (exclude && a.size() > 1 && a.size() == b.size() + 1 && wildcard) {
     return true;
   }
+
   if (exclude || wildcard)
     return (a.size() <= b.size());
   else {
@@ -68,6 +75,7 @@ bool match_path(const std::string& filter, const std::string& layer_path, const 
     return (a.size() == b.size());
   }
 }
+
 bool filter_layer(const std::string& layer_path,
                   const std::vector<std::string>& filters,
                   const bool result)
@@ -78,18 +86,21 @@ bool filter_layer(const std::string& layer_path,
   }
   return !result;
 }
- If there is one layer with the given name "filter", we can convert
- the filter to a full path to the layer (e.g. to match child layers
- of a group).
+
+// If there is one layer with the given name "filter", we can convert
+// the filter to a full path to the layer (e.g. to match child layers
+// of a group).
 std::string convert_filter_to_layer_path_if_possible(const Sprite* sprite,
                                                      const std::string& filter)
 {
   std::string fullName;
   std::queue<Layer*> layers;
   layers.push(sprite->root());
+
   while (!layers.empty()) {
     const Layer* layer = layers.front();
     layers.pop();
+
     if (layer != sprite->root() && layer->name() == filter) {
       if (fullName.empty()) {
         fullName = get_layer_path(layer);
@@ -105,13 +116,16 @@ std::string convert_filter_to_layer_path_if_possible(const Sprite* sprite,
         layers.push(child);
     }
   }
+
   if (!fullName.empty())
     return fullName;
   else
     return filter;
 }
+
 } // anonymous namespace
- static
+
+// static
 void CliProcessor::FilterLayers(const Sprite* sprite,
                                 std::vector<std::string> includes,
                                 std::vector<std::string> excludes,
@@ -123,16 +137,21 @@ void CliProcessor::FilterLayers(const Sprite* sprite,
     include = convert_filter_to_layer_path_if_possible(sprite, include);
   for (auto& exclude : excludes)
     exclude = convert_filter_to_layer_path_if_possible(sprite, exclude);
+
   for (Layer* layer : sprite->allLayers()) {
     auto layer_path = get_layer_path(layer);
+
     if ((includes.empty() && !layer->isVisibleHierarchy()) ||
         (!includes.empty() && !filter_layer(layer_path, includes, true)))
       continue;
+
     if (!excludes.empty() && !filter_layer(layer_path, excludes, false))
       continue;
+
     filteredLayers.insert(layer);
   }
 }
+
 CliProcessor::CliProcessor(CliDelegate* delegate, const AppOptions& options)
   : m_delegate(delegate)
   , m_options(options)
@@ -141,6 +160,7 @@ CliProcessor::CliProcessor(CliDelegate* delegate, const AppOptions& options)
   if (options.hasExporterParams())
     m_exporter.reset(new DocExporter);
 }
+
 int CliProcessor::process(Context* ctx)
 {
   // --help
@@ -153,17 +173,19 @@ int CliProcessor::process(Context* ctx)
   }
   // Process other options and file names
   else if (!m_options.values().empty()) {
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
     Params scriptParams;
- endif
+#endif
     Console console;
     CliOpenFile cof;
     SpriteSheetType sheetType = SpriteSheetType::None;
     Doc* lastDoc = nullptr;
     render::DitheringAlgorithm ditheringAlgorithm = render::DitheringAlgorithm::None;
     std::string ditheringMatrix;
+
     for (const auto& value : m_options.values()) {
       const AppOptions::Option* opt = value.option();
+
       // Special options/commands
       if (opt) {
         // --data <file.json>
@@ -175,10 +197,12 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.format()) {
           if (m_exporter) {
             SpriteSheetDataFormat format = SpriteSheetDataFormat::Default;
+
             if (value.value() == "json-hash")
               format = SpriteSheetDataFormat::JsonHash;
             else if (value.value() == "json-array")
               format = SpriteSheetDataFormat::JsonArray;
+
             m_exporter->setDataFormat(format);
           }
         }
@@ -272,6 +296,7 @@ int CliProcessor::process(Context* ctx)
             throw std::runtime_error("--frame-range needs two parameters separated by comma (,)\n"
                                      "Usage: --frame-range from,to\n"
                                      "E.g. --frame-range 0,99");
+
           cof.fromFrame = base::convert_to<frame_t>(splitRange[0]);
           cof.toFrame = base::convert_to<frame_t>(splitRange[1]);
         }
@@ -334,6 +359,7 @@ int CliProcessor::process(Context* ctx)
             throw std::runtime_error("--crop needs four parameters separated by comma (,)\n"
                                      "Usage: --crop x,y,width,height\n"
                                      "E.g. --crop 0,0,32,32");
+
           cof.crop.x = base::convert_to<int>(parts[0]);
           cof.crop.y = base::convert_to<int>(parts[1]);
           cof.crop.w = base::convert_to<int>(parts[2]);
@@ -359,6 +385,7 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.saveAs()) {
           if (lastDoc) {
             std::string fn = value.value();
+
             // Automatic --filename-format
             // in case the output filename already contains template elements.
             if (is_template_in_filename(fn)) {
@@ -370,11 +397,13 @@ int CliProcessor::process(Context* ctx)
                                        is_group_in_filename_format(fn));
               bool hasTagTemplate = is_tag_in_filename_format(fn);
               bool hasSliceTemplate = is_slice_in_filename_format(fn);
+
               if (hasLayerTemplate || hasTagTemplate || hasSliceTemplate) {
                 cof.splitLayers = (cof.splitLayers || hasLayerTemplate);
                 cof.splitTags = (cof.splitTags || hasTagTemplate);
                 cof.splitSlices = (cof.splitSlices || hasSliceTemplate);
               }
+
               // Save all documents
               for (auto doc : ctx->documents()) {
                 ctx->setActiveDocument(doc);
@@ -397,6 +426,7 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.palette()) {
           if (lastDoc) {
             ASSERT(cof.document == lastDoc);
+
             std::string filename = value.value();
             m_delegate->loadPalette(ctx, filename);
           }
@@ -408,6 +438,7 @@ int CliProcessor::process(Context* ctx)
         else if (opt == &m_options.scale()) {
           Params params;
           params.set("scale", value.value().c_str());
+
           // Scale all sprites
           for (auto doc : ctx->documents()) {
             ctx->setActiveDocument(doc);
@@ -454,6 +485,7 @@ int CliProcessor::process(Context* ctx)
                 params.set("dithering", "error-diffusion");
                 break;
             }
+
             if (ditheringAlgorithm != render::DitheringAlgorithm::None &&
                 !ditheringMatrix.empty()) {
               params.set("dithering-matrix", ditheringMatrix.c_str());
@@ -464,6 +496,7 @@ int CliProcessor::process(Context* ctx)
                                      "Usage: --color-mode <mode>\n"
                                      "Where <mode> can be rgb, grayscale, or indexed");
           }
+
           for (auto doc : ctx->documents()) {
             ctx->setActiveDocument(doc);
             ctx->executeCommand(command, params);
@@ -477,9 +510,11 @@ int CliProcessor::process(Context* ctx)
             throw std::runtime_error("--shrink-to needs two parameters separated by comma (,)\n"
                                      "Usage: --shrink-to width,height\n"
                                      "E.g. --shrink-to 128,64");
+
           double maxWidth = base::convert_to<double>(dimensions[0]);
           double maxHeight = base::convert_to<double>(dimensions[1]);
           double scaleWidth, scaleHeight, scale;
+
           // Shrink all sprites if needed
           for (auto doc : ctx->documents()) {
             ctx->setActiveDocument(doc);
@@ -493,7 +528,7 @@ int CliProcessor::process(Context* ctx)
             }
           }
         }
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
         // --script <filename>
         else if (opt == &m_options.script()) {
           std::string filename = value.value();
@@ -517,7 +552,7 @@ int CliProcessor::process(Context* ctx)
           else
             scriptParams.set(v.c_str(), "1");
         }
- endif
+#endif
         // --list-layers
         else if (opt == &m_options.listLayers()) {
           if (m_exporter)
@@ -559,6 +594,7 @@ int CliProcessor::process(Context* ctx)
       else {
         cof.document = nullptr;
         cof.filename = base::normalize_path(value.value());
+
         if ( // Check that the filename wasn't used loading a sequence
              // of images as one sprite
           m_usedFiles.find(cof.filename) == m_usedFiles.end() &&
@@ -568,15 +604,18 @@ int CliProcessor::process(Context* ctx)
         }
       }
     }
+
     if (m_exporter) {
       // Rows sprite sheet as the default type
       if (sheetType == SpriteSheetType::None)
         sheetType = SpriteSheetType::Rows;
       m_exporter->setSpriteSheetType(sheetType);
+
       m_delegate->exportFiles(ctx, *m_exporter.get());
       m_exporter.reset(nullptr);
     }
   }
+
   // Running mode
   if (m_options.startUI()) {
     m_delegate->uiMode();
@@ -589,34 +628,44 @@ int CliProcessor::process(Context* ctx)
   }
   return 0;
 }
+
 bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
 {
   m_delegate->beforeOpenFile(cof);
+
   Doc* oldDoc = ctx->activeDocument();
+
   m_batch.open(ctx, cof.filename, cof.oneFrame);
+
   // Mark used file names as "already processed" so we don't try to
   // open then again
   for (const auto& usedFn : m_batch.usedFiles()) {
     auto fn = base::normalize_path(usedFn);
     m_usedFiles.insert(fn);
+
     os::instance()->markCliFileAsProcessed(fn);
   }
+
   Doc* doc = ctx->activeDocument();
   // If the active document is equal to the previous one, it
   // means that we couldn't open this specific document.
   if (doc == oldDoc)
     doc = nullptr;
+
   cof.document = doc;
+
   if (doc) {
     // Show all layers
     if (cof.allLayers) {
       for (doc::Layer* layer : doc->sprite()->allLayers())
         layer->setVisible(true);
     }
+
     // Add document to exporter
     if (m_exporter) {
       Tag* tag = nullptr;
       SelectedFrames selFrames;
+
       if (cof.hasTag()) {
         tag = doc->sprite()->tags().getByName(cof.tag);
       }
@@ -631,9 +680,11 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
           selFrames.insert(cof.fromFrame, cof.toFrame);
         }
       }
+
       SelectedLayers filteredLayers;
       if (cof.hasLayersFilter())
         filterLayers(doc->sprite(), cof, filteredLayers);
+
       if (cof.exportTileset) {
         m_exporter->addTilesetsSamples(doc, (cof.hasLayersFilter() ? &filteredLayers : nullptr));
       }
@@ -648,16 +699,21 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
       }
     }
   }
+
   m_delegate->afterOpenFile(cof);
+
   return (doc ? true : false);
 }
+
 void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
 {
   ctx->setActiveDocument(cof.document);
+
   Command* trimCommand = Commands::instance()->byId(CommandId::AutocropSprite());
   Command* undoCommand = Commands::instance()->byId(CommandId::Undo());
   Doc* doc = cof.document;
   bool clearUndo = false;
+
   if (!cof.crop.isEmpty()) {
     Params cropParams;
     cropParams.set("x", base::convert_to<std::string>(cof.crop.x).c_str());
@@ -666,6 +722,7 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
     cropParams.set("height", base::convert_to<std::string>(cof.crop.h).c_str());
     ctx->executeCommand(Commands::instance()->byId(CommandId::CropSprite()), cropParams);
   }
+
   std::string fn = cof.filename;
   std::string filenameFormat = cof.filenameFormat;
   if (filenameFormat.empty()) { // Default format
@@ -676,6 +733,7 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
                                                  cof.splitLayers, // Has layer
                                                  cof.splitTags);  // Has frame tag
   }
+
   SelectedLayers filteredLayers;
   LayerList layers;
   // --save-as with --split-layers or --split-tags
@@ -687,9 +745,11 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
     // Filter layers
     if (cof.hasLayersFilter())
       filterLayers(doc->sprite(), cof, filteredLayers);
+
     // All visible layers
     layers.push_back(nullptr);
   }
+
   std::vector<doc::Tag*> tags;
   if (cof.hasTag()) {
     tags.push_back(doc->sprite()->tags().getByName(cof.tag));
@@ -709,6 +769,7 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
     else
       tags.push_back(nullptr);
   }
+
   std::vector<doc::Slice*> slices;
   if (cof.hasSlice()) {
     slices.push_back(doc->sprite()->slices().getByName(cof.slice));
@@ -722,29 +783,36 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
     else
       slices.push_back(nullptr);
   }
+
   bool layerInFormat = is_layer_in_filename_format(fn);
   bool groupInFormat = is_group_in_filename_format(fn);
+
   for (doc::Slice* slice : slices) {
     for (doc::Tag* tag : tags) {
       // For each layer, hide other ones and save the sprite.
       for (doc::Layer* layer : layers) {
         RestoreVisibleLayers layersVisibility;
+
         if (cof.splitLayers) {
           ASSERT(layer);
+
           // If the user doesn't want all layers and this one is hidden.
           if (!layer->isVisible())
             continue; // Just ignore this layer.
+
           // Make this layer ("show") the only one visible.
           layersVisibility.showLayer(layer);
         }
         else if (!filteredLayers.empty())
           layersVisibility.showSelectedLayers(doc->sprite(), filteredLayers);
+
         if (layer) {
           if ((layerInFormat && layer->isGroup()) ||
               (!layerInFormat && groupInFormat && !layer->isGroup())) {
             continue;
           }
         }
+
         // TODO --trim --save-as --split-layers doesn't make too much
         // sense as we lost the trim rectangle information (e.g. we
         // don't have sheet .json) Also, we should trim each frame
@@ -757,15 +825,18 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
           }
           ctx->executeCommand(trimCommand, params);
         }
+
         CliOpenFile itemCof = cof;
         FilenameInfo fnInfo;
         fnInfo.filename(fn);
         if (layer) {
           fnInfo.layerName(layer->name());
+
           if (layer->isGroup())
             fnInfo.groupName(layer->name());
           else if (layer->parent() != layer->sprite()->root())
             fnInfo.groupName(layer->parent()->name());
+
           itemCof.includeLayers.push_back(layer->name());
         }
         if (tag) {
@@ -778,8 +849,10 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
         }
         itemCof.filename = filename_formatter(filenameFormat, fnInfo);
         itemCof.filenameFormat = filename_formatter(filenameFormat, fnInfo, false);
+
         // Call delegate
         m_delegate->saveFile(ctx, itemCof);
+
         if (cof.trim) {
           ctx->executeCommand(undoCommand);
           clearUndo = true;
@@ -787,15 +860,18 @@ void CliProcessor::saveFile(Context* ctx, const CliOpenFile& cof)
       }
     }
   }
+
   // Undo crop
   if (!cof.crop.isEmpty()) {
     ctx->executeCommand(undoCommand);
     clearUndo = true;
   }
+
   if (clearUndo) {
     // Just in case allow non-linear history is enabled
     // we clear redo information
     doc->undoHistory()->clearRedo();
   }
 }
+
 } // namespace app

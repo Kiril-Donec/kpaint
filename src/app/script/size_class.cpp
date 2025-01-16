@@ -1,23 +1,24 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2017-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/script/luacpp.h"
- include "fmt/format.h"
- include "gfx/size.h"
- include <cmath>
+#endif
+
+#include "app/script/luacpp.h"
+#include "fmt/format.h"
+#include "gfx/size.h"
+
+#include <cmath>
+
 namespace app { namespace script {
+
 namespace {
+
 gfx::Size Size_new(lua_State* L, int index)
 {
   gfx::Size sz(0, 0);
@@ -59,16 +60,19 @@ gfx::Size Size_new(lua_State* L, int index)
   }
   return sz;
 }
+
 int Size_new(lua_State* L)
 {
   push_obj(L, Size_new(L, 1));
   return 1;
 }
+
 int Size_gc(lua_State* L)
 {
   get_obj<gfx::Size>(L, 1)->~SizeT();
   return 0;
 }
+
 int Size_eq(lua_State* L)
 {
   const auto a = get_obj<gfx::Size>(L, 1);
@@ -76,18 +80,21 @@ int Size_eq(lua_State* L)
   lua_pushboolean(L, *a == *b);
   return 1;
 }
+
 int Size_tostring(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
   lua_pushstring(L, fmt::format("Size{{ width={}, height={} }}", sz->w, sz->h).c_str());
   return 1;
 }
+
 int Size_unm(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
   push_obj(L, -(*sz));
   return 1;
 }
+
 int Size_add(lua_State* L)
 {
   gfx::Size result(0, 0);
@@ -102,6 +109,7 @@ int Size_add(lua_State* L)
   push_obj(L, result);
   return 1;
 }
+
 int Size_sub(lua_State* L)
 {
   gfx::Size result = *get_obj<gfx::Size>(L, 1);
@@ -112,6 +120,7 @@ int Size_sub(lua_State* L)
   push_obj(L, result);
   return 1;
 }
+
 int Size_mul(lua_State* L)
 {
   gfx::Size result = *get_obj<gfx::Size>(L, 1);
@@ -119,6 +128,7 @@ int Size_mul(lua_State* L)
   push_obj(L, result);
   return 1;
 }
+
 int Size_div(lua_State* L)
 {
   gfx::Size result = *get_obj<gfx::Size>(L, 1);
@@ -129,6 +139,7 @@ int Size_div(lua_State* L)
   push_obj(L, result);
   return 1;
 }
+
 int Size_mod(lua_State* L)
 {
   gfx::Size result = *get_obj<gfx::Size>(L, 1);
@@ -140,6 +151,7 @@ int Size_mod(lua_State* L)
   push_obj(L, result);
   return 1;
 }
+
 int Size_pow(lua_State* L)
 {
   gfx::Size result = *get_obj<gfx::Size>(L, 1);
@@ -149,6 +161,7 @@ int Size_pow(lua_State* L)
   push_obj(L, result);
   return 1;
 }
+
 int Size_union(lua_State* L)
 {
   const auto a = get_obj<gfx::Size>(L, 1);
@@ -156,6 +169,7 @@ int Size_union(lua_State* L)
   push_obj(L, a->createUnion(*b));
   return 1;
 }
+
 int Size_get_width(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
@@ -163,6 +177,7 @@ int Size_get_width(lua_State* L)
   lua_pushinteger(L, sz->w);
   return 1;
 }
+
 int Size_get_height(lua_State* L)
 {
   const auto sz = get_obj<gfx::Size>(L, 1);
@@ -170,6 +185,7 @@ int Size_get_height(lua_State* L)
   lua_pushinteger(L, sz->h);
   return 1;
 }
+
 int Size_set_width(lua_State* L)
 {
   auto sz = get_obj<gfx::Size>(L, 1);
@@ -177,6 +193,7 @@ int Size_set_width(lua_State* L)
   sz->w = lua_tointeger(L, 2);
   return 0;
 }
+
 int Size_set_height(lua_State* L)
 {
   auto sz = get_obj<gfx::Size>(L, 1);
@@ -184,6 +201,7 @@ int Size_set_height(lua_State* L)
   sz->h = lua_tointeger(L, 2);
   return 0;
 }
+
 const luaL_Reg Size_methods[] = {
   { "__gc",       Size_gc       },
   { "__eq",       Size_eq       },
@@ -199,6 +217,7 @@ const luaL_Reg Size_methods[] = {
   { "union",      Size_union    },
   { nullptr,      nullptr       }
 };
+
 const Property Size_properties[] = {
   { "w",      Size_get_width,  Size_set_width  },
   { "h",      Size_get_height, Size_set_height },
@@ -206,8 +225,11 @@ const Property Size_properties[] = {
   { "height", Size_get_height, Size_set_height },
   { nullptr,  nullptr,         nullptr         }
 };
+
 } // anonymous namespace
+
 DEF_MTNAME(gfx::Size);
+
 void register_size_class(lua_State* L)
 {
   using gfx::Size;
@@ -215,8 +237,10 @@ void register_size_class(lua_State* L)
   REG_CLASS_NEW(L, Size);
   REG_CLASS_PROPERTIES(L, Size);
 }
+
 gfx::Size convert_args_into_size(lua_State* L, int index)
 {
   return Size_new(L, index);
 }
+
 }} // namespace app::script

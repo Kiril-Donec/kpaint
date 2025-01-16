@@ -1,22 +1,22 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_CLI_APP_OPTIONS_H_INCLUDED
+#define APP_CLI_APP_OPTIONS_H_INCLUDED
+#pragma once
 
+#include <stdexcept>
+#include <string>
+#include <vector>
 
+#include "base/program_options.h"
 
- ifndef APP_CLI_APP_OPTIONS_H_INCLUDED
- define APP_CLI_APP_OPTIONS_H_INCLUDED
- pragma once
- include "base/program_options.h"
- include <stdexcept>
- include <string>
- include <vector>
 namespace app {
+
 class AppOptions {
 public:
   enum VerboseLevel {
@@ -24,19 +24,25 @@ public:
     kVerbose,       // --verbose
     kHighlyVerbose, // --debug
   };
+
   typedef base::ProgramOptions PO;
   typedef PO::Option Option;
   typedef PO::ValueList ValueList;
+
   AppOptions(int argc, const char* argv[]);
+
   const std::string& exeName() const { return m_exeName; }
   const base::ProgramOptions& programOptions() const { return m_po; }
+
   bool startUI() const { return m_startUI; }
   bool startShell() const { return m_startShell; }
   bool previewCLI() const { return m_previewCLI; }
   bool showHelp() const { return m_showHelp; }
   bool showVersion() const { return m_showVersion; }
   VerboseLevel verboseLevel() const { return m_verboseLevel; }
+
   const ValueList& values() const { return m_po.values(); }
+
   // Export options
   const Option& saveAs() const { return m_saveAs; }
   const Option& palette() const { return m_palette; }
@@ -77,25 +83,28 @@ public:
   const Option& slice() const { return m_slice; }
   const Option& filenameFormat() const { return m_filenameFormat; }
   const Option& tagnameFormat() const { return m_tagnameFormat; }
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
   const Option& script() const { return m_script; }
   const Option& scriptParam() const { return m_scriptParam; }
- endif
+#endif
   const Option& listLayers() const { return m_listLayers; }
   const Option& listLayerHierarchy() const { return m_listLayerHierarchy; }
   const Option& listTags() const { return m_listTags; }
   const Option& listSlices() const { return m_listSlices; }
   const Option& oneFrame() const { return m_oneFrame; }
   const Option& exportTileset() const { return m_exportTileset; }
+
   bool hasExporterParams() const;
- ifdef ENABLE_STEAM
+#ifdef ENABLE_STEAM
   bool noInApp() const;
- endif
- ifdef _WIN32
+#endif
+#ifdef _WIN32
   bool disableWintab() const;
- endif
+#endif
+
 private:
   AppOptions(const AppOptions& that);
+
   std::string m_exeName;
   base::ProgramOptions m_po;
   bool m_startUI;
@@ -104,9 +113,10 @@ private:
   bool m_showHelp;
   bool m_showVersion;
   VerboseLevel m_verboseLevel;
- ifdef ENABLE_SCRIPTING
+
+#ifdef ENABLE_SCRIPTING
   Option& m_shell;
- endif
+#endif
   Option& m_batch;
   Option& m_preview;
   Option& m_saveAs;
@@ -148,26 +158,29 @@ private:
   Option& m_slice;
   Option& m_filenameFormat;
   Option& m_tagnameFormat;
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
   Option& m_script;
   Option& m_scriptParam;
- endif
+#endif
   Option& m_listLayers;
   Option& m_listLayerHierarchy;
   Option& m_listTags;
   Option& m_listSlices;
   Option& m_oneFrame;
   Option& m_exportTileset;
+
   Option& m_verbose;
   Option& m_debug;
- ifdef ENABLE_STEAM
+#ifdef ENABLE_STEAM
   Option& m_noInApp;
- endif
- ifdef _WIN32
+#endif
+#ifdef _WIN32
   Option& m_disableWintab;
- endif
+#endif
   Option& m_help;
   Option& m_version;
 };
+
 } // namespace app
- endif
+
+#endif

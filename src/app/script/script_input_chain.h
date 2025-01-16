@@ -1,22 +1,21 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_SCRIPT_SCRIPT_INPUT_CHAIN_H_INCLUDED
+#define APP_SCRIPT_SCRIPT_INPUT_CHAIN_H_INCLUDED
+#pragma once
 
-
-
- ifndef APP_SCRIPT_SCRIPT_INPUT_CHAIN_H_INCLUDED
- define APP_SCRIPT_SCRIPT_INPUT_CHAIN_H_INCLUDED
- pragma once
- ifndef ENABLE_SCRIPTING
+#ifndef ENABLE_SCRIPTING
   #error ENABLE_SCRIPTING must be defined
- endif
- include "app/ui/input_chain_element.h"
+#endif
+
+#include "app/ui/input_chain_element.h"
+
 namespace app {
+
 class ScriptInputChain : public InputChainElement {
 public:
   // InputChainElement impl
@@ -32,5 +31,7 @@ public:
   bool onClear(Context* ctx) override;
   void onCancel(Context* ctx) override;
 };
+
 } // namespace app
- endif
+
+#endif

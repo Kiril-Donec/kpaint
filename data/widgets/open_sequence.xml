@@ -1,11 +1,6 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (C) 2021 by Igara Studio S.A. -->
+<!-- Copyright (C) 2016 by David Capello -->
 <gui>
 <window id="open_sequence" text="@.title">
   <vbox>

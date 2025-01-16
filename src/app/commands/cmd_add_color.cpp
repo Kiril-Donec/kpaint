@@ -1,33 +1,34 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2016-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/cmd/set_palette.h"
- include "app/commands/command.h"
- include "app/commands/new_params.h"
- include "app/console.h"
- include "app/context.h"
- include "app/context_access.h"
- include "app/i18n/strings.h"
- include "app/pref/preferences.h"
- include "app/tx.h"
- include "doc/palette.h"
- ifdef ENABLE_SCRIPTING
+#endif
+
+#include "app/app.h"
+#include "app/cmd/set_palette.h"
+#include "app/commands/command.h"
+#include "app/commands/new_params.h"
+#include "app/console.h"
+#include "app/context.h"
+#include "app/context_access.h"
+#include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
+#include "app/tx.h"
+#include "doc/palette.h"
+
+#ifdef ENABLE_SCRIPTING
   #include "app/script/luacpp.h"
- endif
+#endif
+
 namespace app {
+
 enum class AddColorSource { Fg, Bg, Color };
+
 template<>
 void Param<AddColorSource>::fromString(const std::string& value)
 {
@@ -38,17 +39,20 @@ void Param<AddColorSource>::fromString(const std::string& value)
   else
     setValue(AddColorSource::Color);
 }
- ifdef ENABLE_SCRIPTING
+
+#ifdef ENABLE_SCRIPTING
 template<>
 void Param<AddColorSource>::fromLua(lua_State* L, int index)
 {
   fromString(lua_tostring(L, index));
 }
-// endif // ENABLE_SCRIPTING
+#endif // ENABLE_SCRIPTING
+
 struct AddColorParams : public NewParams {
   Param<AddColorSource> source{ this, AddColorSource::Color, "source" };
   Param<app::Color> color{ this, app::Color::fromMask(), "color" };
 };
+
 class AddColorCommand : public CommandWithNewParams<AddColorParams> {
 public:
   AddColorCommand();
@@ -58,26 +62,32 @@ protected:
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
 };
+
 AddColorCommand::AddColorCommand()
   : CommandWithNewParams<AddColorParams>(CommandId::AddColor(), CmdUIOnlyFlag)
 {
 }
+
 bool AddColorCommand::onEnabled(Context* ctx)
 {
   return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
+
 void AddColorCommand::onExecute(Context* ctx)
 {
   app::Color appColor;
+
   switch (params().source()) {
     case AddColorSource::Fg:    appColor = Preferences::instance().colorBar.fgColor(); break;
     case AddColorSource::Bg:    appColor = Preferences::instance().colorBar.bgColor(); break;
     case AddColorSource::Color: appColor = params().color(); break;
   }
+
   Palette* pal = ctx->activeSite().palette();
   ASSERT(pal);
   if (!pal)
     return;
+
   try {
     std::unique_ptr<Palette> newPalette(new Palette(*pal));
     color_t color =
@@ -87,12 +97,14 @@ void AddColorCommand::onExecute(Context* ctx)
                                            appColor.getBlue(),
                                            appColor.getAlpha(),
                                            -1);
+
     // It should be -1, because the user has pressed the warning
     // button that is available only when the color isn't in the
     // palette.
     ASSERT(index < 0);
     if (index >= 0)
       return;
+
     ContextWriter writer(ctx);
     Doc* document(writer.document());
     Sprite* sprite = writer.sprite();
@@ -100,10 +112,13 @@ void AddColorCommand::onExecute(Context* ctx)
       ASSERT(false);
       return;
     }
+
     newPalette->addEntry(color);
     index = newPalette->size() - 1;
+
     if (document) {
       frame_t frame = writer.frame();
+
       Tx tx(writer, friendlyName(), ModifyDocument);
       tx(new cmd::SetPalette(sprite, frame, newPalette.get()));
       tx.commit();
@@ -113,6 +128,7 @@ void AddColorCommand::onExecute(Context* ctx)
     Console::showException(e);
   }
 }
+
 std::string AddColorCommand::onGetFriendlyName() const
 {
   std::string source;
@@ -123,8 +139,10 @@ std::string AddColorCommand::onGetFriendlyName() const
   }
   return Strings::commands_AddColor(source);
 }
+
 Command* CommandFactory::createAddColorCommand()
 {
   return new AddColorCommand;
 }
+
 } // namespace app

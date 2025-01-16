@@ -1,39 +1,42 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/modules/gui.h"
- include "app/ui/button_set.h"
- include "app/ui/skin/skin_theme.h"
- include "gfx/color.h"
- include "os/surface.h"
- include "ui/box.h"
- include "ui/button.h"
- include "ui/graphics.h"
- include "ui/message.h"
- include "ui/paint_event.h"
- include "ui/size_hint_event.h"
- include "ui/system.h"
- include "ui/theme.h"
- include "ui/widget.h"
- include <algorithm>
- include <cstdarg>
+#endif
+
+#include "app/ui/button_set.h"
+
+#include "app/modules/gui.h"
+#include "app/ui/skin/skin_theme.h"
+#include "gfx/color.h"
+#include "os/surface.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/graphics.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/size_hint_event.h"
+#include "ui/system.h"
+#include "ui/theme.h"
+#include "ui/widget.h"
+
+#include <algorithm>
+#include <cstdarg>
+
 namespace app {
+
 using namespace ui;
 using namespace app::skin;
- Last selected item for ButtonSet activated on mouse up when the
- mouse capture is get.
+
+// Last selected item for ButtonSet activated on mouse up when the
+// mouse capture is get.
 static int g_itemBeforeCapture = -1;
+
 WidgetType buttonset_item_type()
 {
   static WidgetType type = kGenericWidget;
@@ -41,21 +44,25 @@ WidgetType buttonset_item_type()
     type = register_widget_type();
   return type;
 }
+
 ButtonSet::Item::Item() : Widget(buttonset_item_type()), m_icon(NULL)
 {
   setup_mini_font(this);
   setAlign(CENTER | MIDDLE);
   setFocusStop(true);
 }
+
 void ButtonSet::Item::setIcon(const SkinPartPtr& icon)
 {
   m_icon = icon;
   invalidate();
 }
+
 ButtonSet* ButtonSet::Item::buttonSet()
 {
   return static_cast<ButtonSet*>(parent());
 }
+
 void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 {
   if (style()) {
@@ -69,9 +76,11 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
       rc.w -= buttonSet()->m_colgap;
     if (buttonSet()->m_rowgap < 0 && !isLastRow)
       rc.h -= buttonSet()->m_rowgap;
+
     theme()->paintWidget(ev.graphics(), this, style(), rc);
   }
 }
+
 bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
@@ -82,16 +91,19 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         invalidate();
       }
       break;
+
     case ui::kKeyDownMessage:
       if (isEnabled() && hasText()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         bool mnemonicPressed = (msg->altPressed() && isMnemonicPressed(keymsg));
+
         if (mnemonicPressed || (hasFocus() && keymsg->scancode() == kKeySpace)) {
           buttonSet()->onSelectItem(this, true, msg);
           onClick();
         }
       }
       break;
+
     case ui::kMouseDownMessage:
       if (!isEnabled())
         return true;
@@ -105,19 +117,24 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         // ASSERT(g_itemBeforeCapture < 0);
         g_itemBeforeCapture = buttonSet()->selectedItem();
       }
+
       captureMouse();
       buttonSet()->onSelectItem(this, true, msg);
       invalidate();
+
       if (static_cast<MouseMessage*>(msg)->left() && !buttonSet()->m_triggerOnMouseUp) {
         onClick();
       }
       break;
+
     case ui::kMouseUpMessage:
       if (hasCapture()) {
         if (g_itemBeforeCapture >= 0)
           g_itemBeforeCapture = -1;
+
         releaseMouse();
         invalidate();
+
         if (static_cast<MouseMessage*>(msg)->left()) {
           if (buttonSet()->m_triggerOnMouseUp)
             onClick();
@@ -127,6 +144,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         }
       }
       break;
+
     case ui::kMouseMoveMessage:
       if (hasCapture()) {
         if (buttonSet()->m_offerCapture) {
@@ -136,6 +154,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
               if (g_itemBeforeCapture < (int)children().size()) {
                 Item* item = dynamic_cast<Item*>(at(g_itemBeforeCapture));
                 ASSERT(item);
+
                 // As we never received a kMouseUpMessage (so we never
                 // called onClick()), we have to restore the selected
                 // item at the point when we received the mouse capture.
@@ -147,6 +166,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         }
       }
       break;
+
     case ui::kMouseLeaveMessage:
     case ui::kMouseEnterMessage:
       if (!isEnabled())
@@ -156,14 +176,17 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
   }
   return Widget::onProcessMessage(msg);
 }
+
 void ButtonSet::Item::onClick()
 {
   buttonSet()->onItemChange(this);
 }
+
 void ButtonSet::Item::onRightClick()
 {
   buttonSet()->onRightClick(this);
 }
+
 ButtonSet::ButtonSet(int columns)
   : Grid(columns, false)
   , m_offerCapture(true)
@@ -179,10 +202,12 @@ ButtonSet::ButtonSet(int columns)
   });
   initTheme();
 }
+
 ButtonSet::Item* ButtonSet::addItem(const std::string& text, ui::Style* style)
 {
   return addItem(text, 1, 1, style);
 }
+
 ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan, ui::Style* style)
 {
   Item* item = new Item();
@@ -190,10 +215,12 @@ ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspa
   addItem(item, hspan, vspan, style);
   return item;
 }
+
 ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, ui::Style* style)
 {
   return addItem(icon, 1, 1, style);
 }
+
 ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon,
                                     int hspan,
                                     int vspan,
@@ -208,6 +235,7 @@ ButtonSet::Item* ButtonSet::addItem(Item* item, ui::Style* style)
 {
   return addItem(item, 1, 1, style);
 }
+
 ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style* style)
 {
   item->InitTheme.connect([item, style] {
@@ -225,10 +253,12 @@ ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style*
   addChildInCell(item, hspan, vspan, HORIZONTAL | VERTICAL);
   return item;
 }
+
 ButtonSet::Item* ButtonSet::getItem(int index)
 {
   return dynamic_cast<Item*>(at(index));
 }
+
 int ButtonSet::getItemIndex(const Item* item) const
 {
   int index = 0;
@@ -239,6 +269,7 @@ int ButtonSet::getItemIndex(const Item* item) const
   }
   return -1;
 }
+
 int ButtonSet::selectedItem() const
 {
   int index = 0;
@@ -249,6 +280,7 @@ int ButtonSet::selectedItem() const
   }
   return -1;
 }
+
 int ButtonSet::countSelectedItems() const
 {
   int count = 0;
@@ -257,6 +289,7 @@ int ButtonSet::countSelectedItems() const
       ++count;
   return count;
 }
+
 void ButtonSet::setSelectedItem(int index, bool focusItem)
 {
   if (index >= 0 && index < (int)children().size())
@@ -264,19 +297,23 @@ void ButtonSet::setSelectedItem(int index, bool focusItem)
   else
     setSelectedItem(static_cast<Item*>(nullptr), focusItem);
 }
+
 void ButtonSet::setSelectedItem(Item* item, bool focusItem)
 {
   onSelectItem(item, focusItem, nullptr);
 }
+
 void ButtonSet::onSelectItem(Item* item, bool focusItem, ui::Message* msg)
 {
   const int count = countSelectedItems();
+
   if ((m_multiMode == MultiMode::One) ||
       (m_multiMode == MultiMode::OneOrMore && msg && !msg->shiftPressed() && !msg->altPressed() &&
        !msg->ctrlPressed() && !msg->cmdPressed())) {
     if (item && item->isSelected() &&
         ((m_multiMode == MultiMode::One) || (m_multiMode == MultiMode::OneOrMore && count == 1)))
       return;
+
     if (m_multiMode == MultiMode::One) {
       if (auto sel = findSelectedItem())
         sel->setSelected(false);
@@ -286,44 +323,53 @@ void ButtonSet::onSelectItem(Item* item, bool focusItem, ui::Message* msg)
         child->setSelected(false);
     }
   }
+
   if (item) {
     if (m_multiMode == MultiMode::OneOrMore) {
       // Item already selected
       if (count == 1 && item == findSelectedItem())
         return;
     }
+
     // Toggle item
     item->setSelected(!item->isSelected());
     if (focusItem)
       item->requestFocus();
   }
 }
+
 void ButtonSet::deselectItems()
 {
   Item* sel = findSelectedItem();
   if (sel)
     sel->setSelected(false);
 }
+
 void ButtonSet::setOfferCapture(bool state)
 {
   m_offerCapture = state;
 }
+
 void ButtonSet::setTriggerOnMouseUp(bool state)
 {
   m_triggerOnMouseUp = state;
 }
+
 void ButtonSet::setMultiMode(MultiMode mode)
 {
   m_multiMode = mode;
 }
+
 void ButtonSet::onItemChange(Item* item)
 {
   ItemChange(item);
 }
+
 void ButtonSet::onRightClick(Item* item)
 {
   RightClick(item);
 }
+
 ButtonSet::Item* ButtonSet::findSelectedItem() const
 {
   for (auto child : children()) {
@@ -332,4 +378,5 @@ ButtonSet::Item* ButtonSet::findSelectedItem() const
   }
   return nullptr;
 }
+
 } // namespace app

@@ -1,22 +1,19 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (C) 2015-2018 by David Capello -->
 <gui>
 <window id="modify_selection" text="@.title">
   <vbox>
     <grid columns="2">
+
       <label id="by_label" text="" />
       <expr id="quantity" expansive="true" magnet="true" suffix="px" />
+
       <hbox />
       <vbox>
         <radio id="circle" text="@.circle" group="1" />
         <radio id="square" text="@.square" group="1" />
       </vbox>
+
     </grid>
     <separator horizontal="true" cell_hspan="3" />
     <hbox homogeneous="true" cell_hspan="3" cell_align="right">

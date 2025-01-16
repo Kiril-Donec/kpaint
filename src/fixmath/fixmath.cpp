@@ -1,25 +1,25 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
-
-Copyright (C) 2024-2025 KiriX Company
-
 /*
  * Fixed point type.
  * Based on Allegro library by Shawn Hargreaves.
  */
- ifdef HAVE_CONFIG_H
+
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "fixmath/fixmath.h"
- include <cmath>
+#endif
+
+#include "fixmath/fixmath.h"
+
+#include <cmath>
+
 namespace fixmath {
- Ratios for converting between radians and fixed point angles.
+
+// Ratios for converting between radians and fixed point angles.
 const fixed fixtorad_r = (fixed)1608;    // 2pi/256
 const fixed radtofix_r = (fixed)2670177; // 256/2pi
+
 fixed _cos_tbl[512] = {
   /* precalculated fixed point (16.16) cosines for a full circle (0-255) */
+
   65536L,  65531L,  65516L,  65492L,  65457L,  65413L,  65358L,  65294L,  65220L,  65137L,  65043L,
   64940L,  64827L,  64704L,  64571L,  64429L,  64277L,  64115L,  63944L,  63763L,  63572L,  63372L,
   63162L,  62943L,  62714L,  62476L,  62228L,  61971L,  61705L,  61429L,  61145L,  60851L,  60547L,
@@ -68,8 +68,10 @@ fixed _cos_tbl[512] = {
   64115L,  64277L,  64429L,  64571L,  64704L,  64827L,  64940L,  65043L,  65137L,  65220L,  65294L,
   65358L,  65413L,  65457L,  65492L,  65516L,  65531L
 };
+
 fixed _tan_tbl[256] = {
   /* precalculated fixed point (16.16) tangents for a half circle (0-127) */
+
   0L,       804L,     1609L,        2414L,     3220L,     4026L,     4834L,     5644L,     6455L,
   7268L,    8083L,    8901L,        9721L,     10545L,    11372L,    12202L,    13036L,    13874L,
   14717L,   15564L,   16416L,       17273L,    18136L,    19005L,    19880L,    20762L,    21650L,
@@ -100,8 +102,10 @@ fixed _tan_tbl[256] = {
   -10545L,  -9721L,   -8901L,       -8083L,    -7268L,    -6455L,    -5644L,    -4834L,    -4026L,
   -3220L,   -2414L,   -1609L,       -804L
 };
+
 fixed _acos_tbl[513] = {
   /* precalculated fixed point (16.16) inverse cosines (-1 to 1) */
+
   0x800000L, 0x7C65C7L, 0x7AE75AL, 0x79C19EL, 0x78C9BEL, 0x77EF25L, 0x772953L, 0x76733AL, 0x75C991L,
   0x752A10L, 0x74930CL, 0x740345L, 0x7379C1L, 0x72F5BAL, 0x72768FL, 0x71FBBCL, 0x7184D3L, 0x711174L,
   0x70A152L, 0x703426L, 0x6FC9B5L, 0x6F61C9L, 0x6EFC36L, 0x6E98D1L, 0x6E3777L, 0x6DD805L, 0x6D7A5EL,
@@ -160,25 +164,31 @@ fixed _acos_tbl[513] = {
   0xEEE8CL,  0xE7B2DL,  0xE0444L,  0xD8971L,  0xD0A46L,  0xC863FL,  0xBFCBBL,  0xB6CF4L,  0xAD5F0L,
   0xA366FL,  0x98CC6L,  0x8D6ADL,  0x810DBL,  0x73642L,  0x63E62L,  0x518A6L,  0x39A39L,  0x0L
 };
- Fixed point square root routine for non-i386.
+
+// Fixed point square root routine for non-i386.
 fixed fixsqrt(fixed x)
 {
   if (x > 0)
     return ftofix(std::sqrt(fixtof(x)));
+
   if (x < 0)
     errno = EDOM;
+
   return 0;
 }
- Fixed point sqrt (x*x+y*y) for non-i386.
+
+// Fixed point sqrt (x*x+y*y) for non-i386.
 fixed fixhypot(fixed x, fixed y)
 {
   return ftofix(hypot(fixtof(x), fixtof(y)));
 }
- Fixed point inverse tangent. Does a binary search on the tan table.
+
+// Fixed point inverse tangent. Does a binary search on the tan table.
 fixed fixatan(fixed x)
 {
-  int a, b, c;  /* for binary search */
-  fixed d;      /* difference value for search */
+  int a, b, c; /* for binary search */
+  fixed d;     /* difference value for search */
+
   if (x >= 0) { /* search the first part of tan table */
     a = 0;
     b = 127;
@@ -187,22 +197,29 @@ fixed fixatan(fixed x)
     a = 128;
     b = 255;
   }
+
   do {
     c = (a + b) >> 1;
     d = x - _tan_tbl[c];
+
     if (d > 0)
       a = c + 1;
     else if (d < 0)
       b = c - 1;
+
   } while ((a <= b) && (d));
+
   if (x >= 0)
     return ((long)c) << 15;
+
   return (-0x00800000L + (((long)c) << 15));
 }
- Like the libc atan2, but for fixed point numbers.
+
+// Like the libc atan2, but for fixed point numbers.
 fixed fixatan2(fixed y, fixed x)
 {
   fixed r;
+
   if (x == 0) {
     if (y == 0) {
       errno = EDOM;
@@ -211,17 +228,24 @@ fixed fixatan2(fixed y, fixed x)
     else
       return ((y < 0) ? -0x00400000L : 0x00400000L);
   }
+
   errno = 0;
   r = fixdiv(y, x);
+
   if (errno) {
     errno = 0;
     return ((y < 0) ? -0x00400000L : 0x00400000L);
   }
+
   r = fixatan(r);
+
   if (x >= 0)
     return r;
+
   if (y >= 0)
     return 0x00800000L + r;
+
   return r - 0x00800000L;
 }
+
 } // namespace fixmath

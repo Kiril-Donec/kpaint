@@ -1,28 +1,28 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2016  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/color.h"
- include "app/pref/preferences.h"
- include "app/tools/active_tool.h"
- include "app/tools/active_tool_observer.h"
- include "app/tools/ink.h"
- include "app/tools/pointer.h"
- include "app/tools/tool_box.h"
- include "app/ui/color_bar.h"
- include "app/ui/context_bar.h"
+#endif
+
+#include "app/tools/active_tool.h"
+
+#include "app/app.h"
+#include "app/color.h"
+#include "app/pref/preferences.h"
+#include "app/tools/active_tool_observer.h"
+#include "app/tools/ink.h"
+#include "app/tools/pointer.h"
+#include "app/tools/tool_box.h"
+#include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
+
 namespace app { namespace tools {
+
 class ActiveToolChangeTrigger {
 public:
   ActiveToolChangeTrigger(ActiveToolManager* manager)
@@ -30,6 +30,7 @@ public:
     , m_oldTool(manager->activeTool())
   {
   }
+
   ~ActiveToolChangeTrigger()
   {
     Tool* newTool = m_manager->activeTool();
@@ -42,6 +43,7 @@ private:
   ActiveToolManager* m_manager;
   Tool* m_oldTool;
 };
+
 ActiveToolManager::ActiveToolManager(ToolBox* toolbox)
   : m_toolbox(toolbox)
   , m_quickTool(nullptr)
@@ -54,24 +56,30 @@ ActiveToolManager::ActiveToolManager(ToolBox* toolbox)
                                                                    // default
 {
 }
+
 Tool* ActiveToolManager::activeTool() const
 {
   if (m_allowQuickToolChanges) {
     if (m_quickTool)
       return m_quickTool;
+
     if (m_rightClickTool)
       return m_rightClickTool;
+
     if (m_proximityTool)
       return m_proximityTool;
   }
+
   // Active tool should never returns null
   ASSERT(m_selectedTool);
   return m_selectedTool;
 }
+
 Ink* ActiveToolManager::activeInk() const
 {
   if (!m_quickTool && m_rightClickInk)
     return m_rightClickInk;
+
   Tool* tool = activeTool();
   Ink* ink = tool->getInk(m_rightClick ? 1 : 0);
   if (ink->isPaint() && !ink->isEffect()) {
@@ -82,8 +90,10 @@ Ink* ActiveToolManager::activeInk() const
     }
     ink = adjustToolInkDependingOnSelectedInkType(ink, inkType, color);
   }
+
   return ink;
 }
+
 Ink* ActiveToolManager::adjustToolInkDependingOnSelectedInkType(Ink* ink,
                                                                 const InkType inkType,
                                                                 const app::Color& color) const
@@ -108,29 +118,35 @@ Ink* ActiveToolManager::adjustToolInkDependingOnSelectedInkType(Ink* ink,
   }
   return ink;
 }
+
 Tool* ActiveToolManager::quickTool() const
 {
   return m_quickTool;
 }
+
 Tool* ActiveToolManager::selectedTool() const
 {
   return m_selectedTool;
 }
+
 void ActiveToolManager::newToolSelectedInToolBar(Tool* tool)
 {
   ActiveToolChangeTrigger trigger(this);
   m_selectedTool = tool;
 }
+
 void ActiveToolManager::newQuickToolSelectedFromEditor(Tool* tool)
 {
   ActiveToolChangeTrigger trigger(this);
   m_quickTool = tool;
 }
+
 void ActiveToolManager::brushChanged()
 {
   ActiveToolChangeTrigger trigger(this);
   m_quickTool = nullptr;
 }
+
 void ActiveToolManager::regularTipProximity()
 {
   if (m_proximityTool != nullptr) {
@@ -138,6 +154,7 @@ void ActiveToolManager::regularTipProximity()
     m_proximityTool = nullptr;
   }
 }
+
 void ActiveToolManager::eraserTipProximity()
 {
   Tool* eraser = m_toolbox->getToolById(WellKnownTools::Eraser);
@@ -146,13 +163,16 @@ void ActiveToolManager::eraserTipProximity()
     m_proximityTool = eraser;
   }
 }
+
 void ActiveToolManager::pressButton(const Pointer& pointer)
 {
   ActiveToolChangeTrigger trigger(this);
   Tool* tool = nullptr;
   Ink* ink = nullptr;
+
   if (pointer.button() == Pointer::Right) {
     m_rightClick = true;
+
     if (isToolAffectedByRightClickMode(activeTool())) {
       switch (Preferences::instance().editor.rightClickMode()) {
         case app::gen::RightClickMode::PAINT_BGCOLOR:
@@ -188,27 +208,34 @@ void ActiveToolManager::pressButton(const Pointer& pointer)
   else {
     m_rightClick = false;
   }
+
   m_rightClickTool = tool;
   m_rightClickInk = ink;
 }
+
 void ActiveToolManager::releaseButtons()
 {
   ActiveToolChangeTrigger trigger(this);
+
   m_rightClick = false;
   m_rightClickTool = nullptr;
   m_rightClickInk = nullptr;
 }
+
 void ActiveToolManager::setSelectedTool(Tool* tool)
 {
   ActiveToolChangeTrigger trigger(this);
+
   m_selectedTool = tool;
   notify_observers(&ActiveToolObserver::onSelectedToolChange, tool);
 }
+
 void ActiveToolManager::setAllowQuickToolChanges(const bool state)
 {
   m_allowQuickToolChanges = state;
 }
- static
+
+// static
 bool ActiveToolManager::isToolAffectedByRightClickMode(Tool* tool)
 {
   bool shadingMode = (Preferences::instance().tool(tool).ink() == InkType::SHADING);
@@ -220,7 +247,9 @@ bool ActiveToolManager::isToolAffectedByRightClickMode(Tool* tool)
       shadingMode = (contextBar->getShade().size() >= 2);
     }
   }
+
   return ((tool->getInk(0)->isPaint() && !shadingMode) || (tool->getInk(0)->isEffect())) &&
          (!tool->getInk(0)->isEraser()) && (!tool->getInk(0)->isSelection());
 }
+
 }} // namespace app::tools

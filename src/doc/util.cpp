@@ -1,18 +1,18 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2020-2024 Igara Studio S.A.
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- include "doc/util.h"
- include "doc/image.h"
- include "doc/image_impl.h"
- include "doc/mask.h"
- include "doc/tileset.h"
+#include "doc/util.h"
+
+#include "doc/image.h"
+#include "doc/image_impl.h"
+#include "doc/mask.h"
+#include "doc/tileset.h"
+
 namespace doc {
+
 void fix_old_tileset(Tileset* tileset)
 {
   // Check if the first tile is already the empty tile, in this
@@ -24,16 +24,19 @@ void fix_old_tileset(Tileset* tileset)
   else {
     // Add the empty tile in the index = 0
     tileset->insert(0, tileset->makeEmptyTile());
+
     // The tile 1 will be displayed as tile 0 in the editor
     tileset->setBaseIndex(0);
   }
 }
+
 void fix_old_tilemap(Image* image,
                      const Tileset* tileset,
                      const tile_t tileIDMask,
                      const tile_t tileFlagsMask)
 {
   int delta = (tileset->baseIndex() == 0 ? 1 : 0);
+
   // Convert old empty tile (0xffffffff) to new empty tile (index 0 = notile)
   transform_image<TilemapTraits>(image, [tileIDMask, tileFlagsMask, delta](color_t c) -> color_t {
     color_t res = c;
@@ -44,6 +47,7 @@ void fix_old_tilemap(Image* image,
     return res;
   });
 }
+
 Mask make_aligned_mask(const Grid* grid, const Mask* mask)
 {
   // Fact: the newBounds will be always larger or equal than oldBounds
@@ -60,9 +64,11 @@ Mask make_aligned_mask(const Grid* grid, const Mask* mask)
     maskOutput.replace(newBounds);
     return maskOutput;
   }
+
   newBitmap.reset(Image::create(IMAGE_BITMAP, newBounds.w, newBounds.h));
   maskOutput.freeze();
   maskOutput.reserve(newBounds);
+
   const LockImageBits<BitmapTraits> bits(mask->bitmap());
   typename LockImageBits<BitmapTraits>::const_iterator it = bits.begin();
   // We must travel thought the old bitmap and masking the new bitmap
@@ -89,4 +95,5 @@ Mask make_aligned_mask(const Grid* grid, const Mask* mask)
   maskOutput.unfreeze();
   return maskOutput;
 }
+
 } // namespace doc

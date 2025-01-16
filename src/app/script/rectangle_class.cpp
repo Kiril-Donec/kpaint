@@ -1,25 +1,25 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2017-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/script/engine.h"
- include "app/script/luacpp.h"
- include "fmt/format.h"
- include "gfx/point.h"
- include "gfx/rect.h"
- include "gfx/size.h"
+#endif
+
+#include "app/script/engine.h"
+#include "app/script/luacpp.h"
+#include "fmt/format.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
+
 namespace app { namespace script {
+
 namespace {
+
 gfx::Rect Rectangle_new(lua_State* L, int index)
 {
   // Copy other rectangle
@@ -76,16 +76,19 @@ gfx::Rect Rectangle_new(lua_State* L, int index)
   else
     return gfx::Rect();
 }
+
 int Rectangle_new(lua_State* L)
 {
   push_obj(L, Rectangle_new(L, 1));
   return 1;
 }
+
 int Rectangle_gc(lua_State* L)
 {
   get_obj<gfx::Rect>(L, 1)->~RectT();
   return 0;
 }
+
 int Rectangle_eq(lua_State* L)
 {
   const auto a = get_obj<gfx::Rect>(L, 1);
@@ -93,6 +96,7 @@ int Rectangle_eq(lua_State* L)
   lua_pushboolean(L, *a == *b);
   return 1;
 }
+
 int Rectangle_tostring(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
@@ -102,6 +106,7 @@ int Rectangle_tostring(lua_State* L)
       .c_str());
   return 1;
 }
+
 int Rectangle_contains(lua_State* L)
 {
   const auto a = get_obj<gfx::Rect>(L, 1);
@@ -113,6 +118,7 @@ int Rectangle_contains(lua_State* L)
     lua_pushboolean(L, false);
   return 1;
 }
+
 int Rectangle_intersects(lua_State* L)
 {
   const auto a = get_obj<gfx::Rect>(L, 1);
@@ -120,6 +126,7 @@ int Rectangle_intersects(lua_State* L)
   lua_pushboolean(L, a->intersects(*b));
   return 1;
 }
+
 int Rectangle_union(lua_State* L)
 {
   const auto a = get_obj<gfx::Rect>(L, 1);
@@ -127,6 +134,7 @@ int Rectangle_union(lua_State* L)
   push_obj(L, a->createUnion(*b));
   return 1;
 }
+
 int Rectangle_intersect(lua_State* L)
 {
   const auto a = get_obj<gfx::Rect>(L, 1);
@@ -134,66 +142,77 @@ int Rectangle_intersect(lua_State* L)
   push_obj(L, a->createIntersection(*b));
   return 1;
 }
+
 int Rectangle_get_x(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
   lua_pushinteger(L, rc->x);
   return 1;
 }
+
 int Rectangle_get_y(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
   lua_pushinteger(L, rc->y);
   return 1;
 }
+
 int Rectangle_get_width(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
   lua_pushinteger(L, rc->w);
   return 1;
 }
+
 int Rectangle_get_height(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
   lua_pushinteger(L, rc->h);
   return 1;
 }
+
 int Rectangle_get_origin(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
   push_obj(L, rc->origin());
   return 1;
 }
+
 int Rectangle_get_size(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
   push_obj(L, rc->size());
   return 1;
 }
+
 int Rectangle_set_x(lua_State* L)
 {
   auto rc = get_obj<gfx::Rect>(L, 1);
   rc->x = lua_tointeger(L, 2);
   return 0;
 }
+
 int Rectangle_set_y(lua_State* L)
 {
   auto rc = get_obj<gfx::Rect>(L, 1);
   rc->y = lua_tointeger(L, 2);
   return 0;
 }
+
 int Rectangle_set_width(lua_State* L)
 {
   auto rc = get_obj<gfx::Rect>(L, 1);
   rc->w = lua_tointeger(L, 2);
   return 0;
 }
+
 int Rectangle_set_height(lua_State* L)
 {
   auto rc = get_obj<gfx::Rect>(L, 1);
   rc->h = lua_tointeger(L, 2);
   return 0;
 }
+
 int Rectangle_set_origin(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
@@ -201,6 +220,7 @@ int Rectangle_set_origin(lua_State* L)
   rc->setOrigin(pt);
   return 0;
 }
+
 int Rectangle_set_size(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
@@ -208,12 +228,14 @@ int Rectangle_set_size(lua_State* L)
   rc->setSize(sz);
   return 0;
 }
+
 int Rectangle_get_isEmpty(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
   lua_pushboolean(L, rc->isEmpty());
   return 1;
 }
+
 const luaL_Reg Rectangle_methods[] = {
   { "__gc",       Rectangle_gc         },
   { "__eq",       Rectangle_eq         },
@@ -226,6 +248,7 @@ const luaL_Reg Rectangle_methods[] = {
   { "intersect",  Rectangle_intersect  },
   { nullptr,      nullptr              }
 };
+
 const Property Rectangle_properties[] = {
   { "x",       Rectangle_get_x,       Rectangle_set_x      },
   { "y",       Rectangle_get_y,       Rectangle_set_y      },
@@ -238,8 +261,11 @@ const Property Rectangle_properties[] = {
   { "isEmpty", Rectangle_get_isEmpty, nullptr              },
   { nullptr,   nullptr,               nullptr              }
 };
+
 } // anonymous namespace
+
 DEF_MTNAME(gfx::Rect);
+
 void register_rect_class(lua_State* L)
 {
   using Rectangle = gfx::Rect;
@@ -247,8 +273,10 @@ void register_rect_class(lua_State* L)
   REG_CLASS_NEW(L, Rectangle);
   REG_CLASS_PROPERTIES(L, Rectangle);
 }
+
 gfx::Rect convert_args_into_rect(lua_State* L, int index)
 {
   return Rectangle_new(L, index);
 }
+
 }} // namespace app::script

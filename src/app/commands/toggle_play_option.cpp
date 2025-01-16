@@ -1,22 +1,20 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/commands/command.h"
- include "app/pref/preferences.h"
- include "app/ui/doc_view.h"
- include "app/ui_context.h"
+#endif
+
+#include "app/commands/command.h"
+#include "app/pref/preferences.h"
+#include "app/ui/doc_view.h"
+#include "app/ui_context.h"
+
 namespace app {
+
 class TogglePlayOptionCommand : public Command {
 public:
   TogglePlayOptionCommand(const char* id, Option<bool>* general, Option<bool>* preview);
@@ -29,12 +27,15 @@ protected:
     else
       return nullptr;
   }
+
   bool onEnabled(Context* ctx) override;
   bool onChecked(Context* ctx) override;
   void onExecute(Context* ctx) override;
+
   Option<bool>* m_general;
   Option<bool>* m_preview;
 };
+
 TogglePlayOptionCommand::TogglePlayOptionCommand(const char* id,
                                                  Option<bool>* general,
                                                  Option<bool>* preview)
@@ -44,6 +45,7 @@ TogglePlayOptionCommand::TogglePlayOptionCommand(const char* id,
 {
   ASSERT(m_general);
 }
+
 bool TogglePlayOptionCommand::onEnabled(Context* ctx)
 {
   if (auto docView = this->docView(ctx))
@@ -51,6 +53,7 @@ bool TogglePlayOptionCommand::onEnabled(Context* ctx)
   else
     return false;
 }
+
 bool TogglePlayOptionCommand::onChecked(Context* ctx)
 {
   if (auto docView = this->docView(ctx))
@@ -58,6 +61,7 @@ bool TogglePlayOptionCommand::onChecked(Context* ctx)
   else
     return false;
 }
+
 void TogglePlayOptionCommand::onExecute(Context* ctx)
 {
   if (auto docView = this->docView(ctx)) {
@@ -70,6 +74,7 @@ void TogglePlayOptionCommand::onExecute(Context* ctx)
       (*m_general)(!(*m_general)());
   }
 }
+
 Command* CommandFactory::createTogglePlayOnceCommand()
 {
   auto& pref = Preferences::instance();
@@ -77,6 +82,7 @@ Command* CommandFactory::createTogglePlayOnceCommand()
                                      &pref.editor.playOnce,
                                      &pref.preview.playOnce);
 }
+
 Command* CommandFactory::createTogglePlayAllCommand()
 {
   auto& pref = Preferences::instance();
@@ -84,6 +90,7 @@ Command* CommandFactory::createTogglePlayAllCommand()
                                      &pref.editor.playAll,
                                      &pref.preview.playAll);
 }
+
 Command* CommandFactory::createTogglePlaySubtagsCommand()
 {
   auto& pref = Preferences::instance();
@@ -91,6 +98,7 @@ Command* CommandFactory::createTogglePlaySubtagsCommand()
                                      &pref.editor.playSubtags,
                                      &pref.preview.playSubtags);
 }
+
 Command* CommandFactory::createToggleRewindOnStopCommand()
 {
   auto& pref = Preferences::instance();
@@ -98,4 +106,5 @@ Command* CommandFactory::createToggleRewindOnStopCommand()
                                      &pref.general.rewindOnStop,
                                      nullptr); // No option for preview
 }
+
 } // namespace app

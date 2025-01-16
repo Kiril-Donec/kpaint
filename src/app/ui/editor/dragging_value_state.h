@@ -1,27 +1,26 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2022  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_EDITOR_DRAGGING_VALUE_STATE_H_INCLUDED
+#define APP_UI_EDITOR_DRAGGING_VALUE_STATE_H_INCLUDED
+#pragma once
 
+#include "app/ui/editor/state_with_wheel_behavior.h"
+#include "app/ui/key.h"
+#include "gfx/point.h"
+#include "obs/connection.h"
+#include "render/zoom.h"
 
-
- ifndef APP_UI_EDITOR_DRAGGING_VALUE_STATE_H_INCLUDED
- define APP_UI_EDITOR_DRAGGING_VALUE_STATE_H_INCLUDED
- pragma once
- include "app/ui/editor/state_with_wheel_behavior.h"
- include "app/ui/key.h"
- include "gfx/point.h"
- include "obs/connection.h"
- include "render/zoom.h"
 namespace app {
 class CommandExecutionEvent;
+
 class DraggingValueState : public StateWithWheelBehavior {
 public:
   DraggingValueState(Editor* editor, const Keys& keys);
+
   bool isTemporalState() const override { return true; }
   void onBeforePopState(Editor* editor) override;
   bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
@@ -31,6 +30,7 @@ public:
   bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
   bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
   bool onUpdateStatusBar(Editor* editor) override;
+
   bool requireBrushPreview() override { return true; }
 
 private:
@@ -51,13 +51,16 @@ private:
   int initialLayerOpacity(Editor* editor) const override { return m_initialLayerOpacity; }
   tools::Tool* initialTool() const override { return m_initialTool; }
   void changeFgColor(Color c) override;
+
   tools::Tool* getInitialToolInActiveGroup() override;
   void onToolChange(tools::Tool* tool) override;
   void onToolGroupChange(Editor* editor, tools::ToolGroup* group) override;
+
   Editor* m_editor;
   Keys m_keys;
   gfx::Point m_initialPos;
   gfx::Point m_initialPosSameGroup;
+
   Color m_initialFgColor;
   Color m_initialBgColor;
   int m_initialFgTileIndex;
@@ -73,12 +76,16 @@ private:
   int m_initialCelOpacity;
   int m_initialLayerOpacity;
   tools::Tool* m_initialTool;
+
   // Used to allow multiple modifications to the same initial FG
   // color (m_initialFgColor), e.g. when multiples Key will change
   // different elements of the color (e.g. Value and Saturation) at
   // the same time with different DragVectors/axes.
   Color m_fgColor;
+
   obs::scoped_connection m_beforeCmdConn;
 };
+
 } // namespace app
-// endif // APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED
+
+#endif // APP_UI_EDITOR_ZOOMING_STATE_H_INCLUDED

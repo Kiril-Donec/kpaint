@@ -1,41 +1,43 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/cmd/convert_color_profile.h"
- include "app/doc.h"
- include "app/file/file.h"
- include "app/file_system.h"
- include "app/thumbnail_generator.h"
- include "app/util/conversion_to_surface.h"
- include "base/thread.h"
- include "doc/algorithm/rotate.h"
- include "doc/image.h"
- include "doc/palette.h"
- include "doc/primitives.h"
- include "doc/sprite.h"
- include "os/system.h"
- include "render/projection.h"
- include "render/render.h"
- include "ui/system.h"
- include <algorithm>
- include <atomic>
- include <memory>
- include <thread>
- define MAX_THUMBNAIL_SIZE 128
- define THUMB_TRACE(...)
+#endif
+
+#include "app/thumbnail_generator.h"
+
+#include "app/app.h"
+#include "app/cmd/convert_color_profile.h"
+#include "app/doc.h"
+#include "app/file/file.h"
+#include "app/file_system.h"
+#include "app/util/conversion_to_surface.h"
+#include "base/thread.h"
+#include "doc/algorithm/rotate.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "os/system.h"
+#include "render/projection.h"
+#include "render/render.h"
+#include "ui/system.h"
+
+#include <algorithm>
+#include <atomic>
+#include <memory>
+#include <thread>
+
+#define MAX_THUMBNAIL_SIZE 128
+#define THUMB_TRACE(...)
+
 namespace app {
+
 class ThumbnailGenerator::Worker {
 public:
   Worker(base::concurrent_queue<ThumbnailGenerator::Item>& queue)
@@ -45,6 +47,7 @@ public:
     , m_thread([this] { loadBgThread(); })
   {
   }
+
   ~Worker()
   {
     {
@@ -54,13 +57,16 @@ public:
     }
     m_thread.join();
   }
+
   void stop() const
   {
     const std::lock_guard lock(m_mutex);
     if (m_fop)
       m_fop->stop();
   }
+
   bool isDone() const { return m_isDone; }
+
   void updateProgress()
   {
     const std::lock_guard lock(m_mutex);
@@ -81,19 +87,25 @@ private:
         m_fop = m_item.fop;
         ASSERT(m_fop);
       }
+
       THUMB_TRACE("FOP loading thumbnail: %s\n", m_item.fileitem->fileName().c_str());
+
       // Load the file
       m_fop->operate(nullptr);
+
       // Don't call post-load because postLoad() needs user interaction.
       // m_fop->postLoad();
+
       // Convert the loaded document into the os::Surface.
       const Sprite* sprite =
         (m_fop->document() && m_fop->document()->sprite() ? m_fop->document()->sprite() : nullptr);
+
       std::unique_ptr<Image> thumbnailImage;
       std::unique_ptr<Palette> palette;
       if (!m_fop->isStop() && sprite) {
         // The palette to convert the Image
         palette.reset(new Palette(*sprite->palette(frame_t(0))));
+
         // Special case for indexed images:
         // If the sprite is transparent -> set the transparent color index alpha = 0
         if (sprite->colorMode() == ColorMode::INDEXED && !sprite->backgroundLayer()) {
@@ -101,8 +113,10 @@ private:
           if (i >= 0 && i < int(palette->size()))
             palette->setEntry(i, doc::rgba(0, 0, 0, 0));
         }
+
         const int w = sprite->width() * sprite->pixelRatio().w;
         const int h = sprite->height() * sprite->pixelRatio().h;
+
         // Calculate the thumbnail size
         int thumb_w = MAX_THUMBNAIL_SIZE * w / std::max(w, h);
         int thumb_h = MAX_THUMBNAIL_SIZE * h / std::max(w, h);
@@ -112,13 +126,16 @@ private:
         }
         thumb_w = std::clamp(thumb_w, 1, MAX_THUMBNAIL_SIZE);
         thumb_h = std::clamp(thumb_h, 1, MAX_THUMBNAIL_SIZE);
+
         // Stretch the 'image'
         thumbnailImage.reset(Image::create(sprite->pixelFormat(), thumb_w, thumb_h));
+
         render::Projection proj(sprite->pixelRatio(), render::Zoom(thumb_w, w));
         render::Render render;
         render.setBgOptions(render::BgOptions::MakeTransparent());
         render.setProjection(proj);
         render.renderSprite(thumbnailImage.get(), sprite, frame_t(0), gfx::Clip(0, 0, 0, 0, w, h));
+
         // Convert the image to sRGB color space
         auto cs = sprite->colorSpace();
         if (m_fop->preserveColorProfile() && cs && !cs->nearlyEqual(*gfx::ColorSpace::MakeSRGB())) {
@@ -128,12 +145,15 @@ private:
                                           gfx::ColorSpace::MakeSRGB());
         }
       }
+
       // Close file
       delete m_fop->releaseDocument();
+
       // Set the thumbnail of the file-item.
       if (thumbnailImage) {
         os::SurfaceRef thumbnail = os::instance()->makeRgbaSurface(thumbnailImage->width(),
                                                                    thumbnailImage->height());
+
         convert_image_to_surface(thumbnailImage.get(),
                                  palette.get(),
                                  thumbnail.get(),
@@ -143,11 +163,13 @@ private:
                                  0,
                                  thumbnailImage->width(),
                                  thumbnailImage->height());
+
         {
           const std::lock_guard lock(m_mutex);
           m_item.fileitem->setThumbnail(thumbnail);
         }
       }
+
       THUMB_TRACE("FOP done with thumbnail: %s %s\n",
                   m_item.fileitem->fileName().c_str(),
                   (m_fop->isStop() ? " (stop)" : ""));
@@ -155,6 +177,7 @@ private:
     catch (const std::exception& e) {
       m_fop->setError("Error loading file:\n%s", e.what());
     }
+
     if (!m_fop->isStop()) {
       // Set a nullptr thumbnail if we failed loading the given file,
       // in this way we're not going to re-try generating this same
@@ -162,12 +185,14 @@ private:
       if (m_item.fileitem->needThumbnail())
         m_item.fileitem->setThumbnail(nullptr);
     }
+
     // Reset the m_item (first the fileitem so this worker is not
     // associated to this fileitem anymore, and then the FileOp).
     {
       const std::lock_guard lock(m_mutex);
       m_item.fileitem = nullptr;
     }
+
     m_fop->done();
     {
       const std::lock_guard lock(m_mutex);
@@ -177,9 +202,11 @@ private:
     }
     ASSERT(!m_fop);
   }
+
   void loadBgThread()
   {
     base::this_thread::set_name("thumbnails");
+
     while (!m_queue.empty()) {
       bool success = true;
       while (success) {
@@ -194,6 +221,7 @@ private:
     }
     m_isDone = true;
   }
+
   base::concurrent_queue<Item>& m_queue;
   app::ThumbnailGenerator::Item m_item;
   FileOp* m_fop;
@@ -201,6 +229,7 @@ private:
   std::atomic<bool> m_isDone;
   std::thread m_thread;
 };
+
 ThumbnailGenerator* ThumbnailGenerator::instance()
 {
   static std::unique_ptr<ThumbnailGenerator> singleton;
@@ -213,6 +242,7 @@ ThumbnailGenerator* ThumbnailGenerator::instance()
   }
   return singleton.get();
 }
+
 ThumbnailGenerator::ThumbnailGenerator()
 {
   int n = std::thread::hardware_concurrency() - 1;
@@ -220,10 +250,12 @@ ThumbnailGenerator::ThumbnailGenerator()
     n = 1;
   m_maxWorkers = n;
 }
+
 bool ThumbnailGenerator::checkWorkers()
 {
   const std::lock_guard lock(m_workersAccess);
   bool doingWork = (!m_workers.empty());
+
   for (WorkerList::iterator it = m_workers.begin(); it != m_workers.end();) {
     (*it)->updateProgress();
     if ((*it)->isDone()) {
@@ -233,16 +265,20 @@ bool ThumbnailGenerator::checkWorkers()
       ++it;
     }
   }
+
   return doingWork;
 }
+
 void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
 {
   if (!fileitem->needThumbnail())
     return;
+
   if (fileitem->getThumbnailProgress() > 0.0) {
     if (fileitem->getThumbnailProgress() == 0.00001) {
       m_remainingItems.prioritize(
         [fileitem](const Item& item) { return (item.fileitem == fileitem); });
+
       // If there is no more workers running, we have to start a new
       // one to process the m_remainingItems queue. How is it possible
       // that a IFileItem has a thumbnail progress == 0.00001 but
@@ -259,9 +295,12 @@ void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
     }
     return;
   }
+
   // Set a starting progress so we don't enqueue the same item two times.
   fileitem->setThumbnailProgress(0.00001);
+
   THUMB_TRACE("Queue FOP thumbnail for %s\n", fileitem->fileName().c_str());
+
   std::unique_ptr<FileOp> fop(
     FileOp::createLoadDocumentOperation(nullptr,
                                         fileitem->fileName().c_str(),
@@ -272,10 +311,13 @@ void ThumbnailGenerator::generateThumbnail(IFileItem* fileitem)
     fileitem->setThumbnail(nullptr);
     return;
   }
+
   m_remainingItems.push(Item(fileitem, fop.get()));
   fop.release();
+
   startWorker();
 }
+
 void ThumbnailGenerator::stopAllWorkers()
 {
   Item item;
@@ -290,10 +332,12 @@ void ThumbnailGenerator::stopAllWorkers()
       delete item.fop;
     }
   }
+
   const std::lock_guard lock(m_workersAccess);
   for (const auto& worker : m_workers)
     worker->stop();
 }
+
 void ThumbnailGenerator::startWorker()
 {
   const std::lock_guard lock(m_workersAccess);
@@ -301,4 +345,5 @@ void ThumbnailGenerator::startWorker()
     m_workers.push_back(std::make_unique<Worker>(m_remainingItems));
   }
 }
+
 } // namespace app

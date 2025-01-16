@@ -1,30 +1,33 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2017  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef UI_STYLE_H_INCLUDED
- define UI_STYLE_H_INCLUDED
- pragma once
- include "gfx/border.h"
- include "gfx/color.h"
- include "gfx/point.h"
- include "gfx/rect.h"
- include "gfx/size.h"
- include "os/font.h"
- include "os/surface.h"
- include "ui/base.h"
- include <string>
- include <vector>
+#ifndef UI_STYLE_H_INCLUDED
+#define UI_STYLE_H_INCLUDED
+#pragma once
+
+#include "gfx/border.h"
+#include "gfx/color.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
+#include "os/font.h"
+#include "os/surface.h"
+#include "ui/base.h"
+
+#include <string>
+#include <vector>
+
 namespace os {
 class Font;
 class Surface;
 } // namespace os
+
 namespace ui {
+
 class Style {
 public:
   class Layer {
@@ -38,12 +41,15 @@ public:
       kText,
       kNewLayer,
     };
+
     // Flags (in which state the widget must be to show this layer)
     enum { kMouse = 1, kFocus = 2, kSelected = 4, kDisabled = 8, kCapture = 16 };
+
     class IconSurfaceProvider {
     public:
       virtual os::Surface* iconSurface() const = 0;
     };
+
     Layer()
       : m_type(Type::kNone)
       , m_flags(0)
@@ -54,15 +60,18 @@ public:
       , m_offset(0, 0)
     {
     }
+
     Type type() const { return m_type; }
     int flags() const { return m_flags; }
     int align() const { return m_align; }
+
     gfx::Color color() const { return m_color; }
     os::Surface* icon() const { return m_icon.get(); }
     os::Surface* spriteSheet() const { return m_spriteSheet.get(); }
     const gfx::Rect& spriteBounds() const { return m_spriteBounds; }
     const gfx::Rect& slicesBounds() const { return m_slicesBounds; }
     const gfx::Point& offset() const { return m_offset; }
+
     void setType(const Type type) { m_type = type; }
     void setFlags(const int flags) { m_flags = flags; }
     void setAlign(const int align) { m_align = align; }
@@ -84,11 +93,16 @@ public:
     gfx::Rect m_slicesBounds;
     gfx::Point m_offset;
   };
+
   typedef std::vector<Layer> Layers;
+
   static gfx::Border UndefinedBorder();
+
   static gfx::Size MinSize();
   static gfx::Size MaxSize();
+
   Style(const Style* base);
+
   const std::string& id() const { return m_id; }
   const gfx::Border& margin() const { return m_margin; }
   const gfx::Border& border() const { return m_border; }
@@ -100,6 +114,7 @@ public:
   const bool mnemonics() const { return m_mnemonics; }
   const Layers& layers() const { return m_layers; }
   Layers& layers() { return m_layers; }
+
   void setId(const std::string& id) { m_id = id; }
   void setMargin(const gfx::Border& value) { m_margin = value; }
   void setBorder(const gfx::Border& value) { m_border = value; }
@@ -127,5 +142,7 @@ private:
   os::FontRef m_font;
   bool m_mnemonics;
 };
+
 } // namespace ui
- endif
+
+#endif

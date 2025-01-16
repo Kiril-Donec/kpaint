@@ -1,19 +1,20 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2024  Igara Studio S.A.
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/blend_image.h"
- include "doc/blend_internals.h"
- include "doc/image_impl.h"
+#endif
+
+#include "doc/blend_image.h"
+
+#include "doc/blend_internals.h"
+#include "doc/image_impl.h"
+
 namespace doc {
+
 template<typename DstTraits, typename SrcTraits>
 void blend_image_templ(Image* dst,
                        const Image* src,
@@ -37,6 +38,7 @@ void blend_image_templ(Image* dst,
   for (; dstIt < dstEnd; ++dstIt, ++srcIt)
     *dstIt = blender(*dstIt, *srcIt, opacity);
 }
+
 void blend_image(Image* dst,
                  const Image* src,
                  gfx::Clip area,
@@ -46,6 +48,7 @@ void blend_image(Image* dst,
 {
   if (!area.clip(dst->width(), dst->height(), src->width(), src->height()))
     return;
+
   switch (dst->pixelFormat()) {
     case IMAGE_RGB:
       switch (src->pixelFormat()) {
@@ -67,6 +70,7 @@ void blend_image(Image* dst,
                                                              blendMode);
       }
       break;
+
     case IMAGE_GRAYSCALE:
       switch (src->pixelFormat()) {
         case IMAGE_RGB:
@@ -92,6 +96,7 @@ void blend_image(Image* dst,
                                                                    blendMode);
       }
       break;
+
     case IMAGE_INDEXED:
       switch (src->pixelFormat()) {
         case IMAGE_RGB:
@@ -117,7 +122,9 @@ void blend_image(Image* dst,
                                                                  blendMode);
       }
       break;
+
     case IMAGE_TILEMAP: return dst->copy(src, area);
   }
 }
+
 } // namespace doc

@@ -1,30 +1,30 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_DITHERING_SELECTOR_H_INCLUDED
+#define APP_UI_DITHERING_SELECTOR_H_INCLUDED
+#pragma once
 
+#include "obs/connection.h"
+#include "render/dithering_algorithm.h"
+#include "render/ordered_dither.h"
+#include "ui/box.h"
+#include "ui/combobox.h"
 
-
- ifndef APP_UI_DITHERING_SELECTOR_H_INCLUDED
- define APP_UI_DITHERING_SELECTOR_H_INCLUDED
- pragma once
- include "obs/connection.h"
- include "render/dithering_algorithm.h"
- include "render/ordered_dither.h"
- include "ui/box.h"
- include "ui/combobox.h"
 namespace app {
+
 class DitheringSelector : public ui::ComboBox {
 public:
   enum Type {
     SelectBoth,
     SelectMatrix,
   };
+
   DitheringSelector(Type type);
+
   render::DitheringAlgorithm ditheringAlgorithm();
   render::DitheringMatrix ditheringMatrix();
   void setSelectedItemByName(const std::string& name);
@@ -35,8 +35,11 @@ protected:
 private:
   void regenerate(int selectedItemIndex = 0);
   gfx::Size calcItemSizeHint(int index);
+
   Type m_type;
   obs::scoped_connection m_extChanges;
 };
+
 } // namespace app
- endif
+
+#endif

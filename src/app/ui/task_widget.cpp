@@ -1,26 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/i18n/strings.h"
- include "app/modules/gui.h"
- include "app/ui/skin/skin_theme.h"
- include "app/ui/task_widget.h"
- include "ui/scale.h"
- include <limits>
+#endif
+
+#include "app/ui/task_widget.h"
+
+#include "app/i18n/strings.h"
+#include "app/modules/gui.h"
+#include "app/ui/skin/skin_theme.h"
+#include "ui/scale.h"
+
+#include <limits>
+
 namespace app {
+
 using namespace ui;
 using namespace app::skin;
+
 TaskWidget::TaskWidget(const Type type, base::task::func_t&& func)
   : Box(HORIZONTAL | HOMOGENEOUS)
   , m_monitorTimer(25)
@@ -29,16 +30,19 @@ TaskWidget::TaskWidget(const Type type, base::task::func_t&& func)
 {
   if (int(type) & int(kCanCancel)) {
     addChild(&m_cancelButton);
+
     m_cancelButton.Click.connect([this]() {
       m_task.cancel();
       m_cancelButton.setEnabled(false);
       m_progressBar.setEnabled(false);
     });
   }
+
   if (int(type) & int(kWithProgress)) {
     m_progressBar.setReadOnly(true);
     addChild(&m_progressBar);
   }
+
   m_monitorTimer.Tick.connect([this] {
     if (m_task.completed()) {
       m_monitorTimer.stop();
@@ -53,6 +57,7 @@ TaskWidget::TaskWidget(const Type type, base::task::func_t&& func)
     }
   });
   m_monitorTimer.start();
+
   InitTheme.connect([this] {
     auto theme = SkinTheme::get(this);
     setTransparent(true);
@@ -67,10 +72,13 @@ TaskWidget::TaskWidget(const Type type, base::task::func_t&& func)
     setMaxSize(gfx::Size(std::numeric_limits<int>::max(), textHeight()));
   });
   initTheme();
+
   m_task.run(std::move(func));
 }
+
 void TaskWidget::onComplete()
 {
   // Do nothing
 }
+
 } // namespace app

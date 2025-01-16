@@ -1,27 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2022-2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_SCRIPT_GRAPHICS_CONTEXT_H_INCLUDED
+#define APP_SCRIPT_GRAPHICS_CONTEXT_H_INCLUDED
+#pragma once
 
+#include "doc/palette.h"
+#include "gfx/path.h"
+#include "os/font.h"
+#include "os/paint.h"
+#include "os/surface.h"
 
+#include <stack>
 
- ifndef APP_SCRIPT_GRAPHICS_CONTEXT_H_INCLUDED
- define APP_SCRIPT_GRAPHICS_CONTEXT_H_INCLUDED
- pragma once
- include "doc/palette.h"
- include "gfx/path.h"
- include "os/font.h"
- include "os/paint.h"
- include "os/surface.h"
- include <stack>
 namespace doc {
 class Image;
 }
+
 namespace app { namespace script {
+
 class GraphicsContext {
 private:
   struct State {
@@ -43,17 +43,22 @@ public:
     std::swap(m_path, gc.m_path);
     m_uiscale = gc.m_uiscale;
   }
+
   os::FontRef font() const { return m_font; }
   void font(const os::FontRef& font) { m_font = font; }
+
   doc::Palette* palette() const { return m_palette; }
   void palette(doc::Palette* palette) { m_palette = palette; }
+
   int width() const { return m_surface->width(); }
   int height() const { return m_surface->height(); }
+
   void save()
   {
     m_saved.push(State{ m_paint, m_palette });
     m_surface->save();
   }
+
   void restore()
   {
     if (!m_saved.empty()) {
@@ -64,37 +69,48 @@ public:
       m_surface->restore();
     }
   }
+
   bool antialias() const { return m_paint.antialias(); }
   void antialias(bool value) { m_paint.antialias(value); }
+
   gfx::Color color() const { return m_paint.color(); }
   void color(gfx::Color color) { m_paint.color(color); }
+
   float strokeWidth() const { return m_paint.strokeWidth(); }
   void strokeWidth(float value) { m_paint.strokeWidth(value); }
- if LAF_SKIA
+
+#if LAF_SKIA
   int opacity() const { return m_paint.skPaint().getAlpha(); }
   void opacity(int value) { m_paint.skPaint().setAlpha(value); }
- else
+#else
   int opacity() const { return 255; }
   void opacity(int) {}
- endif
+#endif
+
   os::BlendMode blendMode() const { return m_paint.blendMode(); }
   void blendMode(const os::BlendMode bm) { m_paint.blendMode(bm); }
+
   void strokeRect(const gfx::Rect& rc)
   {
     m_paint.style(os::Paint::Stroke);
     m_surface->drawRect(rc, m_paint);
   }
+
   void fillRect(const gfx::Rect& rc)
   {
     m_paint.style(os::Paint::Fill);
     m_surface->drawRect(rc, m_paint);
   }
+
   void fillText(const std::string& text, int x, int y);
   gfx::Size measureText(const std::string& text) const;
+
   void drawImage(const doc::Image* img, int x, int y);
   void drawImage(const doc::Image* img, const gfx::Rect& srcRc, const gfx::Rect& dstRc);
+
   void drawThemeImage(const std::string& partId, const gfx::Point& pt);
   void drawThemeRect(const std::string& partId, const gfx::Rect& rc);
+
   // Path
   void beginPath() { m_path.reset(); }
   void closePath() { m_path.close(); }
@@ -109,7 +125,9 @@ public:
   void roundedRect(const gfx::Rect& rc, float rx, float ry) { m_path.roundedRect(rc, rx, ry); }
   void stroke();
   void fill();
+
   void clip() { m_surface->clipPath(m_path); }
+
   int uiscale() const { return m_uiscale; }
 
 private:
@@ -122,5 +140,7 @@ private:
   std::stack<State> m_saved;
   doc::Palette* m_palette = nullptr;
 };
+
 }} // namespace app::script
- endif
+
+#endif

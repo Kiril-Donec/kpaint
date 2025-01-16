@@ -1,25 +1,24 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2023-2024  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/commands/new_params.h"
- include "app/i18n/strings.h"
- include "app/ui/editor/editor.h"
- include "app/ui_context.h"
+#endif
+
+#include "app/commands/new_params.h"
+#include "app/i18n/strings.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui_context.h"
+
 namespace app {
+
 struct SetPlaybackSpeedParams : public NewParams {
   Param<double> multiplier{ this, 1.0, "multiplier" };
 };
+
 class SetPlaybackSpeedCommand : public CommandWithNewParams<SetPlaybackSpeedParams> {
 public:
   SetPlaybackSpeedCommand();
@@ -30,10 +29,12 @@ protected:
   std::string onGetFriendlyName() const override;
   bool isListed(const Params& params) const override { return !params.empty(); }
 };
+
 SetPlaybackSpeedCommand::SetPlaybackSpeedCommand()
   : CommandWithNewParams(CommandId::SetPlaybackSpeed(), CmdUIOnlyFlag)
 {
 }
+
 bool SetPlaybackSpeedCommand::onChecked(Context* ctx)
 {
   Editor* editor = nullptr;
@@ -44,6 +45,7 @@ bool SetPlaybackSpeedCommand::onChecked(Context* ctx)
   else
     return false;
 }
+
 void SetPlaybackSpeedCommand::onExecute(Context* ctx)
 {
   Editor* editor = nullptr;
@@ -52,12 +54,15 @@ void SetPlaybackSpeedCommand::onExecute(Context* ctx)
   if (editor)
     editor->setAnimationSpeedMultiplier(params().multiplier());
 }
+
 std::string SetPlaybackSpeedCommand::onGetFriendlyName() const
 {
   return Strings::commands_SetPlaybackSpeed(params().multiplier());
 }
+
 Command* CommandFactory::createSetPlaybackSpeedCommand()
 {
   return new SetPlaybackSpeedCommand;
 }
+
 } // namespace app

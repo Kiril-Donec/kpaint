@@ -1,36 +1,39 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_APP_H_INCLUDED
+#define APP_APP_H_INCLUDED
+#pragma once
 
+#include "app/app_brushes.h"
+#include "base/paths.h"
+#include "doc/pixel_format.h"
+#include "obs/signal.h"
 
+#include <memory>
+#include <string>
+#include <vector>
 
- ifndef APP_APP_H_INCLUDED
- define APP_APP_H_INCLUDED
- pragma once
- include "app/app_brushes.h"
- include "base/paths.h"
- include "doc/pixel_format.h"
- include "obs/signal.h"
- include <memory>
- include <string>
- include <vector>
 namespace doc {
 class Layer;
 }
+
 namespace ui {
 class UISystem;
 }
+
 namespace app {
- ifdef ENABLE_SCRIPTING
+
+#ifdef ENABLE_SCRIPTING
 namespace script {
 class Engine;
 }
- endif
+#endif
+
 class AppMod;
 class AppOptions;
 class BackupIndicator;
@@ -47,31 +50,41 @@ class Preferences;
 class RecentFiles;
 class Timeline;
 class Workspace;
+
 namespace crash {
 class DataRecovery;
 }
+
 namespace tools {
 class ActiveToolManager;
 class Tool;
 class ToolBox;
 } // namespace tools
+
 using namespace doc;
+
 class App {
 public:
   App(AppMod* mod = nullptr);
   ~App();
+
   static App* instance() { return m_instance; }
+
   Context* context();
-  // Returns true if KPaint is running with GUI available.
+
+  // Returns true if Aseprite is running with GUI available.
   bool isGui() const { return m_isGui; }
+
   // Returns true if the application is running in portable mode.
   bool isPortable();
-  // Runs the KPaint application. In GUI mode it's the top-level
+
+  // Runs the Aseprite application. In GUI mode it's the top-level
   // window, in console/scripting it just runs the specified
   // scripts.
   int initialize(const AppOptions& options);
   void run();
   void close();
+
   AppMod* mod() const { return m_mod; }
   tools::ToolBox* toolBox() const;
   tools::Tool* activeTool() const;
@@ -84,20 +97,26 @@ public:
   Preferences& preferences() const;
   Extensions& extensions() const;
   crash::DataRecovery* dataRecovery() const;
+
   AppBrushes& brushes()
   {
     ASSERT(m_brushes.get());
     return *m_brushes;
   }
+
   void showNotification(INotificationDelegate* del);
   void showBackupNotification(bool state);
   void updateDisplayTitleBar();
+
   InputChain& inputChain();
- ifdef ENABLE_SCRIPTING
+
+#ifdef ENABLE_SCRIPTING
   script::Engine* scriptEngine() { return m_engine.get(); }
- endif
+#endif
+
   const std::string& memoryDumpFilename() const { return m_memoryDumpFilename; }
   void memoryDumpFilename(const std::string& fn) { m_memoryDumpFilename = fn; }
+
   // App Signals
   obs::signal<void()> Exit;
   obs::signal<void()> ExitGui;
@@ -109,7 +128,9 @@ private:
   class CoreModules;
   class LoadLanguage;
   class Modules;
+
   static App* m_instance;
+
   AppMod* m_mod;
   std::unique_ptr<ui::UISystem> m_uiSystem;
   std::unique_ptr<CoreModules> m_coreModules;
@@ -117,24 +138,28 @@ private:
   std::unique_ptr<LegacyModules> m_legacy;
   bool m_isGui;
   bool m_isShell;
- ifdef ENABLE_STEAM
+#ifdef ENABLE_STEAM
   bool m_inAppSteam = true;
- endif
+#endif
   std::unique_ptr<MainWindow> m_mainWindow;
   base::paths m_files;
   std::unique_ptr<AppBrushes> m_brushes;
   std::unique_ptr<BackupIndicator> m_backupIndicator;
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
   std::unique_ptr<script::Engine> m_engine;
- endif
+#endif
+
   // Set the memory dump filename to show in the Preferences dialog
   // or the "send crash" dialog. It's set by the SendCrash class.
   std::string m_memoryDumpFilename;
 };
+
 void app_refresh_screen();
 void app_rebuild_documents_tabs();
 PixelFormat app_get_current_pixel_format();
 int app_get_color_to_clear_layer(doc::Layer* layer);
 void app_configure_drm();
+
 } // namespace app
- endif
+
+#endif

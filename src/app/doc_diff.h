@@ -1,19 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_DOC_DIFF_H_INCLUDED
+#define APP_DOC_DIFF_H_INCLUDED
+#pragma once
 
-
-
- ifndef APP_DOC_DIFF_H_INCLUDED
- define APP_DOC_DIFF_H_INCLUDED
- pragma once
 namespace app {
 class Doc;
+
 struct DocDiff {
   bool anything : 1;
   bool canvas : 1;
@@ -27,6 +25,7 @@ struct DocDiff {
   bool images : 1;
   bool colorProfiles : 1;
   bool gridBounds : 1;
+
   DocDiff()
     : anything(false)
     , canvas(false)
@@ -43,8 +42,11 @@ struct DocDiff {
   {
   }
 };
- Useful for testing purposes to detect if two documents (after
- some kind of operation) are equivalent.
+
+// Useful for testing purposes to detect if two documents (after
+// some kind of operation) are equivalent.
 DocDiff compare_docs(const Doc* a, const Doc* b);
+
 } // namespace app
- endif
+
+#endif

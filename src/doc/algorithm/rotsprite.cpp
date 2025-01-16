@@ -1,38 +1,43 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2020-2023  Igara Studio S.A.
+// Copyright (c) 2001-2018 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/algorithm/rotate.h"
- include "doc/image_impl.h"
- include "doc/primitives.h"
- include <algorithm>
- include <memory>
+#endif
+
+#include "doc/algorithm/rotate.h"
+#include "doc/image_impl.h"
+#include "doc/primitives.h"
+
+#include <algorithm>
+#include <memory>
+
 namespace doc { namespace algorithm {
- More information about EPX/Scale2x:
+
+// More information about EPX/Scale2x:
 // http://en.wikipedia.org/wiki/Pixel_art_scaling_algorithms#EPX.2FScale2.C3.97.2FAdvMAME2.C3.97
 // http://scale2x.sourceforge.net/algorithm.html
 // http://scale2x.sourceforge.net/scale2xandepx.html
 template<typename ImageTraits>
 static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h)
 {
-// if 0 // TODO complete this implementation that should be faster
+#if 0 // TODO complete this implementation that should be faster
       // than using a lot of get/put_pixel_fast calls.
   int dst_w = src_w*2;
   int dst_h = src_h*2;
+
   LockImageBits<ImageTraits> dstBits(dst, Image::WriteLock, gfx::Rect(0, 0, dst_w, dst_h));
   const LockImageBits<ImageTraits> srcBits(src);
+
   LockImageBits<ImageTraits>::iterator dstRow0_it = dstBits.begin();
   LockImageBits<ImageTraits>::iterator dstRow1_it = dstBits.begin();
   LockImageBits<ImageTraits>::iterator dstRow0_end = dstBits.end();
   LockImageBits<ImageTraits>::iterator dstRow1_end = dstBits.end();
+
   // Iterators:
   //   A
   // C P B
@@ -51,15 +56,18 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
   LockImageBits<ImageTraits>::const_iterator itP, itA, itB, itC, itD, savedD;
   LockImageBits<ImageTraits>::const_iterator srcEnd = srcBits.end();
   color_t P, A, B, C, D;
+
   // Adjust iterators
   itP = itA = itB = itC = itD = savedD = srcBits.begin();
   dstRow1_it += dst_w;
   itD += src->width();
+
   for (int y=0; y<src_h; ++y) {
     if (y == 1) itA = srcBits.begin();
     if (y == src_h-2) savedD = itD;
     if (y == src_h-1) itD = savedD;
     ++itB;
+
     for (int x=0; x<src_w; ++x) {
       ASSERT(itP != srcEnd);
       ASSERT(itA != srcEnd);
@@ -68,25 +76,30 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
       ASSERT(itD != srcEnd);
       ASSERT(dstRow0_it != dstRow0_end);
       ASSERT(dstRow1_it != dstRow1_end);
+
       P = *itP;
       A = *itA;                 // y-1
       B = *itB;                 // x+1
       C = *itC;                 // x-1
       D = *itD;                 // y+1
+
       *dstRow0_it = (C == A && C != D && A != B ? A: P);
       ++dstRow0_it;
       *dstRow0_it = (A == B && A != C && B != D ? B: P);
       ++dstRow0_it;
+
       *dstRow1_it = (D == C && D != B && C != A ? C: P);
       ++dstRow1_it;
       *dstRow1_it = (B == D && B != A && D != C ? D: P);
       ++dstRow1_it;
+
       ++itP;
       ++itA;
       if (x < src_w-2) ++itB;
       if (x > 0) ++itC;
       ++itD;
     }
+
     // Adjust iterators for the next two rows.
     ++itB;
     ++itC;
@@ -94,6 +107,7 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
     if (y < src_h-1)
       dstRow1_it += dst_w;
   }
+
   // ASSERT(itP == srcEnd);
   // ASSERT(itA == srcEnd);
   // ASSERT(itB == srcEnd);
@@ -101,15 +115,18 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
   // ASSERT(itD == srcEnd);
   ASSERT(dstRow0_it == dstRow0_end);
   ASSERT(dstRow1_it == dstRow1_end);
- else
+#else
+
   #define A c[0]
   #define B c[1]
   #define C c[2]
   #define D c[3]
   #define P c[4]
+
   LockImageBits<ImageTraits> dstBits(dst, gfx::Rect(0, 0, src_w * 2, src_h * 2));
   auto dstIt = dstBits.begin();
   auto dstIt2 = dstIt;
+
   color_t c[5];
   for (int y = 0; y < src_h; ++y) {
     dstIt2 += src_w * 2;
@@ -119,10 +136,12 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
       B = (x < src_w - 1 ? get_pixel_fast<ImageTraits>(src, x + 1, y) : P);
       C = (x > 0 ? get_pixel_fast<ImageTraits>(src, x - 1, y) : P);
       D = (y < src_h - 1 ? get_pixel_fast<ImageTraits>(src, x, y + 1) : P);
+
       *dstIt = (C == A && C != D && A != B ? A : P);
       ++dstIt;
       *dstIt = (A == B && A != C && B != D ? B : P);
       ++dstIt;
+
       *dstIt2 = (D == C && D != B && C != A ? C : P);
       ++dstIt2;
       *dstIt2 = (B == D && B != A && D != C ? D : P);
@@ -130,8 +149,10 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
     }
     dstIt += src_w * 2;
   }
- endif
+
+#endif
 }
+
 static void image_scale2x(Image* dst, const Image* src, int src_w, int src_h)
 {
   switch (src->pixelFormat()) {
@@ -141,6 +162,7 @@ static void image_scale2x(Image* dst, const Image* src, int src_w, int src_h)
     case IMAGE_BITMAP:    image_scale2x_tpl<BitmapTraits>(dst, src, src_w, src_h); break;
   }
 }
+
 void rotsprite_image(Image* bmp,
                      const Image* spr,
                      const Image* mask,
@@ -154,17 +176,21 @@ void rotsprite_image(Image* bmp,
                      int y4)
 {
   static ImageBufferPtr buf[3]; // TODO non-thread safe
+
   for (int i = 0; i < 3; ++i)
     if (!buf[i])
       buf[i].reset(new ImageBuffer(1));
+
   int xmin = std::min(x1, std::min(x2, std::min(x3, x4)));
   int xmax = std::max(x1, std::max(x2, std::max(x3, x4)));
   int ymin = std::min(y1, std::min(y2, std::min(y3, y4)));
   int ymax = std::max(y1, std::max(y2, std::max(y3, y4)));
   int rot_width = xmax - xmin;
   int rot_height = ymax - ymin;
+
   if (rot_width == 0 || rot_height == 0)
     return;
+
   int scale = 8;
   std::unique_ptr<Image> bmp_copy(
     Image::create(bmp->pixelFormat(), rot_width * scale, rot_height * scale, buf[0]));
@@ -173,17 +199,22 @@ void rotsprite_image(Image* bmp,
   std::unique_ptr<Image> spr_copy(
     Image::create(spr->pixelFormat(), spr->width() * scale, spr->height() * scale, buf[2]));
   std::unique_ptr<Image> msk_copy;
+
   color_t maskColor = spr->maskColor();
+
   bmp_copy->setMaskColor(maskColor);
   tmp_copy->setMaskColor(maskColor);
   spr_copy->setMaskColor(maskColor);
+
   spr_copy->clear(maskColor);
   spr_copy->copy(spr, gfx::Clip(spr->bounds()));
+
   for (int i = 0; i < 3; ++i) {
     // clear_image(tmp_copy, maskColor);
     image_scale2x(tmp_copy.get(), spr_copy.get(), spr->width() * (1 << i), spr->height() * (1 << i));
     spr_copy->copy(tmp_copy.get(), gfx::Clip(tmp_copy->bounds()));
   }
+
   if (mask) {
     // Same ImageBuffer than tmp_copy
     msk_copy.reset(
@@ -200,6 +231,7 @@ void rotsprite_image(Image* bmp,
                 mask->width(),
                 mask->height());
   }
+
   clear_image(bmp_copy.get(), maskColor);
   parallelogram(bmp_copy.get(),
                 spr_copy.get(),
@@ -212,6 +244,7 @@ void rotsprite_image(Image* bmp,
                 (y3 - ymin) * scale,
                 (x4 - xmin) * scale,
                 (y4 - ymin) * scale);
+
   scale_image(bmp,
               bmp_copy.get(),
               std::max(0, xmin),
@@ -223,4 +256,5 @@ void rotsprite_image(Image* bmp,
               bmp_copy->width(),
               bmp_copy->height());
 }
+
 }} // namespace doc::algorithm

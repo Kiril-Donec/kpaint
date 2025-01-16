@@ -1,24 +1,23 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/commands/commands.h"
- include "app/doc.h"
- include "app/ui_context.h"
- include <cstdio>
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/commands/commands.h"
+#include "app/doc.h"
+#include "app/ui_context.h"
+
+#include <cstdio>
+
 namespace app {
+
 class ReopenClosedFileCommand : public Command {
 public:
   ReopenClosedFileCommand();
@@ -27,10 +26,12 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
+
 ReopenClosedFileCommand::ReopenClosedFileCommand()
   : Command(CommandId::ReopenClosedFile(), CmdUIOnlyFlag)
 {
 }
+
 bool ReopenClosedFileCommand::onEnabled(Context* ctx)
 {
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
@@ -38,13 +39,16 @@ bool ReopenClosedFileCommand::onEnabled(Context* ctx)
   }
   return false;
 }
+
 void ReopenClosedFileCommand::onExecute(Context* ctx)
 {
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx))
     uiCtx->reopenLastClosedDoc();
 }
+
 Command* CommandFactory::createReopenClosedFileCommand()
 {
   return new ReopenClosedFileCommand;
 }
+
 } // namespace app

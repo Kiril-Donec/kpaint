@@ -1,35 +1,36 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/modules/gfx.h"
- include "app/modules/palettes.h"
- include "app/shade.h"
- include "app/ui/color_bar.h"
- include "app/ui/color_shades.h"
- include "app/ui/skin/skin_theme.h"
- include "doc/color_mode.h"
- include "doc/palette.h"
- include "doc/palette_picks.h"
- include "doc/remap.h"
- include "ui/graphics.h"
- include "ui/message.h"
- include "ui/paint_event.h"
- include "ui/size_hint_event.h"
- include "ui/system.h"
- include <algorithm>
+#endif
+
+#include "app/ui/color_shades.h"
+
+#include "app/app.h"
+#include "app/modules/gfx.h"
+#include "app/modules/palettes.h"
+#include "app/shade.h"
+#include "app/ui/color_bar.h"
+#include "app/ui/skin/skin_theme.h"
+#include "doc/color_mode.h"
+#include "doc/palette.h"
+#include "doc/palette_picks.h"
+#include "doc/remap.h"
+#include "ui/graphics.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/size_hint_event.h"
+#include "ui/system.h"
+
+#include <algorithm>
+
 namespace app {
+
 ColorShades::ColorShades(const Shade& colors, ClickType click)
   : Widget(ui::kGenericWidget)
   , m_click(click)
@@ -42,16 +43,19 @@ ColorShades::ColorShades(const Shade& colors, ClickType click)
   setText("No colors");
   initTheme();
 }
+
 void ColorShades::setMinColors(int minColors)
 {
   m_minColors = minColors;
   invalidate();
 }
+
 void ColorShades::reverseShadeColors()
 {
   std::reverse(m_shade.begin(), m_shade.end());
   invalidate();
 }
+
 doc::Remap* ColorShades::createShadeRemap(bool left)
 {
   // We need two or more colors to create a shading remap. In
@@ -60,9 +64,12 @@ doc::Remap* ColorShades::createShadeRemap(bool left)
   Shade colors = getShade();
   if (colors.size() <= 1)
     return nullptr;
+
   std::unique_ptr<doc::Remap> remap(new doc::Remap(get_current_palette()->size()));
+
   for (int i = 0; i < remap->size(); ++i)
     remap->map(i, i);
+
   if (left) {
     for (int i = 1; i < int(colors.size()); ++i) {
       int j = colors[i].getIndex();
@@ -79,22 +86,27 @@ doc::Remap* ColorShades::createShadeRemap(bool left)
   }
   return remap.release();
 }
+
 void ColorShades::setShade(const Shade& shade)
 {
   m_shade = shade;
   invalidate();
   parent()->parent()->layout();
 }
+
 void ColorShades::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
+
   auto theme = skin::SkinTheme::get(this);
+
   switch (m_click) {
     case ClickEntries:
     case DragAndDropEntries: setStyle(theme->styles.normalShadeView()); break;
     case ClickWholeShade:    setStyle(theme->styles.menuShadeView()); break;
   }
 }
+
 bool ColorShades::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
@@ -108,18 +120,22 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
         return true;
       }
       break;
+
     case ui::kMouseEnterMessage:
     case ui::kMouseLeaveMessage:
       if (!hasCapture())
         m_hotIndex = -1;
+
       invalidate();
       break;
+
     case ui::kMouseDownMessage:
       if (m_hotIndex >= 0 && m_hotIndex < int(m_shade.size())) {
         switch (m_click) {
           case ClickEntries: {
             ClickEvent ev(static_cast<ui::MouseMessage*>(msg)->button());
             Click(ev);
+
             m_hotIndex = -1;
             invalidate();
             break;
@@ -132,24 +148,33 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
         }
       }
       break;
+
     case ui::kMouseUpMessage: {
       auto button = static_cast<ui::MouseMessage*>(msg)->button();
+
       if (m_click == ClickWholeShade) {
         setSelected(true);
+
         ClickEvent ev(button);
         Click(ev);
+
         closeWindow();
       }
+
       if (m_dragIndex >= 0) {
         ASSERT(m_dragIndex < int(m_shade.size()));
+
         auto color = m_shade[m_dragIndex];
         m_shade.erase(m_shade.begin() + m_dragIndex);
         if (m_hotIndex >= 0)
           m_shade.insert(m_shade.begin() + m_hotIndex, color);
+
         m_dragIndex = -1;
         invalidate();
+
         ClickEvent ev(button);
         Click(ev);
+
         // Relayout the context bar if we have removed an entry.
         //
         // TODO it looks like this should be handled in some kind of
@@ -158,26 +183,32 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
           parent()->parent()->layout();
         }
       }
+
       if (hasCapture())
         releaseMouse();
       break;
     }
+
     case ui::kMouseMoveMessage: {
       ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
       gfx::Point mousePos = mouseMsg->position() - bounds().origin();
       gfx::Rect bounds = clientBounds();
       int hot = -1;
+
       bounds.shrink(3 * ui::guiscale());
+
       if (bounds.contains(mousePos)) {
         int count = std::max(1, size());
         int boxWidth = std::max(1, bounds.w / count);
         hot = (mousePos.x - bounds.x) / boxWidth;
         hot = std::clamp(hot, 0, count - 1);
       }
+
       if (m_hotIndex != hot) {
         m_hotIndex = hot;
         invalidate();
       }
+
       bool dropBefore = (hot >= 0 && mousePos.x < (bounds.x + m_boxSize * ui::guiscale() * hot) +
                                                     m_boxSize * ui::guiscale() / 2);
       if (m_dropBefore != dropBefore) {
@@ -189,6 +220,7 @@ bool ColorShades::onProcessMessage(ui::Message* msg)
   }
   return Widget::onProcessMessage(msg);
 }
+
 void ColorShades::onSizeHint(ui::SizeHintEvent& ev)
 {
   int size = this->size();
@@ -200,24 +232,31 @@ void ColorShades::onSizeHint(ui::SizeHintEvent& ev)
     ev.setSizeHint(gfx::Size(6 + m_boxSize * size, 18) * ui::guiscale());
   }
 }
+
 void ColorShades::onPaint(ui::PaintEvent& ev)
 {
   auto theme = skin::SkinTheme::get(this);
   ui::Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
+
   theme->paintWidget(g, this, style(), bounds);
+
   bounds.shrink(3 * ui::guiscale());
+
   Shade colors = getShade();
   if (colors.size() >= m_minColors) {
     gfx::Rect box(bounds.x, bounds.y, bounds.w / std::max(1, int(colors.size())), bounds.h);
     gfx::Rect hotBounds;
+
     int j = 0;
     for (int i = 0; box.x < bounds.x2(); ++i, box.x += box.w) {
       // Make the last box a little bigger to just use all
       // available size
       if (i == int(colors.size()) - 1)
         box.w = bounds.x2() - box.x;
+
       app::Color color;
+
       if (m_dragIndex >= 0 && m_hotIndex == i) {
         color = colors[m_dragIndex];
       }
@@ -230,12 +269,16 @@ void ColorShades::onPaint(ui::PaintEvent& ev)
         else
           color = app::Color::fromMask();
       }
+
       draw_color(g, box, color, (doc::ColorMode)app_get_current_pixel_format());
+
       if (m_hotIndex == i)
         hotBounds = box;
     }
+
     if (!hotBounds.isEmpty() && isHotEntryVisible()) {
       hotBounds.enlarge(3 * ui::guiscale());
+
       ui::PaintWidgetPartInfo info;
       theme->paintWidgetPart(g, theme->styles.shadeSelection(), hotBounds, info);
     }
@@ -247,4 +290,5 @@ void ColorShades::onPaint(ui::PaintEvent& ev)
     theme->paintWidgetPart(g, theme->styles.shadeEmpty(), bounds, info);
   }
 }
+
 } // namespace app

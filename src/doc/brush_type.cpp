@@ -1,17 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2015 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/brush_type.h"
+#endif
+
+#include "doc/brush_type.h"
+
 namespace doc {
+
 std::string brush_type_to_string_id(BrushType brushType)
 {
   switch (brushType) {
@@ -22,6 +22,7 @@ std::string brush_type_to_string_id(BrushType brushType)
   }
   return "unknown";
 }
+
 BrushType string_id_to_brush_type(const std::string& s)
 {
   if (s == "circle")
@@ -34,4 +35,5 @@ BrushType string_id_to_brush_type(const std::string& s)
     return kImageBrushType;
   return kFirstBrushType;
 }
+
 } // namespace doc

@@ -1,35 +1,36 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- ifndef ENABLE_SCRIPTING
+#endif
+
+#ifndef ENABLE_SCRIPTING
   #error ENABLE_SCRIPTING must be defined
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/commands/params.h"
- include "app/console.h"
- include "app/context.h"
- include "app/i18n/strings.h"
- include "app/pref/preferences.h"
- include "app/resource_finder.h"
- include "app/script/engine.h"
- include "app/ui/optional_alert.h"
- include "base/fs.h"
- include "fmt/format.h"
- include "ui/manager.h"
- include <cstdio>
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/commands/params.h"
+#include "app/console.h"
+#include "app/context.h"
+#include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
+#include "app/resource_finder.h"
+#include "app/script/engine.h"
+#include "app/ui/optional_alert.h"
+#include "base/fs.h"
+#include "fmt/format.h"
+#include "ui/manager.h"
+
+#include <cstdio>
+
 namespace app {
+
 class RunScriptCommand : public Command {
 public:
   RunScriptCommand();
@@ -44,9 +45,11 @@ private:
   std::string m_filename;
   Params m_params;
 };
+
 RunScriptCommand::RunScriptCommand() : Command(CommandId::RunScript(), CmdRecordableFlag)
 {
 }
+
 void RunScriptCommand::onLoadParams(const Params& params)
 {
   m_filename = params.get("filename");
@@ -56,8 +59,10 @@ void RunScriptCommand::onLoadParams(const Params& params)
     if (rf.findFirst())
       m_filename = rf.filename();
   }
+
   m_params = params;
 }
+
 void RunScriptCommand::onExecute(Context* context)
 {
   if (context->isUIAvailable()) {
@@ -67,18 +72,24 @@ void RunScriptCommand::onExecute(Context* context)
     if (ret != 1)
       return;
   }
+
   App::instance()->scriptEngine()->evalUserFile(m_filename, m_params);
+
   if (context->isUIAvailable())
     ui::Manager::getDefault()->invalidate();
 }
+
 std::string RunScriptCommand::onGetFriendlyName() const
 {
   if (m_filename.empty())
     return Strings::commands_RunScript();
+
   return fmt::format("{0}: {1}", Strings::commands_RunScript(), base::get_file_name(m_filename));
 }
+
 Command* CommandFactory::createRunScriptCommand()
 {
   return new RunScriptCommand;
 }
+
 } // namespace app

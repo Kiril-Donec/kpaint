@@ -1,32 +1,37 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "gfx/size.h"
- include "ui/fit_bounds.h"
- include "ui/graphics.h"
- include "ui/intern.h"
- include "ui/manager.h"
- include "ui/message.h"
- include "ui/paint_event.h"
- include "ui/scale.h"
- include "ui/size_hint_event.h"
- include "ui/system.h"
- include "ui/textbox.h"
- include "ui/theme.h"
- include "ui/tooltips.h"
- include <string>
+#endif
+
+#include "ui/tooltips.h"
+
+#include "gfx/size.h"
+#include "ui/fit_bounds.h"
+#include "ui/graphics.h"
+#include "ui/intern.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/scale.h"
+#include "ui/size_hint_event.h"
+#include "ui/system.h"
+#include "ui/textbox.h"
+#include "ui/theme.h"
+
+#include <string>
+
 static const int kTooltipDelayMsecs = 300;
+
 namespace ui {
+
 using namespace gfx;
+
 TooltipManager::TooltipManager() : Widget(kGenericWidget)
 {
   Manager* manager = Manager::getDefault();
@@ -34,24 +39,30 @@ TooltipManager::TooltipManager() : Widget(kGenericWidget)
   manager->addMessageFilter(kKeyDownMessage, this);
   manager->addMessageFilter(kMouseDownMessage, this);
   manager->addMessageFilter(kMouseLeaveMessage, this);
+
   setVisible(false);
 }
+
 TooltipManager::~TooltipManager()
 {
   Manager* manager = Manager::getDefault();
   manager->removeMessageFilterFor(this);
 }
+
 void TooltipManager::addTooltipFor(Widget* widget, const std::string& text, int arrowAlign)
 {
   ASSERT(!widget->hasFlags(IGNORE_MOUSE));
+
   m_tips[widget] = TipInfo(text, arrowAlign);
 }
+
 void TooltipManager::removeTooltipFor(Widget* widget)
 {
   auto it = m_tips.find(widget);
   if (it != m_tips.end())
     m_tips.erase(it);
 }
+
 bool TooltipManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -63,15 +74,18 @@ bool TooltipManager::onProcessMessage(Message* msg)
         if (it != m_tips.end()) {
           m_target.widget = it->first;
           m_target.tipInfo = it->second;
+
           if (m_timer == nullptr) {
             m_timer.reset(new Timer(kTooltipDelayMsecs, this));
             m_timer->Tick.connect(&TooltipManager::onTick, this);
           }
+
           m_timer->start();
         }
       }
       break;
     }
+
     case kKeyDownMessage:
     case kMouseDownMessage:
     case kMouseLeaveMessage:
@@ -79,27 +93,35 @@ bool TooltipManager::onProcessMessage(Message* msg)
         m_tipWindow->closeWindow(nullptr);
         m_tipWindow.reset();
       }
+
       if (m_timer)
         m_timer->stop();
+
       return false;
   }
+
   return Widget::onProcessMessage(msg);
 }
+
 void TooltipManager::onInitTheme(InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
   if (m_tipWindow)
     m_tipWindow->initTheme();
 }
+
 void TooltipManager::onTick()
 {
   if (!m_tipWindow) {
     m_tipWindow.reset(new TipWindow(m_target.tipInfo.text));
+
     int arrowAlign = m_target.tipInfo.arrowAlign;
     gfx::Rect target = m_target.widget->bounds();
     if (!arrowAlign)
       target.setOrigin(m_target.widget->mousePosInDisplay() + 12 * guiscale());
+
     ui::Display* targetDisplay = m_target.widget->display();
+
     if (m_tipWindow->pointAt(arrowAlign, target, targetDisplay)) {
       m_tipWindow->openWindow();
       m_tipWindow->adjustTargetFrom(targetDisplay);
@@ -112,7 +134,9 @@ void TooltipManager::onTick()
   }
   m_timer->stop();
 }
- TipWindow
+
+// TipWindow
+
 TipWindow::TipWindow(const std::string& text)
   // Put an empty string in the ctor so the window label isn't build
   : PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
@@ -122,29 +146,38 @@ TipWindow::TipWindow(const std::string& text)
   , m_textBox(new TextBox("", LEFT | TOP))
 {
   setTransparent(true);
+
   // Here we build our own custimized label for the window
   // (a text box).
   m_textBox->setVisible(false);
   addChild(m_textBox);
   setText(text);
+
   makeFixed();
   initTheme();
 }
+
 void TipWindow::setCloseOnKeyDown(bool state)
 {
   m_closeOnKeyDown = state;
 }
+
 bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target, const ui::Display* display)
 {
   // TODO merge this code with the new ui::fit_bounds() algorithm
+
   m_target = target;
   m_arrowAlign = arrowAlign;
+
   remapWindow();
+
   int x = target.x;
   int y = target.y;
   int w = bounds().w;
   int h = bounds().h;
+
   os::Window* nativeParentWindow = display->nativeWindow();
+
   int trycount = 0;
   for (; trycount < 4; ++trycount) {
     switch (arrowAlign) {
@@ -181,6 +214,7 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target, const ui::Displ
         y = m_target.y + m_target.h / 2 - h / 2;
         break;
     }
+
     if (get_multiple_displays()) {
       const gfx::Rect waBounds = nativeParentWindow->screen()->workarea();
       gfx::Point pt = nativeParentWindow->pointToScreen(gfx::Point(x, y));
@@ -195,6 +229,7 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target, const ui::Displ
       x = std::clamp(x, displayBounds.x, displayBounds.x2() - w);
       y = std::clamp(y, displayBounds.y, displayBounds.y2() - h);
     }
+
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {
       switch (trycount) {
         case 0:
@@ -220,8 +255,10 @@ bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target, const ui::Displ
       break;
     }
   }
+
   return (trycount < 4);
 }
+
 void TipWindow::adjustTargetFrom(const ui::Display* targetDisplay)
 {
   // Convert the target relative to this window coordinates
@@ -235,6 +272,7 @@ void TipWindow::adjustTargetFrom(const ui::Display* targetDisplay)
     m_target.offset(-bounds().origin());
   }
 }
+
 bool TipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -243,8 +281,10 @@ bool TipWindow::onProcessMessage(Message* msg)
         closeWindow(nullptr);
       break;
   }
+
   return PopupWindow::onProcessMessage(msg);
 }
+
 void TipWindow::onPaint(PaintEvent& ev)
 {
   theme()->paintTooltip(ev.graphics(),
@@ -255,6 +295,7 @@ void TipWindow::onPaint(PaintEvent& ev)
                         arrowAlign(),
                         target());
 }
+
 void TipWindow::onBuildTitleLabel()
 {
   if (!text().empty()) {
@@ -264,4 +305,5 @@ void TipWindow::onBuildTitleLabel()
   else
     m_textBox->setVisible(false);
 }
+
 } // namespace ui

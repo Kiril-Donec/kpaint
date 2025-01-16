@@ -1,24 +1,23 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020-2024  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/commands/params.h"
- include "app/i18n/strings.h"
- include "app/ui/color_bar.h"
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/commands/params.h"
+#include "app/i18n/strings.h"
+#include "app/ui/color_bar.h"
+
 namespace app {
+
 using namespace gfx;
+
 class TilesetModeCommand : public Command {
 public:
   TilesetModeCommand() : Command(CommandId::TilesetMode(), CmdUIOnlyFlag)
@@ -37,16 +36,19 @@ protected:
     else
       m_mode = TilesetMode::Auto;
   }
+
   bool onChecked(Context* context) override
   {
     auto colorBar = ColorBar::instance();
     return (colorBar->tilesetMode() == m_mode);
   }
+
   void onExecute(Context* context) override
   {
     auto colorBar = ColorBar::instance();
     colorBar->setTilesetMode(m_mode);
   }
+
   std::string onGetFriendlyName() const override
   {
     std::string mode;
@@ -57,13 +59,16 @@ protected:
     }
     return Strings::commands_TilesetMode(mode);
   }
+
   bool isListed(const Params& params) const override { return !params.empty(); }
 
 private:
   TilesetMode m_mode;
 };
+
 Command* CommandFactory::createTilesetModeCommand()
 {
   return new TilesetModeCommand;
 }
+
 } // namespace app

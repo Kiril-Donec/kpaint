@@ -1,26 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_COLOR_H_INCLUDED
+#define APP_COLOR_H_INCLUDED
+#pragma once
 
+#include "doc/color.h"
+#include "doc/pixel_format.h"
+#include "doc/tile.h"
 
+#include <string>
 
- ifndef APP_COLOR_H_INCLUDED
- define APP_COLOR_H_INCLUDED
- pragma once
- include "doc/color.h"
- include "doc/pixel_format.h"
- include "doc/tile.h"
- include <string>
 namespace doc {
 class Image;
 class Layer;
 } // namespace doc
+
 namespace app {
+
 class Color {
 public:
   enum Type {
@@ -32,9 +33,12 @@ public:
     IndexType,
     TileType,
   };
+
   enum HumanReadableString { ShortHumanReadableString, LongHumanReadableString };
+
   // Default ctor is mask color
   Color() : m_type(MaskType) {}
+
   static Color fromMask();
   static Color fromRgb(int r, int g, int b, int a = 255);
   static Color fromHsv(double h, double s, double v, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
@@ -42,16 +46,22 @@ public:
   static Color fromGray(int g, int a = 255);
   static Color fromIndex(int index);
   static Color fromTile(doc::tile_t tile);
+
   static Color fromImage(doc::PixelFormat pixelFormat, doc::color_t c);
   static Color fromImageGetPixel(doc::Image* image, int x, int y);
   static Color fromString(const std::string& str);
+
   Color toRgb() const;
   std::string toString() const;
   std::string toHumanReadableString(doc::PixelFormat format, HumanReadableString type) const;
+
   bool operator==(const Color& other) const;
   bool operator!=(const Color& other) const { return !operator==(other); }
+
   Type getType() const { return m_type; }
+
   bool isValid() const;
+
   // Getters
   int getRed() const;
   int getGreen() const;
@@ -66,13 +76,16 @@ public:
   int getIndex() const;
   doc::tile_t getTile() const;
   int getAlpha() const;
+
   // Setters
   void setAlpha(int alpha);
 
 private:
   Color(Type type) : m_type(type) {}
+
   // Color type
   Type m_type;
+
   // Color value
   union {
     struct {
@@ -93,5 +106,7 @@ private:
     doc::tile_t tile;
   } m_value;
 };
+
 } // namespace app
- endif
+
+#endif

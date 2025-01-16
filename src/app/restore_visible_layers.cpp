@@ -1,28 +1,29 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2016  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/restore_visible_layers.h"
- include "doc/layer.h"
- include "doc/selected_layers.h"
- include "doc/sprite.h"
+#endif
+
+#include "app/restore_visible_layers.h"
+
+#include "doc/layer.h"
+#include "doc/selected_layers.h"
+#include "doc/sprite.h"
+
 namespace app {
+
 using namespace doc;
+
 RestoreVisibleLayers::~RestoreVisibleLayers()
 {
   for (auto item : m_restore)
     item.first->setVisible(item.second);
 }
+
 void RestoreVisibleLayers::showLayer(Layer* layer)
 {
   SelectedLayers selLayers;
@@ -30,12 +31,14 @@ void RestoreVisibleLayers::showLayer(Layer* layer)
   selLayers.propagateSelection();
   showSelectedLayers(layer->sprite(), selLayers);
 }
+
 void RestoreVisibleLayers::showSelectedLayers(Sprite* sprite, const SelectedLayers& inSelLayers)
 {
   SelectedLayers selLayers = inSelLayers;
   selLayers.propagateSelection();
   setLayerVisiblity(sprite->root(), selLayers);
 }
+
 void RestoreVisibleLayers::setLayerVisiblity(LayerGroup* group, const SelectedLayers& selLayers)
 {
   for (Layer* layer : group->layers()) {
@@ -48,4 +51,5 @@ void RestoreVisibleLayers::setLayerVisiblity(LayerGroup* group, const SelectedLa
       setLayerVisiblity(static_cast<LayerGroup*>(layer), selLayers);
   }
 }
+
 } // namespace app

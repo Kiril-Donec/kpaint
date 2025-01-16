@@ -1,11 +1,5 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
   <window id="new_folder_window" text="@new_folder.title">
     <vbox>

@@ -1,33 +1,34 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
+#define APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
+#pragma once
 
+#include "app/transformation.h"
+#include "app/ui/editor/editor_decorator.h"
+#include "app/ui/editor/handle_type.h"
+#include "app/ui/editor/state_with_wheel_behavior.h"
+#include "doc/algorithm/flip_type.h"
+#include "obs/connection.h"
 
-
- ifndef APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
- define APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
- pragma once
- include "app/transformation.h"
- include "app/ui/editor/editor_decorator.h"
- include "app/ui/editor/handle_type.h"
- include "app/ui/editor/state_with_wheel_behavior.h"
- include "doc/algorithm/flip_type.h"
- include "obs/connection.h"
 namespace app {
 namespace tools {
 class Ink;
 class Pointer;
 } // namespace tools
+
 class DrawingState;
 class TransformHandles;
+
 class StandbyState : public StateWithWheelBehavior {
 public:
   enum class DrawingType { Regular, LineFreehand, SelectTiles };
+
   StandbyState();
   virtual ~StandbyState();
   virtual void onEnterState(Editor* editor) override;
@@ -40,13 +41,18 @@ public:
   virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
   virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
   virtual bool onUpdateStatusBar(Editor* editor) override;
+
   // Returns true as the standby state is the only one which shows
   // the brush-preview.
   virtual bool requireBrushPreview() override { return true; }
+
   // Layer edges and cel guides are allowed to be drawn.
   virtual bool allowLayerEdges() override { return true; }
+
   virtual Transformation getTransformation(Editor* editor);
+
   void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
+
   void startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType);
 
 protected:
@@ -55,6 +61,7 @@ protected:
                                      const ui::MouseMessage* msg,
                                      const tools::Pointer* pointer);
   virtual bool canCheckStartDrawingStraightLine() { return true; }
+
   class Decorator : public EditorDecorator {
   public:
     struct Handle {
@@ -63,11 +70,15 @@ protected:
       Handle(int align, const gfx::Rect& bounds) : align(align), bounds(bounds) {}
     };
     typedef std::vector<Handle> Handles;
+
     Decorator(StandbyState* standbyState);
     virtual ~Decorator();
+
     TransformHandles* getTransformHandles(Editor* editor);
     bool getSymmetryHandles(Editor* editor, Handles& handles);
+
     bool onSetCursor(tools::Ink* ink, Editor* editor, const gfx::Point& mouseScreenPos);
+
     // EditorDecorator overrides
     void postRenderDecorator(EditorPostRender* render) override;
     void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) override;
@@ -87,10 +98,13 @@ private:
   gfx::Rect resizeCelBounds(Editor* editor) const;
   bool overSelectionEdges(Editor* editor, const gfx::Point& mouseScreenPos) const;
   void selectTile(Editor* editor);
+
   Decorator* m_decorator;
   obs::scoped_connection m_pivotVisConn;
   obs::scoped_connection m_pivotPosConn;
   bool m_transformSelectionHandlesAreVisible;
 };
+
 } // namespace app
-// endif // APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
+
+#endif // APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED

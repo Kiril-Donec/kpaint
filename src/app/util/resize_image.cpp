@@ -1,31 +1,31 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2019-2022  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/cmd/replace_image.h"
- include "app/cmd/set_cel_bounds.h"
- include "app/cmd/set_cel_position.h"
- include "app/tx.h"
- include "app/util/resize_image.h"
- include "doc/cel.h"
- include "doc/image.h"
- include "doc/image_ref.h"
- include "doc/layer.h"
- include "doc/sprite.h"
- include <algorithm>
- include <cmath>
- include <memory>
+#endif
+
+#include "app/util/resize_image.h"
+
+#include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_bounds.h"
+#include "app/cmd/set_cel_position.h"
+#include "app/tx.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/image_ref.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
+
+#include <algorithm>
+#include <cmath>
+#include <memory>
+
 namespace app {
+
 doc::Image* resize_image(const doc::Image* image,
                          const gfx::SizeF& scale,
                          const doc::algorithm::ResizeMethod method,
@@ -37,10 +37,13 @@ doc::Image* resize_image(const doc::Image* image,
   spec.setHeight(std::max(1, int(std::round(scale.h * image->height()))));
   std::unique_ptr<doc::Image> newImage(doc::Image::create(spec));
   newImage->setMaskColor(image->maskColor());
+
   doc::algorithm::fixup_image_transparent_colors(newImage.get());
   doc::algorithm::resize_image(image, newImage.get(), method, pal, rgbmap, newImage->maskColor());
+
   return newImage.release();
 }
+
 void resize_cel_image(Tx& tx,
                       doc::Cel* cel,
                       const gfx::SizeF& scale,
@@ -51,6 +54,7 @@ void resize_cel_image(Tx& tx,
   doc::Image* image = cel->image();
   if (image && !cel->link()) {
     doc::Sprite* sprite = cel->sprite();
+
     // Resize the cel bounds only if it's from a reference layer
     if (cel->layer()->isReference()) {
       gfx::RectF newBounds = cel->boundsF();
@@ -65,12 +69,14 @@ void resize_cel_image(Tx& tx,
       const int y = cel->y() + pivot.y - scale.h * pivot.y;
       if (cel->x() != x || cel->y() != y)
         tx(new cmd::SetCelPosition(cel, x, y));
+
       // Resize the image
       const int w = std::max(1, int(scale.w * image->width()));
       const int h = std::max(1, int(scale.h * image->height()));
       doc::ImageRef newImage(
         doc::Image::create(image->pixelFormat(), std::max(1, w), std::max(1, h)));
       newImage->setMaskColor(image->maskColor());
+
       doc::algorithm::fixup_image_transparent_colors(image);
       doc::algorithm::resize_image(
         image,
@@ -79,8 +85,10 @@ void resize_cel_image(Tx& tx,
         sprite->palette(cel->frame()),
         sprite->rgbMap(cel->frame()),
         (cel->layer()->isBackground() ? -1 : sprite->transparentColor()));
+
       tx(new cmd::ReplaceImage(sprite, cel->imageRef(), newImage));
     }
   }
 }
+
 } // namespace app

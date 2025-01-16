@@ -1,34 +1,35 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/commands/command.h"
- include "app/commands/commands.h"
- include "app/loop_tag.h"
- include "app/pref/preferences.h"
- include "app/tools/ink.h"
- include "app/ui/editor/editor.h"
- include "app/ui/editor/editor_customization_delegate.h"
- include "app/ui/editor/play_state.h"
- include "app/ui/editor/scrolling_state.h"
- include "app/ui/skin/skin_theme.h"
- include "app/ui_context.h"
- include "doc/tag.h"
- include "ui/manager.h"
- include "ui/message.h"
- include "ui/system.h"
+#endif
+
+#include "app/ui/editor/play_state.h"
+
+#include "app/commands/command.h"
+#include "app/commands/commands.h"
+#include "app/loop_tag.h"
+#include "app/pref/preferences.h"
+#include "app/tools/ink.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_customization_delegate.h"
+#include "app/ui/editor/scrolling_state.h"
+#include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
+#include "doc/tag.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/system.h"
+
 namespace app {
+
 using namespace ui;
+
 PlayState::PlayState(const bool playOnce, const bool playAll, const bool playSubtags)
   : m_editor(nullptr)
   , m_playOnce(playOnce)
@@ -41,26 +42,32 @@ PlayState::PlayState(const bool playOnce, const bool playAll, const bool playSub
   , m_tag(nullptr)
 {
   m_playTimer.Tick.connect(&PlayState::onPlaybackTick, this);
+
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can stop the animation.
   m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
     &PlayState::onBeforeCommandExecution,
     this);
 }
+
 Tag* PlayState::playingTag() const
 {
   return m_tag;
 }
+
 void PlayState::onEnterState(Editor* editor)
 {
   StateWithWheelBehavior::onEnterState(editor);
+
   if (!m_editor) {
     m_editor = editor;
     m_refFrame = editor->frame();
   }
+
   // Get the tag
   if (!m_playAll) {
     m_tag = m_editor->getCustomizationDelegate()->getTagProvider()->getTagByFrame(m_refFrame, true);
+
     // Don't repeat the tag infinitely if the tag repeat field doesn't
     // say so.
     if (m_playSubtags && m_tag && m_tag->repeat() != 0) {
@@ -70,15 +77,20 @@ void PlayState::onEnterState(Editor* editor)
   else {
     m_tag = nullptr;
   }
+
   // Go to the first frame of the animation or active frame tag
   if (m_playOnce) {
     frame_t frame = 0;
+
     if (m_tag) {
       frame = (m_tag->aniDir() == AniDir::REVERSE ? m_tag->toFrame() : m_tag->fromFrame());
     }
+
     m_editor->setFrame(frame);
   }
+
   m_toScroll = false;
+
   // Maybe we came from ScrollingState and the timer is already
   // running. Which also means there was a Playback in course, so
   // don't create a new one (this fixes an issue when the editor
@@ -99,62 +111,76 @@ void PlayState::onEnterState(Editor* editor)
     m_playTimer.start();
   }
 }
+
 EditorState::LeaveAction PlayState::onLeaveState(Editor* editor, EditorState* newState)
 {
   // We don't stop the timer if we are going to the ScrollingState
   // (we keep playing the animation).
   if (!m_toScroll) {
     m_playTimer.stop();
+
     if (m_playOnce || Preferences::instance().general.rewindOnStop())
       m_editor->setFrame(m_refFrame);
   }
   return KeepState;
 }
+
 void PlayState::onBeforePopState(Editor* editor)
 {
   m_ctxConn.disconnect();
   StateWithWheelBehavior::onBeforePopState(editor);
 }
+
 bool PlayState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   if (editor->hasCapture())
     return true;
+
   // When an editor is clicked the current view is changed.
   UIContext* context = UIContext::instance();
   context->setActiveView(editor->getDocView());
+
   // A click with right-button stops the animation
   if (msg->button() == kButtonRight) {
     editor->stop();
     return true;
   }
+
   // Set this flag to indicate that we are going to ScrollingState for
   // some time, so we don't change the current frame.
   m_toScroll = true;
+
   // If the active tool is the Zoom tool, we start zooming.
   if (editor->checkForZoom(msg))
     return true;
+
   // Start scroll loop
   editor->startScrollingState(msg);
   return true;
 }
+
 bool PlayState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   editor->releaseMouse();
   return true;
 }
+
 bool PlayState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   editor->updateStatusBar();
   return true;
 }
+
 bool PlayState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   return false;
 }
+
 bool PlayState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   return false;
 }
+
 bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();
@@ -168,18 +194,24 @@ bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   editor->showMouseCursor(kScrollCursor);
   return true;
 }
+
 void PlayState::onRemoveTag(Editor* editor, doc::Tag* tag)
 {
   if (m_tag == tag)
     m_tag = nullptr;
+
   m_playback.removeReferencesToTag(tag);
 }
+
 void PlayState::onPlaybackTick()
 {
   ASSERT(m_playTimer.isRunning());
+
   if (m_nextFrameTime < 0)
     return;
+
   m_nextFrameTime -= (base::current_tick() - m_curFrameTick);
+
   while (m_nextFrameTime <= 0) {
     doc::frame_t frame = m_playback.nextFrame();
     if (m_playback.isStopped() ||
@@ -193,18 +225,22 @@ void PlayState::onPlaybackTick()
     m_editor->setFrame(frame);
     m_nextFrameTime += getNextFrameTime();
   }
+
   m_curFrameTick = base::current_tick();
 }
- Before executing any command, we stop the animation
+
+// Before executing any command, we stop the animation
 void PlayState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
   // This check just in case we stay connected to context signals when
   // the editor is already deleted.
   ASSERT(m_editor);
   ASSERT(m_editor->manager() == ui::Manager::getDefault());
+
   // If the command is for other editor, we don't stop the animation.
   if (!m_editor->isActive())
     return;
+
   // If we're executing PlayAnimation command, it means that the
   // user wants to stop the animation. We cannot stop the animation
   // here, because if it's stopped, PlayAnimation will re-play it
@@ -217,11 +253,14 @@ void PlayState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       ev.command()->id() == CommandId::Scroll() || ev.command()->id() == CommandId::Timeline()) {
     return;
   }
+
   m_editor->stop();
 }
+
 double PlayState::getNextFrameTime()
 {
   return m_editor->sprite()->frameDuration(m_editor->frame()) /
          m_editor->getAnimationSpeedMultiplier(); // The "speed multiplier" is a "duration divider"
 }
+
 } // namespace app

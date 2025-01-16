@@ -1,11 +1,5 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (c) 2021  Igara Studio S.A. -->
 <gui>
   <window id="aseprite_update" text="@.title" minwidth="300" minheight="200">
     <box vertical="true" expansive="true">

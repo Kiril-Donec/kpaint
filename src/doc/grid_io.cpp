@@ -1,24 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (C) 2019  Igara Studio S.A.
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "base/serialization.h"
- include "doc/grid.h"
- include "doc/grid_io.h"
- include "doc/image.h"
- include "doc/image_io.h"
- include <iostream>
+#endif
+
+#include "doc/grid_io.h"
+
+#include "base/serialization.h"
+#include "doc/grid.h"
+#include "doc/image.h"
+#include "doc/image_io.h"
+
+#include <iostream>
+
 namespace doc {
+
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
+
 bool write_grid(std::ostream& os, const Grid& grid)
 {
   write32(os, grid.tileSize().w);
@@ -39,6 +42,7 @@ bool write_grid(std::ostream& os, const Grid& grid)
   else
     return true;
 }
+
 Grid read_grid(std::istream& is)
 {
   gfx::Size tileSize;
@@ -60,6 +64,7 @@ Grid read_grid(std::istream& is)
   oddColOffset.x = read32(is);
   oddColOffset.y = read32(is);
   bool hasMask = read8(is);
+
   Grid grid;
   grid.tileSize(tileSize);
   grid.origin(origin);
@@ -67,6 +72,7 @@ Grid read_grid(std::istream& is)
   grid.tileOffset(tileOffset);
   grid.oddRowOffset(oddRowOffset);
   grid.oddColOffset(oddColOffset);
+
   if (hasMask) {
     ImageRef mask(read_image(is));
     if (mask)
@@ -74,4 +80,5 @@ Grid read_grid(std::istream& is)
   }
   return grid;
 }
+
 } // namespace doc

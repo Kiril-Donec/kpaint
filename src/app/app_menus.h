@@ -1,45 +1,50 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_APP_MENUS_H_INCLUDED
+#define APP_APP_MENUS_H_INCLUDED
+#pragma once
 
+#include "app/i18n/xml_translator.h"
+#include "app/ui/key.h"
+#include "app/widget_type_mismatch.h"
+#include "base/disable_copying.h"
+#include "obs/connection.h"
+#include "os/menus.h"
+#include "ui/base.h"
+#include "ui/menu.h"
 
+#include <memory>
 
- ifndef APP_APP_MENUS_H_INCLUDED
- define APP_APP_MENUS_H_INCLUDED
- pragma once
- include "app/i18n/xml_translator.h"
- include "app/ui/key.h"
- include "app/widget_type_mismatch.h"
- include "base/disable_copying.h"
- include "obs/connection.h"
- include "os/menus.h"
- include "ui/base.h"
- include "ui/menu.h"
- include <memory>
 namespace tinyxml2 {
 class XMLElement;
 class XMLHandle;
 } // namespace tinyxml2
+
 namespace app {
 class Command;
 class Params;
+
 using namespace ui;
- Class to handle/get/reload available menus in gui.xml file.
+
+// Class to handle/get/reload available menus in gui.xml file.
 class AppMenus {
   AppMenus();
   DISABLE_COPYING(AppMenus);
 
 public:
   static AppMenus* instance();
+
   void reload();
   void initTheme();
+
   // Updates the menu of recent files.
   bool rebuildRecentList();
+
   Menu* getRootMenu() { return m_rootMenu.get(); }
   Menu* getTabPopupMenu() { return m_tabPopupMenu.get(); }
   Menu* getDocumentTabPopupMenu() { return m_documentTabPopupMenu.get(); }
@@ -53,10 +58,12 @@ public:
   Menu* getInkPopupMenu() { return m_inkPopupMenu.get(); }
   Menu* getAnimationMenu();
   Menu* getNewFrameMenu() { return m_newFramePopupMenu.get(); }
+
   void applyShortcutToMenuitemsWithCommand(Command* command,
                                            const Params& params,
                                            const KeyPtr& key);
   void syncNativeMenuItemKeyShortcuts();
+
   // Menu item handling in groups
   void addMenuGroup(const std::string& groupId, MenuItem* menuItem);
   void removeMenuGroup(const std::string& groupId);
@@ -67,6 +74,7 @@ public:
 private:
   template<typename Pred>
   void removeMenuItemFromGroup(Pred pred);
+
   Menu* loadMenuById(tinyxml2::XMLHandle& handle, const char* id);
   Menu* convertXmlelemToMenu(tinyxml2::XMLElement* elem);
   Widget* convertXmlelemToMenuitem(tinyxml2::XMLElement* elem, Menu* menu);
@@ -78,14 +86,17 @@ private:
   void updateMenusList();
   void createNativeMenus();
   void createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu);
- ifdef ENABLE_SCRIPTING
+
+#ifdef ENABLE_SCRIPTING
   void loadScriptsSubmenu(ui::Menu* menu, const std::string& dir, const bool rootLevel);
- endif
+#endif
+
   struct GroupInfo {
     Menu* menu = nullptr;
     Widget* end = nullptr;
     WidgetsList items;
   };
+
   std::unique_ptr<Menu> m_rootMenu;
   Widget* m_recentFilesPlaceholder;
   MenuItem* m_helpMenuitem;
@@ -112,6 +123,9 @@ private:
   os::MenuRef m_osMenu;
   XmlTranslator m_xmlTranslator;
 };
+
 os::Shortcut get_os_shortcut_from_key(const Key* key);
+
 } // namespace app
- endif
+
+#endif

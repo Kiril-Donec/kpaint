@@ -1,11 +1,6 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (C) 2019-2022  Igara Studio S.A. -->
+<!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="file_selector" text="">
   <vbox id="main">
@@ -33,6 +28,7 @@
     <grid columns="2">
       <label text="@.file_name" />
       <box id="file_name_placeholder" cell_align="horizontal" />
+
       <label text="@.file_type" />
       <hbox cell_align="horizontal">
         <combobox id="file_type" minwidth="70" />

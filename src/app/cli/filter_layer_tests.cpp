@@ -1,20 +1,18 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#include "tests/app_test.h"
 
+#include "app/cli/cli_processor.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 
-
- include "app/cli/cli_processor.h"
- include "doc/layer.h"
- include "doc/sprite.h"
- include "tests/app_test.h"
 using namespace app;
 using namespace doc;
+
 class FilterLayers : public ::testing::Test {
 public:
   FilterLayers() : sprite(ImageSpec(ColorMode::RGB, 32, 32))
@@ -25,6 +23,7 @@ public:
     ab->setName("b");
     ba->setName("a");
     bb->setName("b");
+
     sprite.root()->addLayer(a);
     sprite.root()->addLayer(b);
     a->addLayer(aa);
@@ -32,10 +31,12 @@ public:
     b->addLayer(ba);
     b->addLayer(bb);
   }
+
   void filter(std::vector<std::string> includes, std::vector<std::string> excludes)
   {
     CliProcessor::FilterLayers(&sprite, std::move(includes), std::move(excludes), sel);
   }
+
   Sprite sprite;
   LayerGroup* a = new LayerGroup(&sprite);
   LayerGroup* b = new LayerGroup(&sprite);
@@ -45,6 +46,7 @@ public:
   LayerImage* bb = new LayerImage(&sprite);
   SelectedLayers sel;
 };
+
 TEST_F(FilterLayers, Default)
 {
   filter({}, {});
@@ -56,9 +58,11 @@ TEST_F(FilterLayers, Default)
   EXPECT_TRUE(sel.contains(ba));
   EXPECT_TRUE(sel.contains(bb));
 }
+
 TEST_F(FilterLayers, DefaultWithHiddenChild)
 {
   aa->setVisible(false);
+
   filter({}, {});
   EXPECT_EQ(5, sel.size());
   EXPECT_TRUE(sel.contains(a));
@@ -68,9 +72,11 @@ TEST_F(FilterLayers, DefaultWithHiddenChild)
   EXPECT_TRUE(sel.contains(ba));
   EXPECT_TRUE(sel.contains(bb));
 }
+
 TEST_F(FilterLayers, DefaultWithHiddenGroup)
 {
   b->setVisible(false);
+
   filter({}, {});
   EXPECT_EQ(3, sel.size());
   EXPECT_TRUE(sel.contains(a));
@@ -80,6 +86,7 @@ TEST_F(FilterLayers, DefaultWithHiddenGroup)
   EXPECT_FALSE(sel.contains(ba));
   EXPECT_FALSE(sel.contains(bb));
 }
+
 TEST_F(FilterLayers, All)
 {
   filter({ "*" }, {});
@@ -91,9 +98,11 @@ TEST_F(FilterLayers, All)
   EXPECT_TRUE(sel.contains(ba));
   EXPECT_TRUE(sel.contains(bb));
 }
+
 TEST_F(FilterLayers, AllWithHiddenChild)
 {
   ab->setVisible(false);
+
   filter({ "*" }, {});
   EXPECT_EQ(6, sel.size());
   EXPECT_TRUE(sel.contains(a));
@@ -103,12 +112,14 @@ TEST_F(FilterLayers, AllWithHiddenChild)
   EXPECT_TRUE(sel.contains(ba));
   EXPECT_TRUE(sel.contains(bb));
 }
+
 TEST_F(FilterLayers, IncludeGroupAmbiguousNameSelectTopLevel)
 {
   filter({ "a" }, {});
   EXPECT_EQ(1, sel.size());
   EXPECT_TRUE(sel.contains(a));
 }
+
 TEST_F(FilterLayers, IncludeChild)
 {
   filter({ "a/a" }, {});
@@ -116,41 +127,51 @@ TEST_F(FilterLayers, IncludeChild)
   EXPECT_TRUE(sel.contains(aa));
   EXPECT_FALSE(sel.contains(a));
 }
+
 TEST_F(FilterLayers, IncludeGroupWithHiddenChild)
 {
   aa->setVisible(false);
+
   filter({ "a" }, {});
   EXPECT_EQ(1, sel.size());
   EXPECT_TRUE(sel.contains(a));
 }
+
 TEST_F(FilterLayers, IncludeChildrenEvenHiddenOne)
 {
   aa->setVisible(false);
+
   filter({ "a/*" }, {});
   EXPECT_EQ(2, sel.size());
   EXPECT_TRUE(sel.contains(aa));
   EXPECT_TRUE(sel.contains(ab));
 }
+
 TEST_F(FilterLayers, IncludeHiddenChild)
 {
   aa->setName("aa");
   aa->setVisible(false);
+
   filter({ "aa" }, {});
   EXPECT_EQ(1, sel.size());
   EXPECT_TRUE(sel.contains(aa));
 }
+
 TEST_F(FilterLayers, IncludeHiddenChildWithFullPath)
 {
   aa->setVisible(false);
+
   filter({ "a/a" }, {});
   EXPECT_EQ(1, sel.size());
   EXPECT_TRUE(sel.contains(aa));
 }
+
 TEST_F(FilterLayers, ExcludeAll)
 {
   filter({}, { "*" });
   EXPECT_TRUE(sel.empty());
 }
+
 TEST_F(FilterLayers, ExcludeChild)
 {
   filter({}, { "a/a" });
@@ -162,6 +183,7 @@ TEST_F(FilterLayers, ExcludeChild)
   EXPECT_TRUE(sel.contains(ba));
   EXPECT_TRUE(sel.contains(bb));
 }
+
 TEST_F(FilterLayers, ExcludeGroup)
 {
   filter({}, { "b" });
@@ -173,12 +195,14 @@ TEST_F(FilterLayers, ExcludeGroup)
   EXPECT_FALSE(sel.contains(ba));
   EXPECT_FALSE(sel.contains(ba));
 }
+
 TEST_F(FilterLayers, IncludeOneGroupAndExcludeOtherGroup)
 {
   filter({ "a" }, { "b" });
   EXPECT_EQ(1, sel.size());
   EXPECT_TRUE(sel.contains(a));
 }
+
 TEST_F(FilterLayers, IncludeAllExcludeOneGroup)
 {
   filter({ "*" }, { "b" });

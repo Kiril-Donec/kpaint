@@ -1,69 +1,74 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/cmd/flip_mask.h"
- include "app/cmd/flip_masked_cel.h"
- include "app/cmd/set_cel_bounds.h"
- include "app/cmd/set_mask_position.h"
- include "app/cmd/trim_cel.h"
- include "app/commands/cmd_flip.h"
- include "app/commands/params.h"
- include "app/context_access.h"
- include "app/doc_api.h"
- include "app/doc_range.h"
- include "app/i18n/strings.h"
- include "app/modules/gui.h"
- include "app/tools/tool_box.h"
- include "app/tx.h"
- include "app/ui/editor/editor.h"
- include "app/ui/editor/moving_pixels_state.h"
- include "app/ui/status_bar.h"
- include "app/ui/timeline/timeline.h"
- include "app/ui/toolbar.h"
- include "app/util/expand_cel_canvas.h"
- include "app/util/range_utils.h"
- include "doc/algorithm/flip_image.h"
- include "doc/cel.h"
- include "doc/cels_range.h"
- include "doc/image.h"
- include "doc/layer.h"
- include "doc/mask.h"
- include "doc/sprite.h"
- include "gfx/size.h"
+#endif
+
+#include "app/commands/cmd_flip.h"
+
+#include "app/app.h"
+#include "app/cmd/flip_mask.h"
+#include "app/cmd/flip_masked_cel.h"
+#include "app/cmd/set_cel_bounds.h"
+#include "app/cmd/set_mask_position.h"
+#include "app/cmd/trim_cel.h"
+#include "app/commands/params.h"
+#include "app/context_access.h"
+#include "app/doc_api.h"
+#include "app/doc_range.h"
+#include "app/i18n/strings.h"
+#include "app/modules/gui.h"
+#include "app/tools/tool_box.h"
+#include "app/tx.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/editor/moving_pixels_state.h"
+#include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
+#include "app/ui/toolbar.h"
+#include "app/util/expand_cel_canvas.h"
+#include "app/util/range_utils.h"
+#include "doc/algorithm/flip_image.h"
+#include "doc/cel.h"
+#include "doc/cels_range.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
+#include "gfx/size.h"
+
 namespace app {
+
 FlipCommand::FlipCommand() : Command(CommandId::Flip(), CmdRecordableFlag)
 {
   m_flipMask = false;
   m_flipType = doc::algorithm::FlipHorizontal;
 }
+
 void FlipCommand::onLoadParams(const Params& params)
 {
   std::string target = params.get("target");
   m_flipMask = (target == "mask");
+
   std::string orientation = params.get("orientation");
   m_flipType = (orientation == "vertical" ? doc::algorithm::FlipVertical :
                                             doc::algorithm::FlipHorizontal);
 }
+
 bool FlipCommand::onEnabled(Context* ctx)
 {
   return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
+
 void FlipCommand::onExecute(Context* ctx)
 {
   Site site = ctx->activeSite();
   LockTimelineRange lockRange(App::instance()->timeline());
+
   CelList cels;
   if (m_flipMask) {
     // If we want to flip the visible mask we can go to
@@ -79,6 +84,7 @@ void FlipCommand::onExecute(Context* ctx)
         return;
       }
     }
+
     auto range = site.range();
     if (range.enabled()) {
       cels = get_unique_cels_to_edit_pixels(site.sprite(), range);
@@ -86,6 +92,7 @@ void FlipCommand::onExecute(Context* ctx)
     else if (site.cel() && site.layer() && site.layer()->canEditPixels()) {
       cels.push_back(site.cel());
     }
+
     if (cels.empty()) {
       if (ctx->isUIAvailable()) {
         StatusBar::instance()->showTip(1000, Strings::statusbar_tips_all_layers_are_locked());
@@ -98,24 +105,30 @@ void FlipCommand::onExecute(Context* ctx)
     for (Cel* cel : site.sprite()->uniqueCels())
       cels.push_back(cel);
   }
+
   ContextWriter writer(ctx);
   Doc* document = writer.document();
   Sprite* sprite = writer.sprite();
   Tx tx(writer, friendlyName());
   DocApi api = document->getApi(tx);
+
   Mask* mask = document->mask();
   if (m_flipMask && document->isMaskVisible()) {
     Site site = *writer.site();
+
     for (Cel* cel : cels) {
       // TODO add support to flip masked part of a reference layer
       if (cel->layer()->isReference())
         continue;
+
       site.frame(cel->frame());
       site.layer(cel->layer());
+
       int x, y;
       Image* image = site.image(&x, &y);
       if (!image)
         continue;
+
       // When the mask is inside the cel, we can try to flip the
       // pixels inside the image.
       if (cel->bounds().contains(mask->bounds())) {
@@ -124,10 +137,12 @@ void FlipCommand::onExecute(Context* ctx)
         flipBounds &= image->bounds();
         if (flipBounds.isEmpty())
           continue;
+
         if (mask->bitmap() && !mask->isRectangular())
           tx(new cmd::FlipMaskedCel(cel, m_flipType));
         else
           api.flipImage(image, flipBounds, m_flipType);
+
         if (site.shouldTrimCel(cel))
           tx(new cmd::TrimCel(cel));
       }
@@ -137,8 +152,11 @@ void FlipCommand::onExecute(Context* ctx)
         gfx::Rect flipBounds = (sprite->bounds() & mask->bounds());
         if (flipBounds.isEmpty())
           continue;
+
         ExpandCelCanvas expand(site, cel->layer(), TiledMode::NONE, tx, ExpandCelCanvas::None);
+
         expand.validateDestCanvas(gfx::Region(flipBounds));
+
         if (mask->bitmap() && !mask->isRectangular())
           doc::algorithm::flip_image_with_mask(expand.getDestCanvas(),
                                                mask,
@@ -146,6 +164,7 @@ void FlipCommand::onExecute(Context* ctx)
                                                document->bgColor(cel->layer()));
         else
           doc::algorithm::flip_image(expand.getDestCanvas(), flipBounds, m_flipType);
+
         expand.commit();
       }
     }
@@ -153,13 +172,16 @@ void FlipCommand::onExecute(Context* ctx)
   else {
     for (Cel* cel : cels) {
       Image* image = cel->image();
+
       // Flip reference layer cel
       if (cel->layer()->isReference()) {
         gfx::RectF bounds = cel->boundsF();
+
         if (m_flipType == doc::algorithm::FlipHorizontal)
           bounds.x = sprite->width() - bounds.w - bounds.x;
         if (m_flipType == doc::algorithm::FlipVertical)
           bounds.y = sprite->height() - bounds.h - bounds.y;
+
         tx(new cmd::SetCelBoundsF(cel, bounds));
       }
       else {
@@ -172,13 +194,16 @@ void FlipCommand::onExecute(Context* ctx)
                               sprite->height() - image->height() - cel->y() :
                               cel->y()));
       }
+
       api.flipImage(image, image->bounds(), m_flipType);
     }
   }
+
   // Flip the mask.
   Image* maskBitmap = mask->bitmap();
   if (maskBitmap) {
     tx(new cmd::FlipMask(document, m_flipType));
+
     // Flip the mask position because the
     if (!m_flipMask)
       tx(new cmd::SetMaskPosition(
@@ -189,25 +214,33 @@ void FlipCommand::onExecute(Context* ctx)
           (m_flipType == doc::algorithm::FlipVertical ? sprite->height() - mask->bounds().y2() :
                                                         mask->bounds().y))));
   }
+
   tx.commit();
+
   update_screen_for_document(document);
 }
+
 std::string FlipCommand::onGetFriendlyName() const
 {
   std::string content;
   std::string orientation;
+
   if (m_flipMask)
     content = Strings::commands_Flip_Selection();
   else
     content = Strings::commands_Flip_Canvas();
+
   if (m_flipType == doc::algorithm::FlipHorizontal)
     orientation = Strings::commands_Flip_Horizontally();
   else
     orientation = Strings::commands_Flip_Vertically();
+
   return Strings::commands_Flip(content, orientation);
 }
+
 Command* CommandFactory::createFlipCommand()
 {
   return new FlipCommand;
 }
+
 } // namespace app

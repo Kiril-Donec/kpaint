@@ -1,33 +1,38 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2017  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "os/font.h"
- include "ui/style.h"
+#endif
+
+#include "ui/style.h"
+
+#include "os/font.h"
+
 namespace ui {
- static
+
+// static
 gfx::Border Style::UndefinedBorder()
 {
   return gfx::Border(-1, -1, -1, -1);
 }
- static
+
+// static
 gfx::Size Style::MinSize()
 {
   return gfx::Size(0, 0);
 }
- static
+
+// static
 gfx::Size Style::MaxSize()
 {
   return gfx::Size(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
 }
+
 Style::Style(const Style* base)
   : m_insertionPoint(0)
   , m_margin(base ? base->margin() : Style::UndefinedBorder())
@@ -42,25 +47,30 @@ Style::Style(const Style* base)
   if (base)
     m_layers = base->layers();
 }
+
 void Style::setMinSize(const gfx::Size& sz)
 {
   ASSERT(sz.w <= m_maxSize.w);
   ASSERT(sz.h <= m_maxSize.h);
   m_minSize = sz;
 }
+
 void Style::setMaxSize(const gfx::Size& sz)
 {
   ASSERT(sz.w >= m_minSize.w);
   ASSERT(sz.h >= m_minSize.h);
   m_maxSize = sz;
 }
+
 void Style::setFont(const os::Ref<os::Font>& font)
 {
   m_font = font;
 }
+
 void Style::addLayer(const Layer& layer)
 {
   int i, j = int(m_layers.size());
+
   for (i = m_insertionPoint; i < int(m_layers.size()); ++i) {
     if (layer.type() == m_layers[i].type()) {
       for (j = i + 1; j < int(m_layers.size()); ++j) {
@@ -70,6 +80,7 @@ void Style::addLayer(const Layer& layer)
       break;
     }
   }
+
   if (i < int(m_layers.size())) {
     if (layer.type() == Style::Layer::Type::kNewLayer)
       m_insertionPoint = i + 1;
@@ -82,4 +93,5 @@ void Style::addLayer(const Layer& layer)
       m_insertionPoint = int(m_layers.size());
   }
 }
+
 } // namespace ui

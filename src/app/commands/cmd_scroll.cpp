@@ -1,27 +1,26 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/commands/move_thing.h"
- include "app/commands/params.h"
- include "app/context_access.h"
- include "app/i18n/strings.h"
- include "app/ui/editor/editor.h"
- include "base/convert_to.h"
- include "ui/view.h"
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/commands/move_thing.h"
+#include "app/commands/params.h"
+#include "app/context_access.h"
+#include "app/i18n/strings.h"
+#include "app/ui/editor/editor.h"
+#include "base/convert_to.h"
+#include "ui/view.h"
+
 namespace app {
+
 class ScrollCommand : public Command {
 public:
   ScrollCommand();
@@ -36,31 +35,39 @@ protected:
 private:
   MoveThing m_moveThing;
 };
+
 ScrollCommand::ScrollCommand() : Command(CommandId::Scroll(), CmdUIOnlyFlag)
 {
 }
+
 void ScrollCommand::onLoadParams(const Params& params)
 {
   m_moveThing.onLoadParams(params);
 }
+
 bool ScrollCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::HasActiveDocument);
 }
+
 void ScrollCommand::onExecute(Context* context)
 {
   auto editor = Editor::activeEditor();
   ui::View* view = ui::View::getView(editor);
   gfx::Point scroll = view->viewScroll();
   gfx::Point delta = m_moveThing.getDelta(context);
+
   editor->setEditorScroll(scroll + delta);
 }
+
 std::string ScrollCommand::onGetFriendlyName() const
 {
   return Strings::commands_Scroll(m_moveThing.getFriendlyString());
 }
+
 Command* CommandFactory::createScrollCommand()
 {
   return new ScrollCommand;
 }
+
 } // namespace app

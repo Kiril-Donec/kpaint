@@ -1,23 +1,25 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2019-2022 Igara Studio S.A.
+// Copyright (c) 2001-2016 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/cel_data.h"
- include "doc/image.h"
- include "doc/layer.h"
- include "doc/layer_tilemap.h"
- include "doc/sprite.h"
- include "doc/tileset.h"
- include "gfx/rect.h"
+#endif
+
+#include "doc/cel_data.h"
+
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/layer_tilemap.h"
+#include "doc/sprite.h"
+#include "doc/tileset.h"
+#include "gfx/rect.h"
+
 namespace doc {
+
 CelData::CelData(const ImageRef& image)
   : WithUserData(ObjectType::CelData)
   , m_image(image)
@@ -26,6 +28,7 @@ CelData::CelData(const ImageRef& image)
   , m_boundsF(nullptr)
 {
 }
+
 CelData::CelData(const CelData& celData)
   : WithUserData(ObjectType::CelData)
   , m_image(celData.m_image)
@@ -34,21 +37,26 @@ CelData::CelData(const CelData& celData)
   , m_boundsF(celData.m_boundsF ? std::make_unique<gfx::RectF>(*celData.m_boundsF) : nullptr)
 {
 }
+
 CelData::~CelData()
 {
 }
+
 void CelData::setImage(const ImageRef& image, Layer* layer)
 {
   ASSERT(image.get());
+
   m_image = image;
   adjustBounds(layer);
 }
+
 void CelData::setPosition(const gfx::Point& pos)
 {
   m_bounds.setOrigin(pos);
   if (m_boundsF)
     m_boundsF->setOrigin(gfx::PointF(pos));
 }
+
 void CelData::adjustBounds(Layer* layer)
 {
   ASSERT(m_image);
@@ -67,4 +75,5 @@ void CelData::adjustBounds(Layer* layer)
   m_bounds.w = m_image->width();
   m_bounds.h = m_image->height();
 }
+
 } // namespace doc

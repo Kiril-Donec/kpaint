@@ -1,25 +1,23 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2022-2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#include "app/script/canvas_widget.h"
 
+#include "app/script/graphics_context.h"
+#include "app/ui/skin/skin_theme.h"
+#include "os/system.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
+#include "ui/system.h"
 
-
- include "app/script/canvas_widget.h"
- include "app/script/graphics_context.h"
- include "app/ui/skin/skin_theme.h"
- include "os/system.h"
- include "ui/message.h"
- include "ui/paint_event.h"
- include "ui/resize_event.h"
- include "ui/size_hint_event.h"
- include "ui/system.h"
 namespace app { namespace script {
- static
+
+// static
 ui::WidgetType Canvas::Type()
 {
   static ui::WidgetType type = ui::kGenericWidget;
@@ -27,23 +25,29 @@ ui::WidgetType Canvas::Type()
     type = ui::register_widget_type();
   return type;
 }
- static
+
+// static
 bool Canvas::s_stopKeyEventPropagation = false;
- static
+
+// static
 void Canvas::stopKeyEventPropagation()
 {
   s_stopKeyEventPropagation = true;
 }
+
 Canvas::Canvas() : ui::Widget(Type())
 {
 }
+
 void Canvas::callPaint()
 {
   if (!m_surface)
     return;
+
   os::Paint p;
   p.color(bgColor());
   m_surface->drawRect(m_surface->bounds(), p);
+
   // Draw only on resize (onPaint we draw the cached m_surface)
   GraphicsContext gc(m_surface, m_autoScaling ? ui::guiscale() : 1);
   if (m_autoScaling) {
@@ -52,11 +56,14 @@ void Canvas::callPaint()
   }
   else
     gc.font(AddRef(font()));
+
   Paint(gc);
 }
+
 void Canvas::onInitTheme(ui::InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
+
   gfx::Color bg;
   if (auto theme = skin::SkinTheme::get(this))
     bg = theme->colors.windowFace();
@@ -64,6 +71,7 @@ void Canvas::onInitTheme(ui::InitThemeEvent& ev)
     bg = gfx::rgba(0, 0, 0);
   setBgColor(bg);
 }
+
 template<typename T>
 static T makeScaled(T* msg, const gfx::Point& offset)
 {
@@ -74,6 +82,7 @@ static T makeScaled(T* msg, const gfx::Point& offset)
   result.setDisplay(static_cast<ui::Message*>(msg)->display());
   return result;
 }
+
 bool Canvas::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
@@ -86,6 +95,7 @@ bool Canvas::onProcessMessage(ui::Message* msg)
           return true;
       }
       break;
+
     case ui::kKeyUpMessage:
       if (hasFocus()) {
         s_stopKeyEventPropagation = false;
@@ -95,7 +105,9 @@ bool Canvas::onProcessMessage(ui::Message* msg)
           return true;
       }
       break;
+
     case ui::kSetCursorMessage: ui::set_mouse_cursor(m_cursorType); return true;
+
     case ui::kMouseMoveMessage: {
       auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
       if (m_autoScaling) {
@@ -104,11 +116,14 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       MouseMove(&mouseMsg);
       break;
     }
+
     case ui::kMouseDownMessage: {
       if (!hasCapture())
         captureMouse();
+
       if (isFocusStop() && !hasFocus())
         requestFocus();
+
       auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
       if (m_autoScaling) {
         mouseMsg = makeScaled(&mouseMsg, bounds().origin());
@@ -116,16 +131,19 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       MouseDown(&mouseMsg);
       break;
     }
+
     case ui::kMouseUpMessage: {
       auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
       if (m_autoScaling) {
         mouseMsg = makeScaled(&mouseMsg, bounds().origin());
       }
       MouseUp(&mouseMsg);
+
       if (hasCapture())
         releaseMouse();
       break;
     }
+
     case ui::kDoubleClickMessage: {
       auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
       if (m_autoScaling) {
@@ -134,6 +152,7 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       DoubleClick(&mouseMsg);
       break;
     }
+
     case ui::kMouseWheelMessage: {
       auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
       if (m_autoScaling) {
@@ -142,6 +161,7 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       Wheel(&mouseMsg);
       break;
     }
+
     case ui::kTouchMagnifyMessage: {
       auto touchMsg = *static_cast<ui::TouchMessage*>(msg);
       if (m_autoScaling) {
@@ -153,16 +173,19 @@ bool Canvas::onProcessMessage(ui::Message* msg)
   }
   return ui::Widget::onProcessMessage(msg);
 }
+
 void Canvas::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
   if (os::instance() && !ev.bounds().isEmpty()) {
     int w = ev.bounds().w;
     int h = ev.bounds().h;
+
     if (m_autoScaling) {
       w = w / ui::guiscale() + (w % ui::guiscale());
       h = h / ui::guiscale() + (h % ui::guiscale());
     }
+
     if (!m_surface || m_surface->width() != w || m_surface->height() != h) {
       m_surface = os::instance()->makeSurface(w, h);
       callPaint();
@@ -171,6 +194,7 @@ void Canvas::onResize(ui::ResizeEvent& ev)
   else
     m_surface.reset();
 }
+
 void Canvas::onPaint(ui::PaintEvent& ev)
 {
   auto g = ev.graphics();
@@ -183,4 +207,5 @@ void Canvas::onPaint(ui::PaintEvent& ev)
     g->drawSurface(m_surface.get(), m_surface->bounds(), rc, os::Sampling(), nullptr);
   }
 }
+
 }} // namespace app::script

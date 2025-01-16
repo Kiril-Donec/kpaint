@@ -1,11 +1,5 @@
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<?xml version="1.0" encoding="utf-8"?>
-<!---- KPaint
-     Copyright (C) 2024-2025 KiriX Company --->
-
-<!---- KPaint --->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
   <window id="main_window" noborders="true" desktop="true">
     <vbox noborders="true" expansive="true">
@@ -32,5 +26,9 @@
       </splitter>
       <hbox noborders="true" id="status_bar_placeholder" />
     </vbox>
+    <menubar id="main_menubar">
+      <menu text="KPaint Belko Edition" id="app_menu">
+      </menu>
+    </menubar>
   </window>
 </gui>

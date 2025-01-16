@@ -1,4 +1,4 @@
-# KPaint Render Library
+# Aseprite Render Library
 
 > Distributed under [MIT license](LICENSE.txt)
 

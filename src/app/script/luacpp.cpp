@@ -1,20 +1,20 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/script/luacpp.h"
- include <cstdio>
+#endif
+
+#include "app/script/luacpp.h"
+
+#include <cstdio>
+
 namespace app { namespace script {
+
 static const char mt_index_code[] =
   "__generic_mt_index = function(t, k) "
   "  local mt = getmetatable(t) "
@@ -34,6 +34,7 @@ static const char mt_index_code[] =
   "  if type(t) == 'table' then return rawset(t, k, v) end "
   "  error(debug.traceback()..': Cannot set field '..tostring(k))"
   "end";
+
 void run_mt_index_code(lua_State* L)
 {
   if (luaL_loadbuffer(L, mt_index_code, sizeof(mt_index_code) - 1, "internal") ||
@@ -42,14 +43,17 @@ void run_mt_index_code(lua_State* L)
     const char* s = lua_tostring(L, -1);
     if (s)
       std::puts(s);
+
     lua_pop(L, 1);
   }
 }
+
 void create_mt_getters_setters(lua_State* L, const char* tname, const Property* properties)
 {
- ifdef _DEBUG
+#ifdef _DEBUG
   const int top = lua_gettop(L);
- endif
+#endif
+
   bool withGetters = false;
   bool withSetters = false;
   for (auto p = properties; p->name; ++p) {
@@ -59,6 +63,7 @@ void create_mt_getters_setters(lua_State* L, const char* tname, const Property* 
       withSetters = true;
   }
   ASSERT(withGetters || withSetters);
+
   luaL_getmetatable(L, tname);
   if (withGetters) {
     lua_newtable(L);
@@ -85,8 +90,10 @@ void create_mt_getters_setters(lua_State* L, const char* tname, const Property* 
     lua_pop(L, 1);
   }
   lua_pop(L, 1);
+
   ASSERT(lua_gettop(L) == top);
 }
+
 bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName)
 {
   bool result = false;
@@ -96,4 +103,5 @@ bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName)
   lua_pop(L, 1);
   return result;
 }
+
 }} // namespace app::script

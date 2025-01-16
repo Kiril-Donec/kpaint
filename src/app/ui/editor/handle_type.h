@@ -1,19 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2001-2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_EDITOR_HANDLE_TYPE_H_INCLUDED
+#define APP_UI_EDITOR_HANDLE_TYPE_H_INCLUDED
+#pragma once
 
-
-
- ifndef APP_UI_EDITOR_HANDLE_TYPE_H_INCLUDED
- define APP_UI_EDITOR_HANDLE_TYPE_H_INCLUDED
- pragma once
 namespace app {
- Handles available to transform a region of pixels in the editor.
+
+// Handles available to transform a region of pixels in the editor.
 enum HandleType {
   // No handle selected
   NoHandle,
@@ -43,5 +41,7 @@ enum HandleType {
   // Handle used to move the pivot
   PivotHandle,
 };
+
 } // namespace app
- endif
+
+#endif

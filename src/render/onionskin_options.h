@@ -1,22 +1,24 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Render Library
+// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2018  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Render Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef RENDER_ONIONSKIN_OPTIONS_H_INCLUDED
- define RENDER_ONIONSKIN_OPTIONS_H_INCLUDED
- pragma once
- include "render/onionskin_position.h"
- include "render/onionskin_type.h"
+#ifndef RENDER_ONIONSKIN_OPTIONS_H_INCLUDED
+#define RENDER_ONIONSKIN_OPTIONS_H_INCLUDED
+#pragma once
+
+#include "render/onionskin_position.h"
+#include "render/onionskin_type.h"
+
 namespace doc {
 class Layer;
 class Tag;
 } // namespace doc
+
 namespace render {
+
 class OnionskinOptions {
 public:
   OnionskinOptions(OnionskinType type)
@@ -30,6 +32,7 @@ public:
     , m_layer(nullptr)
   {
   }
+
   OnionskinType type() const { return m_type; }
   OnionskinPosition position() const { return m_position; }
   int prevFrames() const { return m_prevFrames; }
@@ -38,6 +41,7 @@ public:
   int opacityStep() const { return m_opacityStep; }
   doc::Tag* loopTag() const { return m_loopTag; }
   doc::Layer* layer() const { return m_layer; }
+
   void type(OnionskinType type) { m_type = type; }
   void position(OnionskinPosition position) { m_position = position; }
   void prevFrames(int prevFrames) { m_prevFrames = prevFrames; }
@@ -57,5 +61,7 @@ private:
   doc::Tag* m_loopTag;
   doc::Layer* m_layer;
 };
+
 } // namespace render
- endif
+
+#endif

@@ -1,20 +1,21 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document IO Library
+// Copyright (c) 2021-2023 Igara Studio S.A.
+// Copyright (c) 2016-2017 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document IO Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef DIO_FILE_FORMAT_H_INCLUDED
- define DIO_FILE_FORMAT_H_INCLUDED
- pragma once
+#ifndef DIO_FILE_FORMAT_H_INCLUDED
+#define DIO_FILE_FORMAT_H_INCLUDED
+#pragma once
+
 namespace dio {
+
 enum class FileFormat {
   ERROR = -1,
   UNKNOWN = 0,
-  ASE_ANIMATION, // KPaint File Format
+
+  ASE_ANIMATION, // Aseprite File Format
   ASE_PALETTE,   // Adobe Swatch Exchange
   ACT_PALETTE,
   BMP_IMAGE,
@@ -35,5 +36,7 @@ enum class FileFormat {
   PSD_IMAGE,
   QOI_IMAGE,
 };
+
 } // namespace dio
- endif
+
+#endif

@@ -1,65 +1,70 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2022  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/color.h"
- include "app/commands/new_params.h"
- include "app/doc_exporter.h"
- include "app/pref/preferences.h"
- include "app/sprite_sheet_type.h"
- include "app/tools/ink_type.h"
- include "base/convert_to.h"
- include "base/split_string.h"
- include "base/string.h"
- include "doc/algorithm/resize_image.h"
- include "doc/anidir.h"
- include "doc/color_mode.h"
- include "doc/rgbmap_algorithm.h"
- include "filters/color_curve.h"
- include "filters/hue_saturation_filter.h"
- include "filters/outline_filter.h"
- include "filters/tiled_mode.h"
- include "gfx/rect.h"
- include "gfx/size.h"
- ifdef ENABLE_SCRIPTING
+#endif
+
+#include "app/commands/new_params.h"
+
+#include "app/color.h"
+#include "app/doc_exporter.h"
+#include "app/pref/preferences.h"
+#include "app/sprite_sheet_type.h"
+#include "app/tools/ink_type.h"
+#include "base/convert_to.h"
+#include "base/split_string.h"
+#include "base/string.h"
+#include "doc/algorithm/resize_image.h"
+#include "doc/anidir.h"
+#include "doc/color_mode.h"
+#include "doc/rgbmap_algorithm.h"
+#include "filters/color_curve.h"
+#include "filters/hue_saturation_filter.h"
+#include "filters/outline_filter.h"
+#include "filters/tiled_mode.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
+
+#ifdef ENABLE_SCRIPTING
   #include "app/script/engine.h"
   #include "app/script/luacpp.h"
   #include "app/script/values.h"
- endif
+#endif
+
 namespace app {
-// ////////////////////////////////////////////////////////////////////
- Convert values from strings (e.g. useful for values from gui.xml)
-// ////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
+// Convert values from strings (e.g. useful for values from gui.xml)
+//////////////////////////////////////////////////////////////////////
+
 template<>
 void Param<bool>::fromString(const std::string& value)
 {
   setValue(value == "1" || value == "true");
 }
+
 template<>
 void Param<int>::fromString(const std::string& value)
 {
   setValue(base::convert_to<int>(value));
 }
+
 template<>
 void Param<double>::fromString(const std::string& value)
 {
   setValue(base::convert_to<double>(value));
 }
+
 template<>
 void Param<std::string>::fromString(const std::string& value)
 {
   setValue(value);
 }
+
 template<>
 void Param<gfx::Size>::fromString(const std::string& value)
 {
@@ -72,6 +77,7 @@ void Param<gfx::Size>::fromString(const std::string& value)
   }
   setValue(size);
 }
+
 template<>
 void Param<gfx::Rect>::fromString(const std::string& value)
 {
@@ -86,6 +92,7 @@ void Param<gfx::Rect>::fromString(const std::string& value)
   }
   setValue(rect);
 }
+
 template<>
 void Param<doc::algorithm::ResizeMethod>::fromString(const std::string& value)
 {
@@ -96,6 +103,7 @@ void Param<doc::algorithm::ResizeMethod>::fromString(const std::string& value)
   else
     setValue(doc::algorithm::ResizeMethod::RESIZE_METHOD_NEAREST_NEIGHBOR);
 }
+
 template<>
 void Param<app::SpriteSheetType>::fromString(const std::string& value)
 {
@@ -112,6 +120,7 @@ void Param<app::SpriteSheetType>::fromString(const std::string& value)
   else
     setValue(app::SpriteSheetType::None);
 }
+
 template<>
 void Param<app::SpriteSheetDataFormat>::fromString(const std::string& value)
 {
@@ -122,6 +131,7 @@ void Param<app::SpriteSheetDataFormat>::fromString(const std::string& value)
   else
     setValue(app::SpriteSheetDataFormat::JsonHash);
 }
+
 template<>
 void Param<doc::ColorMode>::fromString(const std::string& value)
 {
@@ -134,16 +144,19 @@ void Param<doc::ColorMode>::fromString(const std::string& value)
   else
     setValue(doc::ColorMode::RGB);
 }
+
 template<>
 void Param<doc::AniDir>::fromString(const std::string& value)
 {
   setValue(doc::convert_string_to_anidir(value));
 }
+
 template<>
 void Param<app::Color>::fromString(const std::string& value)
 {
   setValue(app::Color::fromString(value));
 }
+
 template<>
 void Param<filters::TiledMode>::fromString(const std::string& value)
 {
@@ -156,6 +169,7 @@ void Param<filters::TiledMode>::fromString(const std::string& value)
   else
     setValue(filters::TiledMode::NONE);
 }
+
 template<>
 void Param<filters::OutlineFilter::Place>::fromString(const std::string& value)
 {
@@ -164,6 +178,7 @@ void Param<filters::OutlineFilter::Place>::fromString(const std::string& value)
   else
     setValue(filters::OutlineFilter::Place::Outside);
 }
+
 template<>
 void Param<filters::OutlineFilter::Matrix>::fromString(const std::string& value)
 {
@@ -178,6 +193,7 @@ void Param<filters::OutlineFilter::Matrix>::fromString(const std::string& value)
   else
     setValue((filters::OutlineFilter::Matrix)0);
 }
+
 template<>
 void Param<filters::HueSaturationFilter::Mode>::fromString(const std::string& value)
 {
@@ -190,6 +206,7 @@ void Param<filters::HueSaturationFilter::Mode>::fromString(const std::string& va
   else
     setValue(filters::HueSaturationFilter::Mode::HSL_MUL);
 }
+
 template<>
 void Param<filters::ColorCurve>::fromString(const std::string& value)
 {
@@ -202,11 +219,13 @@ void Param<filters::ColorCurve>::fromString(const std::string& value)
   }
   setValue(curve);
 }
+
 template<>
 void Param<tools::InkType>::fromString(const std::string& value)
 {
   setValue(tools::string_id_to_ink_type(value));
 }
+
 template<>
 void Param<doc::RgbMapAlgorithm>::fromString(const std::string& value)
 {
@@ -217,6 +236,7 @@ void Param<doc::RgbMapAlgorithm>::fromString(const std::string& value)
   else
     setValue(doc::RgbMapAlgorithm::DEFAULT);
 }
+
 template<>
 void Param<gen::SelectionMode>::fromString(const std::string& value)
 {
@@ -231,25 +251,31 @@ void Param<gen::SelectionMode>::fromString(const std::string& value)
   else
     setValue(gen::SelectionMode::DEFAULT);
 }
-// ////////////////////////////////////////////////////////////////////
- Convert values from Lua
-// ////////////////////////////////////////////////////////////////////
- ifdef ENABLE_SCRIPTING
+
+//////////////////////////////////////////////////////////////////////
+// Convert values from Lua
+//////////////////////////////////////////////////////////////////////
+
+#ifdef ENABLE_SCRIPTING
+
 template<>
 void Param<bool>::fromLua(lua_State* L, int index)
 {
   setValue(lua_toboolean(L, index));
 }
+
 template<>
 void Param<int>::fromLua(lua_State* L, int index)
 {
   setValue(lua_tointeger(L, index));
 }
+
 template<>
 void Param<double>::fromLua(lua_State* L, int index)
 {
   setValue(lua_tonumber(L, index));
 }
+
 template<>
 void Param<std::string>::fromLua(lua_State* L, int index)
 {
@@ -258,16 +284,19 @@ void Param<std::string>::fromLua(lua_State* L, int index)
   else
     setValue(std::string());
 }
+
 template<>
 void Param<gfx::Size>::fromLua(lua_State* L, int index)
 {
   setValue(script::convert_args_into_size(L, index));
 }
+
 template<>
 void Param<gfx::Rect>::fromLua(lua_State* L, int index)
 {
   setValue(script::convert_args_into_rect(L, index));
 }
+
 template<>
 void Param<doc::algorithm::ResizeMethod>::fromLua(lua_State* L, int index)
 {
@@ -276,6 +305,7 @@ void Param<doc::algorithm::ResizeMethod>::fromLua(lua_State* L, int index)
   else
     setValue((doc::algorithm::ResizeMethod)lua_tointeger(L, index));
 }
+
 template<>
 void Param<app::SpriteSheetType>::fromLua(lua_State* L, int index)
 {
@@ -284,6 +314,7 @@ void Param<app::SpriteSheetType>::fromLua(lua_State* L, int index)
   else
     setValue((app::SpriteSheetType)lua_tointeger(L, index));
 }
+
 template<>
 void Param<app::SpriteSheetDataFormat>::fromLua(lua_State* L, int index)
 {
@@ -292,6 +323,7 @@ void Param<app::SpriteSheetDataFormat>::fromLua(lua_State* L, int index)
   else
     setValue((app::SpriteSheetDataFormat)lua_tointeger(L, index));
 }
+
 template<>
 void Param<doc::ColorMode>::fromLua(lua_State* L, int index)
 {
@@ -300,6 +332,7 @@ void Param<doc::ColorMode>::fromLua(lua_State* L, int index)
   else
     setValue((doc::ColorMode)lua_tointeger(L, index));
 }
+
 template<>
 void Param<doc::AniDir>::fromLua(lua_State* L, int index)
 {
@@ -308,11 +341,13 @@ void Param<doc::AniDir>::fromLua(lua_State* L, int index)
   else
     setValue((doc::AniDir)lua_tointeger(L, index));
 }
+
 template<>
 void Param<app::Color>::fromLua(lua_State* L, int index)
 {
   setValue(script::convert_args_into_color(L, index));
 }
+
 template<>
 void Param<filters::TiledMode>::fromLua(lua_State* L, int index)
 {
@@ -321,6 +356,7 @@ void Param<filters::TiledMode>::fromLua(lua_State* L, int index)
   else
     setValue((filters::TiledMode)lua_tointeger(L, index));
 }
+
 template<>
 void Param<filters::OutlineFilter::Place>::fromLua(lua_State* L, int index)
 {
@@ -329,6 +365,7 @@ void Param<filters::OutlineFilter::Place>::fromLua(lua_State* L, int index)
   else
     setValue((filters::OutlineFilter::Place)lua_tointeger(L, index));
 }
+
 template<>
 void Param<filters::OutlineFilter::Matrix>::fromLua(lua_State* L, int index)
 {
@@ -337,6 +374,7 @@ void Param<filters::OutlineFilter::Matrix>::fromLua(lua_State* L, int index)
   else
     setValue((filters::OutlineFilter::Matrix)lua_tointeger(L, index));
 }
+
 template<>
 void Param<filters::HueSaturationFilter::Mode>::fromLua(lua_State* L, int index)
 {
@@ -345,6 +383,7 @@ void Param<filters::HueSaturationFilter::Mode>::fromLua(lua_State* L, int index)
   else
     setValue((filters::HueSaturationFilter::Mode)lua_tointeger(L, index));
 }
+
 template<>
 void Param<filters::ColorCurve>::fromLua(lua_State* L, int index)
 {
@@ -361,11 +400,13 @@ void Param<filters::ColorCurve>::fromLua(lua_State* L, int index)
     setValue(curve);
   }
 }
+
 template<>
 void Param<tools::InkType>::fromLua(lua_State* L, int index)
 {
   setValue(script::get_value_from_lua<tools::InkType>(L, index));
 }
+
 template<>
 void Param<doc::RgbMapAlgorithm>::fromLua(lua_State* L, int index)
 {
@@ -374,6 +415,7 @@ void Param<doc::RgbMapAlgorithm>::fromLua(lua_State* L, int index)
   else
     setValue((doc::RgbMapAlgorithm)lua_tointeger(L, index));
 }
+
 template<>
 void Param<gen::SelectionMode>::fromLua(lua_State* L, int index)
 {
@@ -382,6 +424,7 @@ void Param<gen::SelectionMode>::fromLua(lua_State* L, int index)
   else
     setValue((gen::SelectionMode)lua_tointeger(L, index));
 }
+
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
 {
   onResetValues();
@@ -397,19 +440,22 @@ void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
   }
   m_skipLoadParams = true;
 }
-// endif // ENABLE_SCRIPTING
+
+#endif // ENABLE_SCRIPTING
+
 void CommandWithNewParamsBase::onLoadParams(const Params& params)
 {
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
   if (m_skipLoadParams) {
     m_skipLoadParams = false;
     return;
   }
-// endif // ENABLE_SCRIPTING
+#endif // ENABLE_SCRIPTING
   onResetValues();
   for (const auto& pair : params) {
     if (ParamBase* p = onGetParam(pair.first))
       p->fromString(pair.second);
   }
 }
+
 } // namespace app

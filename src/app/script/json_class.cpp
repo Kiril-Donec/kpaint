@@ -1,27 +1,29 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/script/luacpp.h"
- include "app/script/values.h"
- include "json11.hpp"
- include <cstring>
+#endif
+
+#include "app/script/luacpp.h"
+#include "app/script/values.h"
+
+#include <cstring>
+
+#include "json11.hpp"
+
 namespace app { namespace script {
+
 namespace {
+
 struct Json {};
 using JsonObj = json11::Json;
 using JsonArrayIterator = JsonObj::array::const_iterator;
 using JsonObjectIterator = JsonObj::object::const_iterator;
+
 void push_json_value(lua_State* L, const JsonObj& value)
 {
   switch (value.type()) {
@@ -33,14 +35,19 @@ void push_json_value(lua_State* L, const JsonObj& value)
     case json11::Json::OBJECT: push_obj(L, value); break;
   }
 }
+
 JsonObj get_json_value(lua_State* L, int index)
 {
   switch (lua_type(L, index)) {
     case LUA_TNONE:
     case LUA_TNIL:     return JsonObj();
+
     case LUA_TBOOLEAN: return JsonObj(lua_toboolean(L, index) ? true : false);
+
     case LUA_TNUMBER:  return JsonObj(lua_tonumber(L, index));
+
     case LUA_TSTRING:  return JsonObj(lua_tostring(L, index));
+
     case LUA_TTABLE:
       if (is_array_table(L, index)) {
         JsonObj::array items;
@@ -67,23 +74,27 @@ JsonObj get_json_value(lua_State* L, int index)
         return JsonObj(items);
       }
       break;
+
     case LUA_TUSERDATA:
       // TODO convert rectangles, point, size, uuids?
       break;
   }
   return JsonObj();
 }
+
 int JsonObj_gc(lua_State* L)
 {
   get_obj<JsonObj>(L, 1)->~JsonObj();
   return 0;
 }
+
 int JsonObj_eq(lua_State* L)
 {
   auto a = get_obj<JsonObj>(L, 1);
   auto b = get_obj<JsonObj>(L, 2);
   return (*a == *b);
 }
+
 int JsonObj_len(lua_State* L)
 {
   auto obj = get_obj<JsonObj>(L, 1);
@@ -98,6 +109,7 @@ int JsonObj_len(lua_State* L)
   }
   return 1;
 }
+
 int JsonObj_index(lua_State* L)
 {
   auto obj = get_obj<JsonObj>(L, 1);
@@ -114,6 +126,7 @@ int JsonObj_index(lua_State* L)
   }
   return 0;
 }
+
 int JsonObj_newindex(lua_State* L)
 {
   auto obj = get_obj<JsonObj>(L, 1);
@@ -130,6 +143,7 @@ int JsonObj_newindex(lua_State* L)
   }
   return 0;
 }
+
 int JsonObj_pairs_next(lua_State* L)
 {
   auto obj = get_obj<JsonObj>(L, 1);
@@ -141,6 +155,7 @@ int JsonObj_pairs_next(lua_State* L)
   ++it;
   return 2;
 }
+
 int JsonObj_ipairs_next(lua_State* L)
 {
   auto obj = get_obj<JsonObj>(L, 1);
@@ -152,6 +167,7 @@ int JsonObj_ipairs_next(lua_State* L)
   ++it;
   return 0;
 }
+
 int JsonObj_pairs(lua_State* L)
 {
   auto obj = get_obj<JsonObj>(L, 1);
@@ -169,22 +185,26 @@ int JsonObj_pairs(lua_State* L)
   }
   return 0;
 }
+
 int JsonObj_tostring(lua_State* L)
 {
   auto obj = get_obj<JsonObj>(L, 1);
   lua_pushstring(L, obj->dump().c_str());
   return 1;
 }
+
 int JsonObjectIterator_gc(lua_State* L)
 {
   get_obj<JsonObjectIterator>(L, 1)->~JsonObjectIterator();
   return 0;
 }
+
 int JsonArrayIterator_gc(lua_State* L)
 {
   get_obj<JsonArrayIterator>(L, 1)->~JsonArrayIterator();
   return 0;
 }
+
 int Json_decode(lua_State* L)
 {
   if (const char* s = lua_tostring(L, 1)) {
@@ -197,6 +217,7 @@ int Json_decode(lua_State* L)
   }
   return 0;
 }
+
 int Json_encode(lua_State* L)
 {
   // Encode a JsonObj, we deep copy it (create a deep copy)
@@ -211,6 +232,7 @@ int Json_encode(lua_State* L)
   }
   return 0;
 }
+
 const luaL_Reg JsonObj_methods[] = {
   { "__gc",       JsonObj_gc       },
   { "__eq",       JsonObj_eq       },
@@ -221,30 +243,37 @@ const luaL_Reg JsonObj_methods[] = {
   { "__tostring", JsonObj_tostring },
   { nullptr,      nullptr          }
 };
+
 const luaL_Reg JsonObjectIterator_methods[] = {
   { "__gc",  JsonObjectIterator_gc },
   { nullptr, nullptr               }
 };
+
 const luaL_Reg JsonArrayIterator_methods[] = {
   { "__gc",  JsonArrayIterator_gc },
   { nullptr, nullptr              }
 };
+
 const luaL_Reg Json_methods[] = {
   { "decode", Json_decode },
   { "encode", Json_encode },
   { nullptr,  nullptr     }
 };
+
 } // anonymous namespace
+
 DEF_MTNAME(Json);
 DEF_MTNAME(JsonObj);
 DEF_MTNAME(JsonObjectIterator);
 DEF_MTNAME(JsonArrayIterator);
+
 void register_json_object(lua_State* L)
 {
   REG_CLASS(L, JsonObj);
   REG_CLASS(L, JsonObjectIterator);
   REG_CLASS(L, JsonArrayIterator);
   REG_CLASS(L, Json);
+
   lua_newtable(L); // Create a table which will be the "json" object
   lua_pushvalue(L, -1);
   luaL_getmetatable(L, get_mtname<Json>());
@@ -252,4 +281,5 @@ void register_json_object(lua_State* L)
   lua_setglobal(L, "json");
   lua_pop(L, 1); // Pop json table
 }
+
 }} // namespace app::script

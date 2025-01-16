@@ -1,24 +1,26 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2019-2024 Igara Studio S.A.
+// Copyright (c) 2001-2016 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "doc/cel.h"
- include "doc/grid.h"
- include "doc/image.h"
- include "doc/layer.h"
- include "doc/layer_tilemap.h"
- include "doc/sprite.h"
- include "doc/tile.h"
- include "gfx/rect.h"
+#endif
+
+#include "doc/cel.h"
+
+#include "doc/grid.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/layer_tilemap.h"
+#include "doc/sprite.h"
+#include "doc/tile.h"
+#include "gfx/rect.h"
+
 namespace doc {
+
 Cel::Cel(frame_t frame, const ImageRef& image)
   : Object(ObjectType::Cel)
   , m_layer(NULL)
@@ -26,6 +28,7 @@ Cel::Cel(frame_t frame, const ImageRef& image)
   , m_data(new CelData(image))
 {
 }
+
 Cel::Cel(frame_t frame, const CelDataRef& celData)
   : Object(ObjectType::Cel)
   , m_layer(NULL)
@@ -33,56 +36,68 @@ Cel::Cel(frame_t frame, const CelDataRef& celData)
   , m_data(celData)
 {
 }
- static
+
+// static
 Cel* Cel::MakeCopy(const frame_t newFrame, const Cel* other)
 {
   Cel* cel = new Cel(newFrame, ImageRef(Image::createCopy(other->image())));
+
   cel->setPosition(other->position());
   cel->setOpacity(other->opacity());
   cel->copyNonsharedPropertiesFrom(other);
   return cel;
 }
- static
+
+// static
 Cel* Cel::MakeLink(const frame_t newFrame, const Cel* other)
 {
   Cel* cel = new Cel(newFrame, other->dataRef());
   cel->copyNonsharedPropertiesFrom(other);
   return cel;
 }
+
 void Cel::setFrame(frame_t frame)
 {
   ASSERT(m_layer == NULL);
   m_frame = frame;
 }
+
 void Cel::setDataRef(const CelDataRef& celData)
 {
   ASSERT(celData);
   m_data = celData;
 }
+
 void Cel::setPosition(int x, int y)
 {
   setPosition(gfx::Point(x, y));
 }
+
 void Cel::setPosition(const gfx::Point& pos)
 {
   m_data->setPosition(pos);
 }
+
 void Cel::setBounds(const gfx::Rect& bounds)
 {
   m_data->setBounds(bounds);
 }
+
 void Cel::setBoundsF(const gfx::RectF& bounds)
 {
   m_data->setBoundsF(bounds);
 }
+
 void Cel::setOpacity(int opacity)
 {
   m_data->setOpacity(opacity);
 }
+
 void Cel::setZIndex(int zindex)
 {
   m_zIndex = zindex;
 }
+
 Document* Cel::document() const
 {
   ASSERT(m_layer);
@@ -91,6 +106,7 @@ Document* Cel::document() const
   else
     return NULL;
 }
+
 Sprite* Cel::sprite() const
 {
   ASSERT(m_layer);
@@ -99,11 +115,13 @@ Sprite* Cel::sprite() const
   else
     return NULL;
 }
+
 Cel* Cel::link() const
 {
   ASSERT(m_data);
   if (m_data.get() == NULL)
     return NULL;
+
   if (!m_data.unique()) {
     for (frame_t fr = 0; fr < m_frame; ++fr) {
       Cel* possible = m_layer->cel(fr);
@@ -111,24 +129,30 @@ Cel* Cel::link() const
         return possible;
     }
   }
+
   return NULL;
 }
+
 std::size_t Cel::links() const
 {
   std::size_t links = 0;
+
   Sprite* sprite = this->sprite();
   for (frame_t fr = 0; fr < sprite->totalFrames(); ++fr) {
     Cel* cel = m_layer->cel(fr);
     if (cel && cel != this && cel->dataRef().get() == m_data.get())
       ++links;
   }
+
   return links;
 }
+
 void Cel::setParentLayer(LayerImage* layer)
 {
   m_layer = layer;
   fixupImage();
 }
+
 Grid Cel::grid() const
 {
   if (m_layer) {
@@ -142,10 +166,12 @@ Grid Cel::grid() const
   }
   return Grid();
 }
+
 void Cel::copyNonsharedPropertiesFrom(const Cel* fromCel)
 {
   setZIndex(fromCel->zIndex());
 }
+
 void Cel::fixupImage()
 {
   // Change the mask color to the sprite mask color
@@ -156,4 +182,5 @@ void Cel::fixupImage()
     m_data->adjustBounds(m_layer);
   }
 }
+
 } // namespace doc

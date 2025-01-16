@@ -1,41 +1,44 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/console.h"
- include "app/extensions.h"
- include "app/i18n/strings.h"
- include "app/modules/palettes.h"
- include "app/ui/dithering_selector.h"
- include "app/ui/skin/skin_theme.h"
- include "app/util/conversion_to_surface.h"
- include "doc/image.h"
- include "doc/image_ref.h"
- include "doc/primitives.h"
- include "os/surface.h"
- include "os/system.h"
- include "render/dithering.h"
- include "render/gradient.h"
- include "render/quantization.h"
- include "ui/graphics.h"
- include "ui/listitem.h"
- include "ui/paint_event.h"
- include "ui/size_hint_event.h"
- include <algorithm>
+#endif
+
+#include "app/ui/dithering_selector.h"
+
+#include "app/app.h"
+#include "app/console.h"
+#include "app/extensions.h"
+#include "app/i18n/strings.h"
+#include "app/modules/palettes.h"
+#include "app/ui/skin/skin_theme.h"
+#include "app/util/conversion_to_surface.h"
+#include "doc/image.h"
+#include "doc/image_ref.h"
+#include "doc/primitives.h"
+#include "os/surface.h"
+#include "os/system.h"
+#include "render/dithering.h"
+#include "render/gradient.h"
+#include "render/quantization.h"
+#include "ui/graphics.h"
+#include "ui/listitem.h"
+#include "ui/paint_event.h"
+#include "ui/size_hint_event.h"
+
+#include <algorithm>
+
 namespace app {
+
 using namespace ui;
+
 namespace {
+
 class DitherItem : public ListItem {
 public:
   DitherItem(render::DitheringAlgorithm algo,
@@ -49,6 +52,7 @@ public:
     , m_palMods(0)
   {
   }
+
   DitherItem(const render::DitheringMatrix& matrix, const std::string& text)
     : ListItem(text)
     , m_matrixOnly(true)
@@ -58,7 +62,9 @@ public:
     , m_palMods(0)
   {
   }
+
   render::DitheringAlgorithm algo() const { return m_dithering.algorithm(); }
+
   render::DitheringMatrix matrix() const { return m_dithering.matrix(); }
 
 private:
@@ -66,13 +72,16 @@ private:
   {
     const doc::Palette* palette = get_current_palette();
     ASSERT(palette);
+
     if (m_preview) {
       // Reuse the preview in case that the palette is exactly the same
       if (palette->id() == m_palId && palette->getModifications() == m_palMods)
         return m_preview.get();
+
       // In other case regenerate the preview for the current palette
       m_preview.reset();
     }
+
     const int w = 128, h = 16;
     doc::ImageRef image1(doc::Image::create(doc::IMAGE_RGB, w, h));
     render_rgba_linear_gradient(image1.get(),
@@ -82,6 +91,7 @@ private:
                                 doc::rgba(0, 0, 0, 255),
                                 doc::rgba(255, 255, 255, 255),
                                 (m_matrixOnly ? m_dithering.matrix() : render::DitheringMatrix()));
+
     doc::ImageRef image2;
     if (m_matrixOnly) {
       image2 = image1;
@@ -99,23 +109,30 @@ private:
                                    -1,
                                    nullptr);
     }
+
     m_preview = os::instance()->makeRgbaSurface(w, h);
     convert_image_to_surface(image2.get(), palette, m_preview.get(), 0, 0, 0, 0, w, h);
+
     m_palId = palette->id();
     m_palMods = palette->getModifications();
     return m_preview.get();
   }
+
   void onSizeHint(SizeHintEvent& ev) override
   {
     gfx::Size sz = textSize();
+
     sz.w = std::max(sz.w, preview()->width() * guiscale()) + 4 * guiscale();
     sz.h += 6 * guiscale() + preview()->height() * guiscale();
+
     ev.setSizeHint(sz);
   }
+
   void onPaint(PaintEvent& ev) override
   {
     Graphics* g = ev.graphics();
     auto theme = skin::SkinTheme::get(this);
+
     gfx::Color fg, bg;
     if (isSelected()) {
       fg = theme->colors.listitemSelectedText();
@@ -125,12 +142,16 @@ private:
       fg = theme->colors.listitemNormalText();
       bg = theme->colors.listitemNormalFace();
     }
+
     gfx::Rect rc = clientBounds();
     g->fillRect(bg, rc);
+
     gfx::Size textsz = textSize();
     g->drawText(text(), fg, bg, gfx::Point(rc.x + 2 * guiscale(), rc.y + 2 * guiscale()));
+
     ui::Paint paint;
     paint.blendMode(os::BlendMode::SrcOver);
+
     g->drawSurface(preview(),
                    preview()->bounds(),
                    gfx::Rect(rc.x + 2 * guiscale(),
@@ -140,39 +161,49 @@ private:
                    os::Sampling(),
                    &paint);
   }
+
   bool m_matrixOnly;
   render::Dithering m_dithering;
   os::SurfaceRef m_preview;
   doc::ObjectId m_palId;
   int m_palMods;
 };
+
 } // anonymous namespace
+
 DitheringSelector::DitheringSelector(Type type) : m_type(type)
 {
   Extensions& extensions = App::instance()->extensions();
+
   // If an extension with "ditheringMatrices" is disable/enable, we
   // regenerate this DitheringSelector
   m_extChanges = extensions.DitheringMatricesChange.connect([this] { regenerate(); });
+
   setUseCustomWidget(true);
   regenerate();
 }
+
 void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
 {
   ComboBox::onInitTheme(ev);
   if (getItem(0))
     setSizeHint(calcItemSizeHint(0));
 }
+
 void DitheringSelector::setSelectedItemByName(const std::string& name)
 {
   int index = findItemIndex(name);
   setSelectedItemIndex(index);
   regenerate(index);
 }
+
 void DitheringSelector::regenerate(int selectedItemIndex)
 {
   deleteAllItems();
+
   Extensions& extensions = App::instance()->extensions();
   auto ditheringMatrices = extensions.ditheringMatrices();
+
   switch (m_type) {
     case SelectBoth:
       addItem(new DitherItem(render::DitheringAlgorithm::None,
@@ -222,6 +253,7 @@ void DitheringSelector::regenerate(int selectedItemIndex)
   setSelectedItemIndex(selectedItemIndex);
   setSizeHint(calcItemSizeHint(selectedItemIndex));
 }
+
 render::DitheringAlgorithm DitheringSelector::ditheringAlgorithm()
 {
   auto item = static_cast<DitherItem*>(getSelectedItem());
@@ -230,6 +262,7 @@ render::DitheringAlgorithm DitheringSelector::ditheringAlgorithm()
   else
     return render::DitheringAlgorithm::None;
 }
+
 render::DitheringMatrix DitheringSelector::ditheringMatrix()
 {
   auto item = static_cast<DitherItem*>(getSelectedItem());
@@ -238,6 +271,7 @@ render::DitheringMatrix DitheringSelector::ditheringMatrix()
   else
     return render::DitheringMatrix();
 }
+
 gfx::Size DitheringSelector::calcItemSizeHint(int index)
 {
   auto item = getItem(index);
@@ -250,4 +284,5 @@ gfx::Size DitheringSelector::calcItemSizeHint(int index)
     return gfx::Size(0, 0);
   }
 }
+
 } // namespace app

@@ -1,29 +1,30 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/cmd_transaction.h"
- include "app/context.h"
- include "app/site.h"
- include "app/ui/timeline/timeline.h"
+#endif
+
+#include "app/cmd_transaction.h"
+
+#include "app/app.h"
+#include "app/context.h"
+#include "app/site.h"
+#include "app/ui/timeline/timeline.h"
+
 namespace app {
+
 CmdTransaction::CmdTransaction(const std::string& label, bool changeSavedState)
   : m_ranges(nullptr)
   , m_label(label)
   , m_changeSavedState(changeSavedState)
 {
 }
+
 CmdTransaction* CmdTransaction::moveToEmptyCopy()
 {
   CmdTransaction* copy = new CmdTransaction(m_label, m_changeSavedState);
@@ -36,14 +37,17 @@ CmdTransaction* CmdTransaction::moveToEmptyCopy()
   }
   return copy;
 }
+
 void CmdTransaction::setNewDocRange(const DocRange& range)
 {
   if (m_ranges)
     range.write(m_ranges->m_after);
 }
+
 void CmdTransaction::updateSpritePositionAfter()
 {
   m_spritePositionAfter = calcSpritePosition();
+
   // We cannot capture m_ranges->m_after from the Timeline here
   // because the document range in the Timeline is updated after the
   // commit/command (on Timeline::onAfterCommandExecution).
@@ -51,6 +55,7 @@ void CmdTransaction::updateSpritePositionAfter()
   // So m_ranges->m_after is captured explicitly in
   // setNewDocRange().
 }
+
 std::istream* CmdTransaction::documentRangeBeforeExecute() const
 {
   if (m_ranges && m_ranges->m_before.tellp() > 0) {
@@ -60,6 +65,7 @@ std::istream* CmdTransaction::documentRangeBeforeExecute() const
   else
     return nullptr;
 }
+
 std::istream* CmdTransaction::documentRangeAfterExecute() const
 {
   if (m_ranges && m_ranges->m_after.tellp() > 0) {
@@ -69,6 +75,7 @@ std::istream* CmdTransaction::documentRangeAfterExecute() const
   else
     return nullptr;
 }
+
 void CmdTransaction::onExecute()
 {
   // Save the current site and doc range
@@ -77,21 +84,26 @@ void CmdTransaction::onExecute()
     m_ranges.reset(new Ranges);
     calcDocRange().write(m_ranges->m_before);
   }
+
   // Execute the sequence of "cmds"
   CmdSequence::onExecute();
 }
+
 void CmdTransaction::onUndo()
 {
   CmdSequence::onUndo();
 }
+
 void CmdTransaction::onRedo()
 {
   CmdSequence::onRedo();
 }
+
 std::string CmdTransaction::onLabel() const
 {
   return m_label;
 }
+
 size_t CmdTransaction::onMemSize() const
 {
   size_t size = CmdSequence::onMemSize();
@@ -100,11 +112,13 @@ size_t CmdTransaction::onMemSize() const
   }
   return size;
 }
+
 SpritePosition CmdTransaction::calcSpritePosition() const
 {
   Site site = context()->activeSite();
   return SpritePosition(site.layer(), site.frame());
 }
+
 bool CmdTransaction::isDocRangeEnabled() const
 {
   if (App::instance()) {
@@ -114,6 +128,7 @@ bool CmdTransaction::isDocRangeEnabled() const
   }
   return false;
 }
+
 DocRange CmdTransaction::calcDocRange() const
 {
   // TODO We cannot use Context::activeSite() because it losts
@@ -125,4 +140,5 @@ DocRange CmdTransaction::calcDocRange() const
   }
   return DocRange();
 }
+
 } // namespace app

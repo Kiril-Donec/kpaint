@@ -1,22 +1,22 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/util/buffer_region.h"
- include "doc/image.h"
- include "gfx/region.h"
- include <algorithm>
+#endif
+
+#include "app/util/buffer_region.h"
+
+#include "doc/image.h"
+#include "gfx/region.h"
+
+#include <algorithm>
+
 namespace app {
+
 void save_image_region_in_buffer(const gfx::Region& region,
                                  const doc::Image* image,
                                  const gfx::Point& imagePos,
@@ -27,6 +27,7 @@ void save_image_region_in_buffer(const gfx::Region& region,
   size_t reqBytes = 0;
   for (const auto& rc : region)
     reqBytes += bytesPerPixel * rc.w * rc.h;
+
   // Save region pixels
   buffer.resize(reqBytes);
   auto it = buffer.begin();
@@ -39,6 +40,7 @@ void save_image_region_in_buffer(const gfx::Region& region,
     }
   }
 }
+
 void swap_image_region_with_buffer(const gfx::Region& region,
                                    doc::Image* image,
                                    base::buffer& buffer)
@@ -54,4 +56,5 @@ void swap_image_region_with_buffer(const gfx::Region& region,
     }
   }
 }
+
 } // namespace app

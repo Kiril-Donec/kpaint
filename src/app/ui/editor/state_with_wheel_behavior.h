@@ -1,41 +1,45 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2001-2016  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_STATE_WITH_WHEEL_BEHAVIOR_H_INCLUDED
+#define APP_UI_STATE_WITH_WHEEL_BEHAVIOR_H_INCLUDED
+#pragma once
 
+#include "app/color.h"
+#include "app/tools/ink_type.h"
+#include "app/ui/editor/editor_state.h"
+#include "app/ui/key.h"
+#include "doc/frame.h"
+#include "doc/layer.h"
+#include "doc/layer_list.h"
 
-
- ifndef APP_UI_STATE_WITH_WHEEL_BEHAVIOR_H_INCLUDED
- define APP_UI_STATE_WITH_WHEEL_BEHAVIOR_H_INCLUDED
- pragma once
- include "app/color.h"
- include "app/tools/ink_type.h"
- include "app/ui/editor/editor_state.h"
- include "app/ui/key.h"
- include "doc/frame.h"
- include "doc/layer.h"
- include "doc/layer_list.h"
 namespace render {
 class Zoom;
 }
+
 namespace app {
+
 namespace tools {
 class Tool;
 class ToolGroup;
 } // namespace tools
+
 class StateWithWheelBehavior : public EditorState {
 public:
   enum class ScrollBigSteps { Off, On };
   enum class PreciseWheel { Off, On };
+
   // Indicates that the message comes from a real mouse wheel (which
   // might have special handling inverting the direction of the
   // wheel action depending on the operating system, etc.)
   enum class FromMouseWheel { Off, On };
+
   StateWithWheelBehavior();
+
   bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) override;
   bool onTouchMagnify(Editor* editor, ui::TouchMessage* msg) override;
   bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
@@ -51,6 +55,7 @@ protected:
                           const PreciseWheel preciseWheel,
                           const FromMouseWheel fromMouseWheel);
   const doc::LayerList& browsableLayers(Editor* editor) const;
+
   virtual Color initialFgColor() const;
   virtual Color initialBgColor() const;
   virtual int initialFgTileIndex() const;
@@ -68,15 +73,20 @@ protected:
   virtual tools::Tool* initialTool() const;
   virtual void changeFgColor(Color c);
   virtual void disableQuickTool() const;
+
   virtual tools::Tool* getInitialToolInActiveGroup();
   virtual void onToolChange(tools::Tool* tool);
   virtual void onToolGroupChange(Editor* editor, tools::ToolGroup* group);
+
   tools::Tool* getActiveTool() const;
 
 private:
   void setZoom(Editor* editor, const render::Zoom& zoom, const gfx::Point& mousePos);
+
   mutable doc::LayerList m_browsableLayers;
   tools::Tool* m_tool = nullptr;
 };
+
 } // namespace app
- endif
+
+#endif

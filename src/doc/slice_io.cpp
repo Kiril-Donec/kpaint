@@ -1,30 +1,34 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2017-2018 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "base/serialization.h"
- include "doc/slice.h"
- include "doc/slice_io.h"
- include "doc/string_io.h"
- include "doc/user_data_io.h"
- include <iostream>
- include <memory>
+#endif
+
+#include "doc/slice_io.h"
+
+#include "base/serialization.h"
+#include "doc/slice.h"
+#include "doc/string_io.h"
+#include "doc/user_data_io.h"
+
+#include <iostream>
+#include <memory>
+
 namespace doc {
+
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
+
 void write_slice(std::ostream& os, const Slice* slice)
 {
   write32(os, slice->id());
   write_string(os, slice->name());
   write_user_data(os, slice->userData());
+
   // Number of keys
   write32(os, slice->size());
   for (const auto& key : *slice) {
@@ -32,12 +36,14 @@ void write_slice(std::ostream& os, const Slice* slice)
     write_slicekey(os, *key.value());
   }
 }
+
 Slice* read_slice(std::istream& is, const bool setId, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
   const UserData userData = read_user_data(is, serial);
   size_t nkeys = read32(is);
+
   std::unique_ptr<Slice> slice(new Slice);
   slice->setName(name);
   slice->setUserData(userData);
@@ -45,10 +51,12 @@ Slice* read_slice(std::istream& is, const bool setId, const SerialFormat serial)
     frame_t fr = read32(is);
     slice->insert(fr, read_slicekey(is));
   }
+
   if (setId)
     slice->setId(id);
   return slice.release();
 }
+
 void write_slicekey(std::ostream& os, const SliceKey& sliceKey)
 {
   write32(os, sliceKey.bounds().x);
@@ -62,6 +70,7 @@ void write_slicekey(std::ostream& os, const SliceKey& sliceKey)
   write32(os, sliceKey.pivot().x);
   write32(os, sliceKey.pivot().y);
 }
+
 SliceKey read_slicekey(std::istream& is)
 {
   gfx::Rect bounds, center;
@@ -78,4 +87,5 @@ SliceKey read_slicekey(std::istream& is)
   pivot.y = read32(is);
   return SliceKey(bounds, center, pivot);
 }
+
 } // namespace doc

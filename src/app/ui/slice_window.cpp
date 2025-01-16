@@ -1,26 +1,27 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/doc.h"
- include "app/pref/preferences.h"
- include "app/ui/slice_window.h"
- include "app/ui/user_data_view.h"
- include "doc/slice.h"
- include "doc/sprite.h"
- include "ui/manager.h"
- include <algorithm>
+#endif
+
+#include "app/ui/slice_window.h"
+
+#include "app/doc.h"
+#include "app/pref/preferences.h"
+#include "app/ui/user_data_view.h"
+#include "doc/slice.h"
+#include "doc/sprite.h"
+#include "ui/manager.h"
+
+#include <algorithm>
+
 namespace app {
+
 SliceWindow::SliceWindow(const doc::Sprite* sprite,
                          const doc::SelectedObjects& slices,
                          const doc::frame_t frame)
@@ -28,26 +29,33 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
   , m_userDataView(Preferences::instance().slices.userDataVisibility)
 {
   ASSERT(!slices.empty());
+
   Slice* slice = slices.frontAs<Slice>();
   m_userDataView.configureAndSet(slice->userData(), propertiesGrid());
   userData()->Click.connect([this] { onToggleUserData(); });
+
   if (slices.size() == 1) {
     // If we are going to edit just one slice, we indicate like all
     // fields were modified, so then the slice properties transaction
     // is created comparing the window fields with the slice fields
     // (and not with which field was modified).
     m_mods = kAll;
+
     name()->setText(slice->name());
+
     const doc::SliceKey* key = slice->getByFrame(frame);
     ASSERT(key);
     if (!key)
       return;
+
     boundsX()->setTextf("%d", key->bounds().x);
     boundsY()->setTextf("%d", key->bounds().y);
     boundsW()->setTextf("%d", key->bounds().w);
     boundsH()->setTextf("%d", key->bounds().h);
+
     center()->Click.connect([this] { onCenterChange(); });
     pivot()->Click.connect([this] { onPivotChange(); });
+
     if (key->hasCenter()) {
       center()->setSelected(true);
       centerX()->setTextf("%d", key->center().x);
@@ -58,6 +66,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
     else {
       onCenterChange();
     }
+
     if (key->hasPivot()) {
       pivot()->setSelected(true);
       pivotX()->setTextf("%d", key->pivot().x);
@@ -73,29 +82,35 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
                              centerY(), centerW(), centerH(), pivotX(),  pivotY() };
     const Mods entryMods[] = { kName,    kBoundsX, kBoundsY, kBoundsW, kBoundsH, kCenterX,
                                kCenterY, kCenterW, kCenterH, kPivotX,  kPivotY };
+
     for (int i = 0; i < sizeof(entries) / sizeof(entries[0]); ++i) {
       auto entry = entries[i];
       Mods mod = entryMods[i];
       entry->setSuffix("*");
       entry->Change.connect([this, entry, mod] { onModifyField(entry, mod); });
     }
+
     ui::Entry* userDataEntry = m_userDataView.entry();
     userDataEntry->setSuffix("*");
     userDataEntry->Change.connect(
       [this, userDataEntry] { onModifyField(userDataEntry, kUserData); });
+
     ColorButton* colorButton = m_userDataView.color();
     colorButton->Click.connect([this] { onPossibleColorChange(); });
   }
 }
+
 bool SliceWindow::show()
 {
   openWindowInForeground();
   return (closer() == ok());
 }
+
 std::string SliceWindow::nameValue() const
 {
   return name()->text();
 }
+
 gfx::Rect SliceWindow::boundsValue() const
 {
   gfx::Rect rc(boundsX()->textInt(),
@@ -108,10 +123,12 @@ gfx::Rect SliceWindow::boundsValue() const
     rc.h = 1;
   return rc;
 }
+
 gfx::Rect SliceWindow::centerValue() const
 {
   if (!center()->isSelected())
     return gfx::Rect(0, 0, 0, 0);
+
   gfx::Rect rc(centerX()->textInt(),
                centerY()->textInt(),
                centerW()->textInt(),
@@ -122,19 +139,24 @@ gfx::Rect SliceWindow::centerValue() const
     rc.h = 1;
   return rc;
 }
+
 gfx::Point SliceWindow::pivotValue() const
 {
   if (!pivot()->isSelected())
     return doc::SliceKey::NoPivot;
+
   return gfx::Point(pivotX()->textInt(), pivotY()->textInt());
 }
+
 void SliceWindow::onCenterChange()
 {
   bool state = center()->isSelected();
+
   centerX()->setEnabled(state);
   centerY()->setEnabled(state);
   centerW()->setEnabled(state);
   centerH()->setEnabled(state);
+
   if (state) {
     centerX()->setText("1");
     centerY()->setText("1");
@@ -142,30 +164,37 @@ void SliceWindow::onCenterChange()
     centerH()->setTextf("%d", std::max(1, boundsH()->textInt() - 2));
   }
 }
+
 void SliceWindow::onPivotChange()
 {
   bool state = pivot()->isSelected();
+
   pivotX()->setEnabled(state);
   pivotY()->setEnabled(state);
+
   if (state) {
     pivotX()->setText("0");
     pivotY()->setText("0");
   }
 }
+
 void SliceWindow::onToggleUserData()
 {
   m_userDataView.toggleVisibility();
   remapWindow();
   manager()->invalidate();
 }
+
 void SliceWindow::onModifyField(ui::Entry* entry, const Mods mods)
 {
   if (entry)
     entry->setSuffix(std::string());
   m_mods = Mods(int(m_mods) | int(mods));
 }
+
 void SliceWindow::onPossibleColorChange()
 {
   m_mods = Mods(int(m_mods) | int(kUserData));
 }
+
 } // namespace app

@@ -1,22 +1,21 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2019-2024  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/ui/color_bar.h"
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/ui/color_bar.h"
+
 namespace app {
+
 using namespace gfx;
+
 class ToggleTilesModeCommand : public Command {
 public:
   ToggleTilesModeCommand() : Command(CommandId::ToggleTilesMode(), CmdUIOnlyFlag) {}
@@ -27,6 +26,7 @@ protected:
     auto colorBar = ColorBar::instance();
     return (colorBar->tilemapMode() == TilemapMode::Tiles);
   }
+
   void onExecute(Context* context) override
   {
     auto colorBar = ColorBar::instance();
@@ -36,8 +36,10 @@ protected:
     }
   }
 };
+
 Command* CommandFactory::createToggleTilesModeCommand()
 {
   return new ToggleTilesModeCommand;
 }
+
 } // namespace app

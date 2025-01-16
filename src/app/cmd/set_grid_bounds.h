@@ -1,24 +1,23 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_CMD_SET_GRID_BOUNDS_H_INCLUDED
+#define APP_CMD_SET_GRID_BOUNDS_H_INCLUDED
+#pragma once
 
+#include "app/cmd.h"
+#include "app/cmd/with_sprite.h"
+#include "gfx/rect.h"
 
-
- ifndef APP_CMD_SET_GRID_BOUNDS_H_INCLUDED
- define APP_CMD_SET_GRID_BOUNDS_H_INCLUDED
- pragma once
- include "app/cmd.h"
- include "app/cmd/with_sprite.h"
- include "gfx/rect.h"
 namespace doc {
 class Sprite;
 }
+
 namespace app { namespace cmd {
+
 class SetGridBounds : public Cmd,
                       public WithSprite {
 public:
@@ -32,8 +31,11 @@ protected:
 
 private:
   void setGrid(const gfx::Rect& grid);
+
   gfx::Rect m_oldBounds;
   gfx::Rect m_newBounds;
 };
+
 }} // namespace app::cmd
- endif
+
+#endif

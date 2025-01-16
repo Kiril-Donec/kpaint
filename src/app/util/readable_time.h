@@ -1,19 +1,19 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UTIL_READABLE_TIME_H_INCLUDED
+#define APP_UTIL_READABLE_TIME_H_INCLUDED
+#pragma once
 
+#include <string>
 
-
- ifndef APP_UTIL_READABLE_TIME_H_INCLUDED
- define APP_UTIL_READABLE_TIME_H_INCLUDED
- pragma once
- include <string>
 namespace app {
+
 std::string human_readable_time(const int t);
+
 } // namespace app
- endif
+
+#endif

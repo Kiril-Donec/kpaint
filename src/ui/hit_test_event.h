@@ -1,17 +1,17 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2001-2013, 2015  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef UI_HIT_TEST_EVENT_H_INCLUDED
- define UI_HIT_TEST_EVENT_H_INCLUDED
- pragma once
- include "ui/event.h"
+#ifndef UI_HIT_TEST_EVENT_H_INCLUDED
+#define UI_HIT_TEST_EVENT_H_INCLUDED
+#pragma once
+
+#include "ui/event.h"
+
 namespace ui {
+
 enum HitTest {
   HitTestNowhere,
   HitTestCaption,
@@ -25,6 +25,7 @@ enum HitTest {
   HitTestBorderSW,
   HitTestBorderW,
 };
+
 class HitTestEvent : public Event {
 public:
   HitTestEvent(Component* source, const gfx::Point& point, HitTest hit)
@@ -33,7 +34,9 @@ public:
     , m_hit(hit)
   {
   }
+
   gfx::Point point() const { return m_point; }
+
   HitTest hit() const { return m_hit; }
   void setHit(HitTest hit) { m_hit = hit; }
 
@@ -41,5 +44,7 @@ private:
   gfx::Point m_point;
   HitTest m_hit;
 };
+
 } // namespace ui
-// endif // UI_HIT_TEST_EVENT_H_INCLUDED
+
+#endif // UI_HIT_TEST_EVENT_H_INCLUDED

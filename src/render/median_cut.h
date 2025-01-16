@@ -1,19 +1,20 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Render Library
+// Copyright (c) 2001-2017 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Render Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef RENDER_MEDIAN_CUT_H_INCLUDED
- define RENDER_MEDIAN_CUT_H_INCLUDED
- pragma once
- include "doc/color.h"
- include <list>
- include <queue>
+#ifndef RENDER_MEDIAN_CUT_H_INCLUDED
+#define RENDER_MEDIAN_CUT_H_INCLUDED
+#pragma once
+
+#include "doc/color.h"
+
+#include <list>
+#include <queue>
+
 namespace render {
+
 template<class Histogram>
 class Box {
   // These classes are used as parameters for some Box's generic
@@ -43,6 +44,7 @@ class Box {
       return h.at(j, k, l, i);
     }
   };
+
   // These classes are used as template parameter to split a Box
   // along an axis (see splitAlongAxis)
   struct RAxisSplitter {
@@ -100,6 +102,7 @@ public:
     , volume(calculateVolume())
   {
   }
+
   // Shrinks each plane of the box to a position where there are
   // points in the histogram.
   void shrink(const Histogram& histogram)
@@ -108,12 +111,15 @@ public:
     axisShrink<GAxisGetter>(histogram, g1, g2, r1, r2, b1, b2, a1, a2);
     axisShrink<BAxisGetter>(histogram, b1, b2, r1, r2, g1, g2, a1, a2);
     axisShrink<AAxisGetter>(histogram, a1, a2, r1, r2, g1, g2, b1, b2);
+
     // Calculate number of points inside the box (this is done by
     // first time here, because the Box ctor didn't calculate it).
     points = countPoints(histogram);
+
     // Recalculate the volume (used in operator<).
     volume = calculateVolume();
   }
+
   bool split(const Histogram& histogram, std::priority_queue<Box>& boxes) const
   {
     // Split along the largest dimension of the box.
@@ -121,17 +127,21 @@ public:
       return splitAlongAxis<RAxisGetter,
                             RAxisSplitter>(histogram, boxes, r1, r2, g1, g2, b1, b2, a1, a2);
     }
+
     if ((g2 - g1) >= (r2 - r1) && (g2 - g1) >= (b2 - b1) && (g2 - g1) >= (a2 - a1)) {
       return splitAlongAxis<GAxisGetter,
                             GAxisSplitter>(histogram, boxes, g1, g2, r1, r2, b1, b2, a1, a2);
     }
+
     if ((b2 - b1) >= (r2 - r1) && (b2 - b1) >= (g2 - g1) && (b2 - b1) >= (a2 - a1)) {
       return splitAlongAxis<BAxisGetter,
                             BAxisSplitter>(histogram, boxes, b1, b2, r1, r2, g1, g2, a1, a2);
     }
+
     return splitAlongAxis<AAxisGetter,
                           AAxisSplitter>(histogram, boxes, a1, a2, r1, r2, g1, g2, b1, b2);
   }
+
   // Returns the color enclosed by the box calculating the mean of
   // all histogram's points inside the box.
   uint32_t meanColor(const Histogram& histogram) const
@@ -139,6 +149,7 @@ public:
     std::size_t r = 0, g = 0, b = 0, a = 0;
     std::size_t count = 0;
     int i, j, k, l;
+
     for (i = r1; i <= r2; ++i)
       for (j = g1; j <= g2; ++j)
         for (k = b1; k <= b2; ++k)
@@ -150,11 +161,13 @@ public:
             a += c * l;
             count += c;
           }
+
     // No colors in the box? This should not be possible.
     ASSERT(count > 0 &&
            "Box without histogram points, you must fill the histogram before using this function.");
     if (count == 0)
       return doc::rgba(0, 0, 0, 255);
+
     // Calculate the mean. We have to do this before the *255
     // multiplication to avoid a 32-bit overflow. E.g. Alpha channel
     // is the most proper to overflow the 32-bit capacity in case
@@ -163,11 +176,13 @@ public:
     g /= count;
     b /= count;
     a /= count;
+
     return doc::rgba(int(255 * r / (Histogram::RElements - 1)),
                      int(255 * g / (Histogram::GElements - 1)),
                      int(255 * b / (Histogram::BElements - 1)),
                      int(255 * a / (Histogram::AElements - 1)));
   }
+
   // The boxes will be sort in the priority_queue by volume.
   bool operator<(const Box& other) const { return volume < other.volume; }
 
@@ -180,18 +195,22 @@ private:
   {
     return (r2 - r1 + 1) * (g2 - g1 + 1) * (b2 - b1 + 1) * (a2 - a1 + 1);
   }
+
   // Returns the number of histogram's points inside the box bounds.
   std::size_t countPoints(const Histogram& histogram) const
   {
     std::size_t count = 0;
     int i, j, k, l;
+
     for (i = r1; i <= r2; ++i)
       for (j = g1; j <= g2; ++j)
         for (k = b1; k <= b2; ++k)
           for (l = a1; l <= a2; ++l)
             count += histogram.at(i, j, k, l);
+
     return count;
   }
+
   // Reduces the specified side of the box (i1/i2) along the
   // specified axis (if AxisGetter is RAxisGetter, then i1=r1,
   // i2=r2; if AxisGetter is GAxisGetter, then i1=g1, i2=g2).
@@ -207,6 +226,7 @@ private:
                          const int& l2)
   {
     int j, k, l;
+
     // Shrink i1.
     for (; i1 < i2; ++i1) {
       for (j = j1; j <= j2; ++j) {
@@ -218,7 +238,9 @@ private:
         }
       }
     }
+
   doneA:;
+
     for (; i2 > i1; --i2) {
       for (j = j1; j <= j2; ++j) {
         for (k = k1; k <= k2; ++k) {
@@ -229,8 +251,10 @@ private:
         }
       }
     }
+
   doneB:;
   }
+
   // Splits the box in two sub-boxes (if it's possible) along the
   // specified axis by AxisGetter template parameter and "i1/i2"
   // arguments. Returns true if the split was done and the "boxes"
@@ -253,6 +277,7 @@ private:
     std::size_t totalPoints1 = 0;
     std::size_t totalPoints2 = this->points;
     int i, j, k, l;
+
     // We will try to split the box along the "i" axis. Imagine a
     // plane which its normal vector is "i" axis, so we will try to
     // move this plane from "i1" to "i2" to find the median, where
@@ -260,14 +285,17 @@ private:
     // approximated the same.
     for (i = i1; i <= i2; ++i) {
       std::size_t planePoints = 0;
+
       // We count all points in "i" plane.
       for (j = j1; j <= j2; ++j)
         for (k = k1; k <= k2; ++k)
           for (l = l1; l <= l2; ++l)
             planePoints += AxisGetter::at(histogram, i, j, k, l);
+
       // As we move the plane to split through "i" axis One side is getting more points,
       totalPoints1 += planePoints;
       totalPoints2 -= planePoints;
+
       if (totalPoints1 > totalPoints2) {
         if (totalPoints2 > 0) {
           Box box1(AxisSplitter::box1(*this, i));
@@ -293,19 +321,22 @@ private:
     }
     return false;
   }
+
   int r1, g1, b1, a1; // Min point (closest to origin)
   int r2, g2, b2, a2; // Max point
   std::size_t points; // Number of points in the space which enclose this box
   int volume;
 }; // end of class Box
- Median Cut Algorithm as described in P. Heckbert, "Color image
- quantization for frame buffer display,", Computer Graphics,
- 16(3), pp. 297-307 (1982)
+
+// Median Cut Algorithm as described in P. Heckbert, "Color image
+// quantization for frame buffer display,", Computer Graphics,
+// 16(3), pp. 297-307 (1982)
 template<class Histogram>
 void median_cut(const Histogram& histogram, std::size_t maxBoxes, std::vector<uint32_t>& result)
 {
   // We need a priority queue to split bigger boxes first (see Box::operator<).
   std::priority_queue<Box<Histogram>> boxes;
+
   // First we start with one big box containing all histogram's samples.
   boxes.push(Box<Histogram>(0,
                             0,
@@ -315,15 +346,18 @@ void median_cut(const Histogram& histogram, std::size_t maxBoxes, std::vector<ui
                             Histogram::GElements - 1,
                             Histogram::BElements - 1,
                             Histogram::AElements - 1));
+
   // Then we split each box until we reach the maximum specified by
   // the user (maxBoxes) or until there aren't more boxes to split.
   while (!boxes.empty() && boxes.size() < maxBoxes) {
     // Get and remove the first (bigger) box to process from "boxes" queue.
     Box<Histogram> box(boxes.top());
     boxes.pop();
+
     // Shrink the box to the minimum, to enclose the same points in
     // the histogram.
     box.shrink(histogram);
+
     // Try to split the box along the largest axis.
     if (!box.split(histogram, boxes)) {
       // If we were not able to split the box (maybe because it is
@@ -336,6 +370,7 @@ void median_cut(const Histogram& histogram, std::size_t maxBoxes, std::vector<ui
         return;
     }
   }
+
   // When we reach the maximum number of boxes, we convert each box
   // to a color for the "result" vector.
   while (!boxes.empty() && result.size() < maxBoxes) {
@@ -345,5 +380,7 @@ void median_cut(const Histogram& histogram, std::size_t maxBoxes, std::vector<ui
     boxes.pop();
   }
 }
+
 } // namespace render
- endif
+
+#endif

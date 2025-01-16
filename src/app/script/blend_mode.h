@@ -1,23 +1,21 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (c) 2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_SCRIPT_BLEND_MODE_H_INCLUDED
+#define APP_SCRIPT_BLEND_MODE_H_INCLUDED
+#pragma once
 
+#include "base/convert_to.h"
+#include "doc/blend_mode.h"
+#include "os/paint.h"
 
-
- ifndef APP_SCRIPT_BLEND_MODE_H_INCLUDED
- define APP_SCRIPT_BLEND_MODE_H_INCLUDED
- pragma once
- include "base/convert_to.h"
- include "doc/blend_mode.h"
- include "os/paint.h"
 namespace app { namespace script {
- Blend modes for doc::BlendMode and os::BlendMode, used in
- Layer.blendMode and GraphicsContext.blendMode.
+
+// Blend modes for doc::BlendMode and os::BlendMode, used in
+// Layer.blendMode and GraphicsContext.blendMode.
 enum class BlendMode : int {
   CLEAR,
   SRC,
@@ -52,8 +50,11 @@ enum class BlendMode : int {
   SUBTRACT,
   DIVIDE,
 };
+
 }} // namespace app::script
+
 namespace base {
+
 template<>
 inline os::BlendMode convert_to(const app::script::BlendMode& from)
 {
@@ -94,6 +95,7 @@ inline os::BlendMode convert_to(const app::script::BlendMode& from)
     case app::script::BlendMode::DIVIDE:      return os::BlendMode::SrcOver;
   }
 }
+
 template<>
 inline app::script::BlendMode convert_to(const os::BlendMode& from)
 {
@@ -130,6 +132,7 @@ inline app::script::BlendMode convert_to(const os::BlendMode& from)
     case os::BlendMode::Luminosity: return app::script::BlendMode::LUMINOSITY;
   }
 }
+
 template<>
 inline doc::BlendMode convert_to(const app::script::BlendMode& from)
 {
@@ -170,6 +173,7 @@ inline doc::BlendMode convert_to(const app::script::BlendMode& from)
     case app::script::BlendMode::MODULATE:    return doc::BlendMode::NORMAL;
   }
 }
+
 template<>
 inline app::script::BlendMode convert_to(const doc::BlendMode& from)
 {
@@ -197,5 +201,7 @@ inline app::script::BlendMode convert_to(const doc::BlendMode& from)
     case doc::BlendMode::DIVIDE:         return app::script::BlendMode::DIVIDE;
   }
 }
+
 } // namespace base
- endif
+
+#endif

@@ -1,14 +1,14 @@
 {
-  "name": "kpaint-theme",
-  "displayName": "KPaint Default Theme",
-  "description": "Default KPaint Pixel-Art Themes",
+  "name": "aseprite-theme",
+  "displayName": "Aseprite Default Theme",
+  "description": "Default Aseprite Pixel-Art Themes",
   "version": "1.0",
   "author": { "name": "David Capello", "email": "david@igarastudio.com", "url": "http://davidcapello.com/" },
   "contributors": [
     { "name": "Ilija Melentijevic", "url": "http://ilkke.blogspot.com/" },
     { "name": "Nicolas Desilets", "url": "https://twitter.com/MapleGecko" }
   ],
-  "publisher": "kpaint",
+  "publisher": "aseprite",
   "license": "CC-BY-4.0",
   "categories": [
     "Themes"

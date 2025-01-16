@@ -1,20 +1,20 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2001-2017  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef UI_WIDGET_TYPE_H_INCLUDED
- define UI_WIDGET_TYPE_H_INCLUDED
- pragma once
+#ifndef UI_WIDGET_TYPE_H_INCLUDED
+#define UI_WIDGET_TYPE_H_INCLUDED
+#pragma once
+
 namespace ui {
- Widget types.
+
+// Widget types.
 enum WidgetType : int {
   // Undefined (or anonymous) widget type.
   kGenericWidget,
+
   // Known widgets.
   kBoxWidget,
   kButtonWidget,
@@ -44,9 +44,12 @@ enum WidgetType : int {
   kWindowWidget,
   kWindowTitleLabelWidget,
   kWindowCloseButtonWidget,
+
   // User widgets.
   kFirstUserWidget,
   kLastUserWidget = 0x7fffffff
 };
+
 } // namespace ui
-// endif // UI_WIDGET_TYPE_H_INCLUDED
+
+#endif // UI_WIDGET_TYPE_H_INCLUDED

@@ -1,36 +1,41 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2001-2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_COMMANDS_PARAMS_H
+#define APP_COMMANDS_PARAMS_H
 
+#include <map>
+#include <sstream>
+#include <string>
 
-
- ifndef APP_COMMANDS_PARAMS_H
- define APP_COMMANDS_PARAMS_H
- include <map>
- include <sstream>
- include <string>
 namespace app {
+
 class Params {
 public:
   typedef std::map<std::string, std::string> Map;
   typedef Map::iterator iterator;
   typedef Map::const_iterator const_iterator;
+
   iterator begin() { return m_params.begin(); }
   iterator end() { return m_params.end(); }
   const_iterator begin() const { return m_params.begin(); }
   const_iterator end() const { return m_params.end(); }
+
   bool empty() const { return m_params.empty(); }
   int size() const { return int(m_params.size()); }
   void clear() { return m_params.clear(); }
+
   bool has_param(const char* name) const { return m_params.find(name) != m_params.end(); }
+
   bool operator==(const Params& params) const { return m_params == params.m_params; }
+
   bool operator!=(const Params& params) const { return m_params != params.m_params; }
+
   std::string& set(const char* name, const char* value) { return m_params[name] = value; }
+
   std::string get(const char* name) const
   {
     auto it = m_params.find(name);
@@ -38,11 +43,13 @@ public:
       return it->second;
     return std::string();
   }
+
   void operator|=(const Params& params)
   {
     for (const auto& p : params)
       m_params[p.first] = p.second;
   }
+
   template<typename T>
   const T get_as(const char* name) const
   {
@@ -58,6 +65,7 @@ public:
 private:
   Map m_params;
 };
+
 template<>
 inline const bool Params::get_as<bool>(const char* name) const
 {
@@ -68,5 +76,7 @@ inline const bool Params::get_as<bool>(const char* name) const
   }
   return value;
 }
+
 } // namespace app
- endif
+
+#endif

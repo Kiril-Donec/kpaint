@@ -1,18 +1,18 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2001-2015 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef DOC_ALGORITHM_ROTATE_H_INCLUDED
- define DOC_ALGORITHM_ROTATE_H_INCLUDED
- pragma once
+#ifndef DOC_ALGORITHM_ROTATE_H_INCLUDED
+#define DOC_ALGORITHM_ROTATE_H_INCLUDED
+#pragma once
+
 namespace doc {
 class Image;
+
 namespace algorithm {
+
 void scale_image(Image* dst,
                  const Image* src,
                  int dst_x,
@@ -23,6 +23,7 @@ void scale_image(Image* dst,
                  int src_y,
                  int src_w,
                  int src_h);
+
 void rotate_image(Image* dst,
                   const Image* src,
                   int x,
@@ -32,6 +33,7 @@ void rotate_image(Image* dst,
                   int cx,
                   int cy,
                   double angle);
+
 void parallelogram(Image* dst,
                    const Image* src,
                    const Image* mask,
@@ -43,6 +45,8 @@ void parallelogram(Image* dst,
                    int y3,
                    int x4,
                    int y4);
+
 } // namespace algorithm
 } // namespace doc
- endif
+
+#endif

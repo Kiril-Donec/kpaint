@@ -1,33 +1,32 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_DOC_EXPORTER_H_INCLUDED
+#define APP_DOC_EXPORTER_H_INCLUDED
+#pragma once
 
+#include "app/sprite_sheet_data_format.h"
+#include "app/sprite_sheet_type.h"
+#include "base/disable_copying.h"
+#include "base/task.h"
+#include "doc/frame.h"
+#include "doc/image_buffer.h"
+#include "doc/image_ref.h"
+#include "doc/object_id.h"
+#include "doc/object_version.h"
+#include "gfx/fwd.h"
+#include "gfx/rect.h"
 
+#include <iosfwd>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
- ifndef APP_DOC_EXPORTER_H_INCLUDED
- define APP_DOC_EXPORTER_H_INCLUDED
- pragma once
- include "app/sprite_sheet_data_format.h"
- include "app/sprite_sheet_type.h"
- include "base/disable_copying.h"
- include "base/task.h"
- include "doc/frame.h"
- include "doc/image_buffer.h"
- include "doc/image_ref.h"
- include "doc/object_id.h"
- include "doc/object_version.h"
- include "gfx/fwd.h"
- include "gfx/rect.h"
- include <iosfwd>
- include <memory>
- include <string>
- include <utility>
- include <vector>
 namespace doc {
 class Image;
 class SelectedFrames;
@@ -35,20 +34,26 @@ class SelectedLayers;
 class Sprite;
 class Tag;
 } // namespace doc
+
 namespace app {
+
 class Context;
 class Doc;
+
 class DocExporter {
 public:
   DocExporter();
+
   void reset();
   void setDocImageBuffer(const doc::ImageBufferPtr& docBuf);
+
   SpriteSheetDataFormat dataFormat() const { return m_dataFormat; }
   const std::string& dataFilename() { return m_dataFilename; }
   const std::string& textureFilename() { return m_textureFilename; }
   SpriteSheetType spriteSheetType() { return m_sheetType; }
   const std::string& filenameFormat() const { return m_filenameFormat; }
   const std::string& tagnameFormat() const { return m_tagnameFormat; }
+
   void setDataFormat(SpriteSheetDataFormat format) { m_dataFormat = format; }
   void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
   void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
@@ -74,7 +79,9 @@ public:
   void setListLayers(bool value) { m_listLayers = value; }
   void setListLayerHierarchy(bool value) { m_listLayerHierarchy = value; }
   void setListSlices(bool value) { m_listSlices = value; }
+
   void addImage(Doc* doc, const doc::ImageRef& image);
+
   int addDocumentSamples(Doc* doc,
                          const doc::Tag* tag,
                          const bool splitLayers,
@@ -82,7 +89,9 @@ public:
                          const bool splitGrid,
                          const doc::SelectedLayers* selLayers,
                          const doc::SelectedFrames* selFrames);
+
   int addTilesetsSamples(Doc* doc, const doc::SelectedLayers* selLayers);
+
   Doc* exportSheet(Context* ctx, base::task_token& token);
   gfx::Size calculateSheetSize();
 
@@ -92,6 +101,7 @@ private:
   class LayoutSamples;
   class SimpleLayoutSamples;
   class BestFitLayoutSamples;
+
   void addDocument(Doc* doc,
                    const doc::Tag* tag,
                    const doc::SelectedLayers* selLayers,
@@ -107,6 +117,7 @@ private:
                      base::task_token& token) const;
   void trimTexture(const Samples& samples, doc::Sprite* texture) const;
   void createDataFile(const Samples& samples, std::ostream& os, doc::Sprite* texture);
+
   class Item {
   public:
     Doc* doc = nullptr;
@@ -115,6 +126,7 @@ private:
     std::unique_ptr<doc::SelectedFrames> selFrames;
     bool splitGrid = false;
     doc::ImageRef image;
+
     Item(Doc* doc,
          const doc::Tag* tag,
          const doc::SelectedLayers* selLayers,
@@ -123,14 +135,18 @@ private:
     Item(Doc* doc, const doc::ImageRef& image);
     Item(Item&& other);
     ~Item();
+
     Item() = delete;
     Item(const Item&) = delete;
     Item& operator=(const Item&) = delete;
+
     int frames() const;
     doc::SelectedFrames getSelectedFrames() const;
+
     bool isOneImageOnly() const { return image != nullptr; }
   };
   typedef std::vector<Item> Items;
+
   SpriteSheetType m_sheetType;
   SpriteSheetDataFormat m_dataFormat;
   std::string m_dataFilename;
@@ -157,9 +173,11 @@ private:
   bool m_listLayerHierarchy;
   bool m_listSlices;
   Items m_documents;
+
   // Buffers used
   doc::ImageBufferPtr m_docBuf;
   doc::ImageBufferPtr m_sampleBuf;
+
   // Trimmed bounds of a specific sprite (to avoid recalculating
   // this)
   struct Cache {
@@ -168,7 +186,10 @@ private:
     gfx::Rect trimmedBounds;
     bool trimmedByGrid;
   } m_cache;
+
   DISABLE_COPYING(DocExporter);
 };
+
 } // namespace app
- endif
+
+#endif

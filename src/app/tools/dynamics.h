@@ -1,28 +1,28 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2020-2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_TOOLS_DYNAMICS_H_INCLUDED
+#define APP_TOOLS_DYNAMICS_H_INCLUDED
+#pragma once
 
+#include "render/dithering_matrix.h"
 
-
- ifndef APP_TOOLS_DYNAMICS_H_INCLUDED
- define APP_TOOLS_DYNAMICS_H_INCLUDED
- pragma once
- include "render/dithering_matrix.h"
 namespace app { namespace tools {
+
 enum class DynamicSensor {
   Static,
   Pressure,
   Velocity,
 };
+
 enum class ColorFromTo {
   BgToFg,
   FgToBg,
 };
+
 struct DynamicsOptions {
   bool stabilizer = false;
   int stabilizerFactor = 0;
@@ -35,11 +35,14 @@ struct DynamicsOptions {
   ColorFromTo colorFromTo = ColorFromTo::BgToFg;
   float minPressureThreshold = 0.0f, maxPressureThreshold = 1.0f;
   float minVelocityThreshold = 0.0f, maxVelocityThreshold = 1.0f;
+
   bool isDynamic() const
   {
     return (size != DynamicSensor::Static || angle != DynamicSensor::Static ||
             gradient != DynamicSensor::Static);
   }
 };
+
 }} // namespace app::tools
- endif
+
+#endif

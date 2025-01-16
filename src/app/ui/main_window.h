@@ -1,28 +1,30 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_UI_MAIN_WINDOW_H_INCLUDED
+#define APP_UI_MAIN_WINDOW_H_INCLUDED
+#pragma once
 
+#include "app/ui/tabs.h"
+#include "ui/window.h"
 
+#include "main_window.xml.h"
 
- ifndef APP_UI_MAIN_WINDOW_H_INCLUDED
- define APP_UI_MAIN_WINDOW_H_INCLUDED
- pragma once
- include "app/ui/tabs.h"
- include "main_window.xml.h"
- include "ui/window.h"
 namespace ui {
 class Splitter;
 class TooltipManager;
 } // namespace ui
+
 namespace app {
- ifdef ENABLE_UPDATER
+
+#ifdef ENABLE_UPDATER
 class CheckUpdateDelegate;
- endif
+#endif
+
 class BrowserView;
 class ColorBar;
 class ContextBar;
@@ -37,15 +39,19 @@ class StatusBar;
 class Timeline;
 class Workspace;
 class WorkspaceTabs;
+
 namespace crash {
 class DataRecovery;
 }
+
 class MainWindow : public app::gen::MainWindow,
                    public TabsDelegate {
 public:
   enum Mode { NormalMode, ContextBarAndTimelineMode, EditorOnlyMode };
+
   MainWindow();
   ~MainWindow();
+
   MainMenuBar* getMenuBar() { return m_menuBar; }
   ContextBar* getContextBar() { return m_contextBar; }
   StatusBar* statusBar() { return m_statusBar; }
@@ -53,12 +59,13 @@ public:
   Timeline* getTimeline() { return m_timeline; }
   Workspace* getWorkspace() { return m_workspace; }
   PreviewEditorWindow* getPreviewEditor() { return m_previewEditor; }
- ifdef ENABLE_UPDATER
+#ifdef ENABLE_UPDATER
   CheckUpdateDelegate* getCheckUpdateDelegate();
- endif
- if ENABLE_SENTRY
+#endif
+#if ENABLE_SENTRY
   void updateConsentCheckbox();
- endif
+#endif
+
   void initialize();
   void start();
   void showNotification(INotificationDelegate* del);
@@ -68,14 +75,18 @@ public:
   void showDevConsole();
   void showBrowser(const std::string& filename, const std::string& section = std::string());
   bool isHomeSelected() const;
+
   Mode getMode() const { return m_mode; }
   void setMode(Mode mode);
+
   bool getTimelineVisibility() const;
   void setTimelineVisibility(bool visible);
   void popTimeline();
+
   // When crash::DataRecovery finish to search for sessions, this
   // function is called.
   void dataRecoverySessionsAreReady();
+
   // TabsDelegate implementation.
   bool isTabModified(Tabs* tabs, TabView* tabView) override;
   bool canCloneTab(Tabs* tabs, TabView* tabView) override;
@@ -107,6 +118,7 @@ private:
   DocView* getDocView();
   HomeView* getHomeView();
   void configureWorkspaceLayout();
+
   ui::TooltipManager* m_tooltipManager;
   MainMenuBar* m_menuBar;
   StatusBar* m_statusBar;
@@ -122,9 +134,11 @@ private:
   Notifications* m_notifications;
   INotificationDelegate* m_scalePanic;
   BrowserView* m_browserView;
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
   DevConsoleView* m_devConsoleView;
- endif
+#endif
 };
+
 } // namespace app
- endif
+
+#endif

@@ -1,67 +1,73 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/app_menus.h"
- include "app/commands/command.h"
- include "app/context.h"
- include "app/file_selector.h"
- include "app/i18n/strings.h"
- include "app/match_words.h"
- include "app/modules/gui.h"
- include "app/resource_finder.h"
- include "app/tools/tool.h"
- include "app/tools/tool_box.h"
- include "app/ui/app_menuitem.h"
- include "app/ui/keyboard_shortcuts.h"
- include "app/ui/search_entry.h"
- include "app/ui/select_accelerator.h"
- include "app/ui/separator_in_view.h"
- include "app/ui/skin/skin_theme.h"
- include "base/fs.h"
- include "base/pi.h"
- include "base/scoped_value.h"
- include "base/split_string.h"
- include "base/string.h"
- include "keyboard_shortcuts.xml.h"
- include "ui/alert.h"
- include "ui/fit_bounds.h"
- include "ui/graphics.h"
- include "ui/listitem.h"
- include "ui/message.h"
- include "ui/paint_event.h"
- include "ui/resize_event.h"
- include "ui/separator.h"
- include "ui/size_hint_event.h"
- include "ui/splitter.h"
- include "ui/system.h"
- include <algorithm>
- include <map>
- include <memory>
- define KEYBOARD_FILENAME_EXTENSION "kpaint-keys"
+#endif
+
+#include "app/app.h"
+#include "app/app_menus.h"
+#include "app/commands/command.h"
+#include "app/context.h"
+#include "app/file_selector.h"
+#include "app/i18n/strings.h"
+#include "app/match_words.h"
+#include "app/modules/gui.h"
+#include "app/resource_finder.h"
+#include "app/tools/tool.h"
+#include "app/tools/tool_box.h"
+#include "app/ui/app_menuitem.h"
+#include "app/ui/keyboard_shortcuts.h"
+#include "app/ui/search_entry.h"
+#include "app/ui/select_accelerator.h"
+#include "app/ui/separator_in_view.h"
+#include "app/ui/skin/skin_theme.h"
+#include "base/fs.h"
+#include "base/pi.h"
+#include "base/scoped_value.h"
+#include "base/split_string.h"
+#include "base/string.h"
+#include "ui/alert.h"
+#include "ui/fit_bounds.h"
+#include "ui/graphics.h"
+#include "ui/listitem.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/resize_event.h"
+#include "ui/separator.h"
+#include "ui/size_hint_event.h"
+#include "ui/splitter.h"
+#include "ui/system.h"
+
+#include "keyboard_shortcuts.xml.h"
+
+#include <algorithm>
+#include <map>
+#include <memory>
+
+#define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
+
 namespace app {
+
 using namespace skin;
 using namespace tools;
 using namespace ui;
+
 namespace {
+
 using MenuKeys = std::map<AppMenuItem*, KeyPtr>;
+
 class HeaderSplitter : public Splitter {
 public:
   HeaderSplitter() : Splitter(Splitter::ByPixel, HORIZONTAL) {}
   void onPositionChange() override
   {
     Splitter::onPositionChange();
+
     Widget* p = parent();
     while (p && p->type() != kViewWidget)
       p = p->parent();
@@ -69,6 +75,7 @@ public:
       p->layout();
   }
 };
+
 class HeaderItem : public ListItem {
 public:
   HeaderItem()
@@ -77,20 +84,25 @@ public:
     , m_contextLabel(Strings::keyboard_shortcuts_header_context())
   {
     setBorder(gfx::Border(0));
+
     auto theme = SkinTheme::get(this);
     m_actionLabel.setStyle(theme->styles.listHeaderLabel());
     m_keyLabel.setStyle(theme->styles.listHeaderLabel());
     m_contextLabel.setStyle(theme->styles.listHeaderLabel());
+
     gfx::Size displaySize = display()->size();
     m_splitter1.setPosition(displaySize.w * 3 / 4 * 4 / 10);
     m_splitter2.setPosition(displaySize.w * 3 / 4 * 2 / 10);
+
     addChild(&m_splitter1);
     m_splitter1.addChild(&m_actionLabel);
     m_splitter1.addChild(&m_splitter2);
     m_splitter2.addChild(&m_keyLabel);
     m_splitter2.addChild(&m_contextLabel);
   }
+
   int keyXPos() const { return m_keyLabel.bounds().x - bounds().x; }
+
   int contextXPos() const { return m_contextLabel.bounds().x - bounds().x; }
 
 private:
@@ -99,6 +111,7 @@ private:
   Label m_keyLabel;
   Label m_contextLabel;
 };
+
 class KeyItemBase : public ListItem {
 public:
   KeyItemBase(const std::string& text) : ListItem(text) {}
@@ -112,6 +125,7 @@ protected:
     ev.setSizeHint(size);
   }
 };
+
 class KeyItem : public KeyItemBase {
   // Used to avoid deleting the Add/Change/Del buttons on
   // kMouseLeaveMessage when a foreground window is popup on a signal
@@ -146,29 +160,36 @@ public:
     border.bottom(0);
     setBorder(border);
   }
+
   KeyPtr key() { return m_key; }
   AppMenuItem* menuitem() const { return m_menuitem; }
+
   std::string searchableText() const
   {
     if (m_menuitem) {
       Widget* w = m_menuitem;
+
       // If the menu has a submenu, this item cannot be triggered with a key
       // TODO make this possible: we should be able to open a menu with a key
       if (w->type() == kMenuItemWidget && static_cast<MenuItem*>(w)->getSubmenu())
         return std::string();
+
       std::string result;
       while (w && w->type() == kMenuItemWidget) {
         if (!result.empty())
           result.insert(0, " > ");
         result.insert(0, w->text());
+
         w = w->parent();
         if (w && w->type() == kMenuWidget) {
           auto owner = static_cast<Menu*>(w)->getOwnerMenuItem();
+
           // Add the text of the menu (useful for the Palette Menu)
           if (!owner && !w->text().empty()) {
             result.insert(0, " > ");
             result.insert(0, w->text());
           }
+
           w = owner;
         }
         else {
@@ -189,30 +210,37 @@ private:
     Accelerator origAccel = m_key->accels()[index];
     SelectAccelerator window(origAccel, m_key->keycontext(), m_keys);
     window.openWindowInForeground();
+
     if (window.isModified()) {
       m_key->disableAccel(origAccel, KeySource::UserDefined);
       if (!window.accel().isEmpty())
         m_key->add(window.accel(), KeySource::UserDefined, m_keys);
     }
+
     this->window()->layout();
   }
+
   void onDeleteAccel(int index)
   {
     LockButtons lock(this);
     // We need to create a copy of the accelerator because
     // Key::disableAccel() will modify the accels() collection itself.
     ui::Accelerator accel = m_key->accels()[index];
+
     if (ui::Alert::show(Strings::alerts_delete_shortcut(accel.toString())) != 1)
       return;
+
     m_key->disableAccel(accel, KeySource::UserDefined);
     window()->layout();
   }
+
   void onAddAccel()
   {
     LockButtons lock(this);
     ui::Accelerator accel;
     SelectAccelerator window(accel, m_key ? m_key->keycontext() : KeyContext::Any, m_keys);
     window.openWindowInForeground();
+
     if ((window.isModified()) ||
         // We can assign a "None" accelerator to mouse wheel actions
         (m_key && m_key->type() == KeyType::WheelAction && window.isOK())) {
@@ -220,18 +248,25 @@ private:
         ASSERT(m_menuitem);
         if (!m_menuitem)
           return;
+
         ASSERT(m_menuitem->getCommand());
+
         m_key = m_keys.command(m_menuitem->getCommandId().c_str(), m_menuitem->getParams());
+
         m_menuKeys[m_menuitem] = m_key;
       }
+
       m_key->add(window.accel(), KeySource::UserDefined, m_keys);
     }
+
     this->window()->layout();
   }
+
   void onSizeHint(SizeHintEvent& ev) override
   {
     KeyItemBase::onSizeHint(ev);
     gfx::Size size = ev.sizeHint();
+
     if (m_key && m_key->keycontext() != KeyContext::Any) {
       int w = m_headerItem->contextXPos() +
               Graphics::measureUITextLength(
@@ -239,19 +274,23 @@ private:
                 font());
       size.w = std::max(size.w, w);
     }
+
     if (m_key && !m_key->accels().empty()) {
       size_t combos = m_key->accels().size();
       if (combos > 1)
         size.h *= combos;
     }
+
     ev.setSizeHint(size);
   }
+
   void onPaint(PaintEvent& ev) override
   {
     Graphics* g = ev.graphics();
     auto theme = SkinTheme::get(this);
     gfx::Rect bounds = clientBounds();
     gfx::Color fg, bg;
+
     if (isSelected()) {
       fg = theme->colors.listitemSelectedText();
       bg = theme->colors.listitemSelectedFace();
@@ -260,12 +299,15 @@ private:
       fg = theme->colors.listitemNormalText();
       bg = theme->colors.listitemNormalFace();
     }
+
     g->fillRect(bg, bounds);
+
     int y = bounds.y + 2 * guiscale();
     const int th = textSize().h;
     // Position of the second and third columns
     const int keyXPos = bounds.x + m_headerItem->keyXPos();
     const int contextXPos = bounds.x + m_headerItem->contextXPos();
+
     bounds.shrink(border());
     {
       int x = bounds.x + m_level * 16 * guiscale();
@@ -274,6 +316,7 @@ private:
         g->drawUIText(text(), fg, bg, gfx::Point(x, y), 0);
       }
     }
+
     if (m_key && !m_key->accels().empty()) {
       if (m_key->keycontext() != KeyContext::Any) {
         g->drawText(convertKeyContextToUserFriendlyString(m_key->keycontext()),
@@ -281,6 +324,7 @@ private:
                     bg,
                     gfx::Point(contextXPos, y));
       }
+
       const int dh = th + 4 * guiscale();
       IntersectClip clip(g,
                          gfx::Rect(keyXPos, y, contextXPos - keyXPos, dh * m_key->accels().size()));
@@ -296,11 +340,13 @@ private:
       }
     }
   }
+
   void onResize(ResizeEvent& ev) override
   {
     KeyItemBase::onResize(ev);
     destroyButtons();
   }
+
   bool onProcessMessage(Message* msg) override
   {
     switch (msg->type()) {
@@ -309,16 +355,21 @@ private:
         invalidate();
         break;
       }
+
       case kMouseMoveMessage: {
         if (!isEnabled())
           break;
+
         gfx::Rect bounds = this->bounds();
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
         const Accelerators* accels = (m_key ? &m_key->accels() : NULL);
         int y = bounds.y;
         int dh = textSize().h + 4 * guiscale();
         int maxi = (accels && accels->size() > 1 ? accels->size() : 1);
+
         auto theme = SkinTheme::get(this);
+
         for (int i = 0; i < maxi; ++i, y += dh) {
           int w = Graphics::measureUITextLength(
             (accels && i < (int)accels->size() ? getAccelText((*accels)[i]).c_str() : ""),
@@ -326,23 +377,28 @@ private:
           gfx::Rect itemBounds(bounds.x + m_headerItem->keyXPos(), y, w, dh);
           itemBounds = itemBounds.enlarge(
             gfx::Border(4 * guiscale(), 0, 6 * guiscale(), 1 * guiscale()));
+
           if (accels && i < (int)accels->size() && mouseMsg->position().y >= itemBounds.y &&
               mouseMsg->position().y < itemBounds.y + itemBounds.h) {
             if (m_hotAccel != i) {
               m_hotAccel = i;
+
               m_changeConn = obs::connection();
               m_changeButton.reset(new Button(""));
               m_changeConn = m_changeButton->Click.connect([this, i] { onChangeAccel(i); });
               m_changeButton->setStyle(theme->styles.miniButton());
               addChild(m_changeButton.get());
+
               m_deleteConn = obs::connection();
               m_deleteButton.reset(new Button(""));
               m_deleteConn = m_deleteButton->Click.connect([this, i] { onDeleteAccel(i); });
               m_deleteButton->setStyle(theme->styles.miniButton());
               addChild(m_deleteButton.get());
+
               m_changeButton->setBgColor(gfx::ColorNone);
               m_changeButton->setBounds(itemBounds);
               m_changeButton->setText(getAccelText((*accels)[i]));
+
               const char* label = "x";
               m_deleteButton->setBgColor(gfx::ColorNone);
               m_deleteButton->setBounds(
@@ -351,20 +407,25 @@ private:
                           Graphics::measureUITextLength(label, font()) + 4 * guiscale(),
                           itemBounds.h));
               m_deleteButton->setText(label);
+
               invalidate();
             }
           }
+
           if (i == 0 && !m_addButton && (!m_menuitem || m_menuitem->getCommand())) {
             m_addConn = obs::connection();
             m_addButton.reset(new Button(""));
             m_addConn = m_addButton->Click.connect([this] { onAddAccel(); });
             m_addButton->setStyle(theme->styles.miniButton());
             addChild(m_addButton.get());
+
             itemBounds.w = 8 * guiscale() + Graphics::measureUITextLength("Add", font());
             itemBounds.x -= itemBounds.w + 2 * guiscale();
+
             m_addButton->setBgColor(gfx::ColorNone);
             m_addButton->setBounds(itemBounds);
             m_addButton->setText(Strings::keyboard_shortcuts_add());
+
             invalidate();
           }
         }
@@ -373,11 +434,13 @@ private:
     }
     return KeyItemBase::onProcessMessage(msg);
   }
+
   void destroyButtons()
   {
     m_changeConn = obs::connection();
     m_deleteConn = obs::connection();
     m_addConn = obs::connection();
+
     if (!m_lockButtons) {
       m_changeButton.reset();
       m_deleteButton.reset();
@@ -392,8 +455,10 @@ private:
       if (m_addButton)
         m_addButton->setVisible(false);
     }
+
     m_hotAccel = -1;
   }
+
   std::string getAccelText(const Accelerator& accel) const
   {
     if (m_key && m_key->type() == KeyType::WheelAction && accel.isEmpty()) {
@@ -403,6 +468,7 @@ private:
       return accel.toString();
     }
   }
+
   KeyboardShortcuts& m_keys;
   MenuKeys& m_menuKeys;
   KeyPtr m_key;
@@ -420,6 +486,7 @@ private:
   bool m_lockButtons;
   HeaderItem* m_headerItem;
 };
+
 class KeyboardShortcutsWindow : public app::gen::KeyboardShortcuts {
   // TODO Merge with CanvasSizeWindow::Dir
   enum class Dir { NW, N, NE, W, C, E, SW, S, SE };
@@ -436,17 +503,20 @@ public:
     , m_curSection(curSection)
   {
     setAutoRemap(false);
+
     m_listBoxes.push_back(menus());
     m_listBoxes.push_back(commands());
     m_listBoxes.push_back(tools());
     m_listBoxes.push_back(actions());
     m_listBoxes.push_back(wheelActions());
     m_listBoxes.push_back(dragActions());
-// ifdef __APPLE__ // Zoom sliding two fingers option only on macOS
+
+#ifdef __APPLE__ // Zoom sliding two fingers option only on macOS
     slideZoom()->setVisible(true);
- else
+#else
     slideZoom()->setVisible(false);
- endif
+#endif
+
     wheelBehavior()->setSelectedItem(m_keys.hasMouseWheelCustomization() ? 1 : 0);
     if (isDefaultWheelBehavior()) {
       m_keys.setDefaultMouseWheelKeys(wheelZoom()->isSelected());
@@ -454,9 +524,12 @@ public:
     }
     m_keys.addMissingMouseWheelKeys();
     updateSlideZoomText();
+
     onWheelBehaviorChange();
+
     wheelBehavior()->ItemChange.connect([this] { onWheelBehaviorChange(); });
     wheelZoom()->Click.connect([this] { onWheelZoomChange(); });
+
     search()->Change.connect([this] { onSearchChange(); });
     section()->Change.connect([this] { onSectionChange(); });
     dragActions()->Change.connect([this] { onDragActionsChange(); });
@@ -465,13 +538,17 @@ public:
     importButton()->Click.connect([this] { onImport(); });
     exportButton()->Click.connect([this] { onExport(); });
     resetButton()->Click.connect([this] { onReset(); });
+
     fillAllLists();
+
     if (!searchText.empty()) {
       search()->setText(searchText);
       onSearchChange();
     }
   }
+
   ~KeyboardShortcutsWindow() { deleteAllKeyItems(); }
+
   bool isDefaultWheelBehavior() { return (wheelBehavior()->selectedItem() == 0); }
 
 private:
@@ -485,20 +562,26 @@ private:
     deleteList(wheelActions());
     deleteList(dragActions());
   }
+
   void fillAllLists()
   {
     deleteAllKeyItems();
+
     // Fill each list box with the keyboard shortcuts...
+
     fillMenusList(menus(), AppMenus::instance()->getRootMenu(), 0);
+
     {
       // Create a pseudo-item for the palette menu
       KeyItemBase* listItem = new KeyItemBase(Strings::palette_popup_menu_title());
       menus()->addChild(listItem);
       fillMenusList(menus(), AppMenus::instance()->getPalettePopupMenu(), 1);
     }
+
     fillToolsList(tools(), App::instance()->toolBox());
     fillWheelActionsList();
     fillDragActionsList();
+
     // Fill the 'Commands' and 'Action Modifier' lists
     for (const KeyPtr& key : m_keys) {
       // If it's not a listed Command or Action key, we go to the next key...
@@ -506,6 +589,7 @@ private:
             (key->type() == KeyType::Action))) {
         continue;
       }
+
       std::string text = key->triggerString();
       switch (key->keycontext()) {
         case KeyContext::SelectionTool:
@@ -519,46 +603,58 @@ private:
           break;
       }
       KeyItem* keyItem = new KeyItem(m_keys, m_menuKeys, text, key, nullptr, 0, &m_headerItem);
+
       ListBox* listBox = nullptr;
       switch (key->type()) {
         case KeyType::Command: listBox = this->commands(); break;
         case KeyType::Action:  listBox = this->actions(); break;
       }
+
       ASSERT(listBox);
       if (listBox)
         listBox->addChild(keyItem);
     }
+
     commands()->sortItems();
     tools()->sortItems();
     actions()->sortItems();
+
     section()->selectIndex(m_curSection);
     updateViews();
   }
+
   void deleteList(Widget* listbox)
   {
     if (m_headerItem.parent() == listbox)
       listbox->removeChild(&m_headerItem);
+
     while (auto item = listbox->lastChild()) {
       listbox->removeChild(item);
       delete item;
     }
   }
+
   void fillSearchList(const std::string& search)
   {
     deleteList(searchList());
+
     MatchWords match(search);
+
     int sectionIdx = 0; // index 0 is menus
     for (auto listBox : m_listBoxes) {
       Separator* group = nullptr;
+
       for (auto item : listBox->children()) {
         if (KeyItem* keyItem = dynamic_cast<KeyItem*>(item)) {
           std::string itemText = keyItem->searchableText();
           if (!match(itemText))
             continue;
+
           if (!group) {
             group = new SeparatorInView(section()->children()[sectionIdx]->text(), HORIZONTAL);
             searchList()->addChild(group);
           }
+
           KeyItem* copyItem = new KeyItem(m_keys,
                                           m_menuKeys,
                                           itemText,
@@ -566,19 +662,24 @@ private:
                                           keyItem->menuitem(),
                                           0,
                                           &m_headerItem);
+
           if (!item->isEnabled())
             copyItem->setEnabled(false);
+
           searchList()->addChild(copyItem);
         }
       }
+
       ++sectionIdx;
     }
   }
+
   void onWheelBehaviorChange()
   {
     const bool isDefault = isDefaultWheelBehavior();
     wheelActions()->setEnabled(!isDefault);
     wheelZoom()->setVisible(isDefault);
+
     if (isDefault) {
       m_keys.setDefaultMouseWheelKeys(wheelZoom()->isSelected());
       m_wasDefault = true;
@@ -592,14 +693,17 @@ private:
     }
     m_keys.addMissingMouseWheelKeys();
     updateSlideZoomText();
+
     fillWheelActionsList();
     updateViews();
   }
+
   void updateSlideZoomText()
   {
     slideZoom()->setText(isDefaultWheelBehavior() ? Strings::options_slide_zoom() :
                                                     Strings::keyboard_shortcuts_slide_as_wheel());
   }
+
   void fillWheelActionsList()
   {
     deleteList(wheelActions());
@@ -612,6 +716,7 @@ private:
     }
     wheelActions()->sortItems();
   }
+
   void fillDragActionsList()
   {
     deleteList(dragActions());
@@ -624,48 +729,60 @@ private:
     }
     dragActions()->sortItems();
   }
+
   void onWheelZoomChange()
   {
     const bool isDefault = isDefaultWheelBehavior();
     if (isDefault)
       onWheelBehaviorChange();
   }
+
   void onSearchChange()
   {
     base::ScopedValue flag(m_searchChange, true);
     std::string searchText = search()->text();
+
     if (searchText.empty())
       section()->selectIndex(m_curSection);
     else {
       fillSearchList(searchText);
       section()->selectChild(nullptr);
     }
+
     updateViews();
   }
+
   void onSectionChange()
   {
     if (m_searchChange)
       return;
+
     search()->setText("");
     updateViews();
   }
+
   void onDragActionsChange()
   {
     auto key = selectedDragActionKey();
     if (!key)
       return;
+
     int angle = 180 * key->dragVector().angle() / PI;
+
     ui::Widget* oldFocus = manager()->getFocus();
     dragAngle()->setSelectedItem((int)angleToDir(angle));
     if (oldFocus)
       oldFocus->requestFocus();
+
     dragDistance()->setValue(key->dragVector().magnitude());
   }
+
   void onDragVectorChange()
   {
     auto key = selectedDragActionKey();
     if (!key)
       return;
+
     auto v = key->dragVector();
     double a = dirToAngle((Dir)dragAngle()->selectedItem()).angle();
     double m = dragDistance()->getValue();
@@ -677,11 +794,13 @@ private:
       v.y = 0.0;
     key->setDragVector(v);
   }
+
   void updateViews()
   {
     int s = section()->getSelectedIndex();
     if (s >= 0)
       m_curSection = s;
+
     searchView()->setVisible(s < 0);
     menusView()->setVisible(s == 0);
     commandsView()->setVisible(s == 1);
@@ -689,14 +808,17 @@ private:
     actionsView()->setVisible(s == 3);
     wheelSection()->setVisible(s == 4);
     dragSection()->setVisible(s == 5);
+
     if (m_headerItem.parent())
       m_headerItem.parent()->removeChild(&m_headerItem);
     if (s < 0)
       searchList()->insertChild(0, &m_headerItem);
     else
       m_listBoxes[s]->insertChild(0, &m_headerItem);
+
     listsPlaceholder()->layout();
   }
+
   void onImport()
   {
     base::paths exts = { KEYBOARD_FILENAME_EXTENSION };
@@ -707,23 +829,31 @@ private:
                                  FileSelectorType::Open,
                                  filename))
       return;
+
     ASSERT(!filename.empty());
+
     m_keys.importFile(filename.front(), KeySource::UserDefined);
+
     fillAllLists();
   }
+
   void onExport()
   {
     base::paths exts = { KEYBOARD_FILENAME_EXTENSION };
     base::paths filename;
+
     if (!app::show_file_selector(Strings::keyboard_shortcuts_export_keyboard_sc(),
                                  "",
                                  exts,
                                  FileSelectorType::Save,
                                  filename))
       return;
+
     ASSERT(!filename.empty());
+
     m_keys.exportFile(filename.front());
   }
+
   void onReset()
   {
     if (ui::Alert::show(Strings::alerts_restore_all_shortcuts()) == 1) {
@@ -735,12 +865,14 @@ private:
       listsPlaceholder()->layout();
     }
   }
+
   void fillMenusList(ListBox* listbox, Menu* menu, int level)
   {
     for (auto child : menu->children()) {
       if (AppMenuItem* menuItem = dynamic_cast<AppMenuItem*>(child)) {
         if (menuItem->isRecentFileItem())
           continue;
+
         KeyItem* keyItem = new KeyItem(m_keys,
                                        m_menuKeys,
                                        menuItem->text().c_str(),
@@ -748,25 +880,31 @@ private:
                                        menuItem,
                                        level,
                                        &m_headerItem);
+
         listbox->addChild(keyItem);
+
         if (menuItem->hasSubmenu())
           fillMenusList(listbox, menuItem->getSubmenu(), level + 1);
       }
     }
   }
+
   void fillToolsList(ListBox* listbox, ToolBox* toolbox)
   {
     for (Tool* tool : *toolbox) {
       std::string text = tool->getText();
+
       KeyPtr key = m_keys.tool(tool);
       KeyItem* keyItem = new KeyItem(m_keys, m_menuKeys, text, key, nullptr, 0, &m_headerItem);
       listbox->addChild(keyItem);
+
       text += " (quick)";
       key = m_keys.quicktool(tool);
       keyItem = new KeyItem(m_keys, m_menuKeys, text, key, nullptr, 0, &m_headerItem);
       listbox->addChild(keyItem);
     }
   }
+
   bool onProcessMessage(ui::Message* msg) override
   {
     switch (msg->type()) {
@@ -778,6 +916,7 @@ private:
     }
     return app::gen::KeyboardShortcuts::onProcessMessage(msg);
   }
+
   KeyPtr selectedDragActionKey()
   {
     auto item = dragActions()->getSelectedChild();
@@ -788,6 +927,7 @@ private:
     }
     return nullptr;
   }
+
   Dir angleToDir(int angle)
   {
     if (angle >= -1 * 45 / 2 && angle < 1 * 45 / 2)
@@ -808,6 +948,7 @@ private:
       return Dir::SE;
     return Dir::C;
   }
+
   DragVector dirToAngle(Dir dir)
   {
     switch (dir) {
@@ -823,6 +964,7 @@ private:
     }
     return DragVector();
   }
+
   app::KeyboardShortcuts& m_keys;
   MenuKeys& m_menuKeys;
   std::vector<ListBox*> m_listBoxes;
@@ -831,7 +973,9 @@ private:
   HeaderItem m_headerItem;
   int& m_curSection;
 };
+
 } // anonymous namespace
+
 class KeyboardShortcutsCommand : public Command {
 public:
   KeyboardShortcutsCommand();
@@ -842,32 +986,40 @@ protected:
 
 private:
   void fillMenusKeys(app::KeyboardShortcuts& keys, MenuKeys& menuKeys, Menu* menu);
+
   std::string m_search;
 };
+
 KeyboardShortcutsCommand::KeyboardShortcutsCommand()
   : Command(CommandId::KeyboardShortcuts(), CmdUIOnlyFlag)
 {
 }
+
 void KeyboardShortcutsCommand::onLoadParams(const Params& params)
 {
   m_search = params.get("search");
 }
+
 void KeyboardShortcutsCommand::onExecute(Context* context)
 {
   static int curSection = 0;
+
   app::KeyboardShortcuts* globalKeys = app::KeyboardShortcuts::instance();
   app::KeyboardShortcuts keys;
   keys.setKeys(*globalKeys, true);
   keys.addMissingKeysForCommands();
+
   MenuKeys menuKeys;
   fillMenusKeys(keys, menuKeys, AppMenus::instance()->getRootMenu());
   fillMenusKeys(keys, menuKeys, AppMenus::instance()->getPalettePopupMenu());
+
   // Here we copy the m_search field because
   // KeyboardShortcutsWindow::fillAllLists() modifies this same
   // KeyboardShortcutsCommand instance (so m_search will be "")
   // TODO Seeing this, we need a complete new way to handle UI commands execution
   std::string neededSearchCopy = m_search;
   KeyboardShortcutsWindow window(keys, menuKeys, neededSearchCopy, curSection);
+
   ui::Display* mainDisplay = Manager::getDefault()->display();
   ui::fit_bounds(mainDisplay,
                  &window,
@@ -879,19 +1031,24 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
                    bounds.setSize(workarea.size() * 3 / 4);
                    bounds.setOrigin(center - gfx::Point(bounds.size() / 2));
                  });
+
   window.loadLayout();
+
   window.setVisible(true);
   window.openWindowInForeground();
+
   if (window.closer() == window.ok()) {
     globalKeys->setKeys(keys, false);
     for (const auto& p : menuKeys)
       p.first->setKey(p.second);
+
     // Save preferences in widgets that are bound to options automatically
     {
       Message msg(kSavePreferencesMessage);
       msg.setPropagateToChildren(true);
       window.sendMessage(&msg);
     }
+
     // Save keyboard shortcuts in configuration file
     {
       ResourceFinder rf;
@@ -900,8 +1057,10 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
       globalKeys->exportFile(fn);
     }
   }
+
   AppMenus::instance()->syncNativeMenuItemKeyShortcuts();
 }
+
 void KeyboardShortcutsCommand::fillMenusKeys(app::KeyboardShortcuts& keys,
                                              MenuKeys& menuKeys,
                                              Menu* menu)
@@ -910,16 +1069,20 @@ void KeyboardShortcutsCommand::fillMenusKeys(app::KeyboardShortcuts& keys,
     if (AppMenuItem* menuItem = dynamic_cast<AppMenuItem*>(child)) {
       if (menuItem->isRecentFileItem())
         continue;
+
       if (menuItem->getCommand()) {
         menuKeys[menuItem] = keys.command(menuItem->getCommandId().c_str(), menuItem->getParams());
       }
+
       if (menuItem->hasSubmenu())
         fillMenusKeys(keys, menuKeys, menuItem->getSubmenu());
     }
   }
 }
+
 Command* CommandFactory::createKeyboardShortcutsCommand()
 {
   return new KeyboardShortcutsCommand;
 }
+
 } // namespace app

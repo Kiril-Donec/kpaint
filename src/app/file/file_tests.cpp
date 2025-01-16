@@ -1,42 +1,45 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#include "tests/app_test.h"
 
+#include "app/app.h"
+#include "app/context.h"
+#include "app/doc.h"
+#include "app/file/file.h"
+#include "app/file/file_formats_manager.h"
+#include "base/base64.h"
+#include "doc/doc.h"
+#include "doc/user_data.h"
+#include "fmt/format.h"
 
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <functional>
+#include <vector>
 
- include "app/app.h"
- include "app/context.h"
- include "app/doc.h"
- include "app/file/file.h"
- include "app/file/file_formats_manager.h"
- include "base/base64.h"
- include "doc/doc.h"
- include "doc/user_data.h"
- include "fmt/format.h"
- include "tests/app_test.h"
- include <cstdio>
- include <cstdlib>
- include <fstream>
- include <functional>
- include <vector>
 using namespace app;
+
 TEST(File, SeveralSizes)
 {
   // Register all possible image formats.
   std::string fn;
   app::Context ctx;
+
   for (int w = 10; w <= 10 + 503 * 2; w += 503) {
     for (int h = 10; h <= 10 + 503 * 2; h += 503) {
       // fn = fmt::format("test_{}x{}.ase", w, h);
       fn = "test.ase";
+
       {
         std::unique_ptr<Doc> doc(ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256));
         doc->setFilename(fn);
+
         // Random pixels
         Layer* layer = doc->sprite()->root()->firstLayer();
         ASSERT_TRUE(layer != NULL);
@@ -50,13 +53,16 @@ TEST(File, SeveralSizes)
               c = std::rand() % 256;
           }
         }
+
         save_document(&ctx, doc.get());
         doc->close();
       }
+
       {
         std::unique_ptr<Doc> doc(load_document(&ctx, fn));
         ASSERT_EQ(w, doc->sprite()->width());
         ASSERT_EQ(h, doc->sprite()->height());
+
         // Same random pixels (see the seed)
         Layer* layer = doc->sprite()->root()->firstLayer();
         ASSERT_TRUE(layer != nullptr);
@@ -70,14 +76,17 @@ TEST(File, SeveralSizes)
               c = std::rand() % 256;
           }
         }
+
         doc->close();
       }
     }
   }
 }
+
 TEST(File, CustomProperties)
 {
   app::Context ctx;
+
   struct TestCase {
     std::string filename;
     int w;
@@ -180,6 +189,7 @@ TEST(File, CustomProperties)
           fixmath::ftofix(50.34));
         ASSERT_EQ(doc::get_value<base::Uuid>(sprite->userData().properties("")["my_uuid"]),
                   doc::get_value<base::Uuid>(test.propertiesMaps.at("").at("my_uuid")));
+
         ASSERT_EQ(doc::get_value<int32_t>(
                     sprite->userData().properties("extensionIdentification")["number"]),
                   160304);
@@ -240,9 +250,11 @@ TEST(File, CustomProperties)
             {                                                 "lives", uint8_t(5) },
             { "name", std::string("John Doe") },
             { "energy", uint16_t(1000) } }));
+
         ASSERT_EQ(
           doc::get_value<doc::UserData::Vector>(sprite->userData().properties("ext")["numbers"]),
           (doc::UserData::Vector{ int8_t(11), int8_t(22), int8_t(33) }));
+
         ASSERT_EQ(
           doc::get_value<doc::UserData::Properties>(sprite->userData().properties("ext")["player"]),
           (doc::UserData::Properties{
@@ -301,6 +313,7 @@ TEST(File, CustomProperties)
                                           uint64_t(13) }));
       }                                                        }
   };
+
   for (const TestCase& test : tests) {
     {
       std::unique_ptr<Doc> doc(ctx.documents().add(test.w, test.h, test.mode, test.ncolors));
@@ -309,6 +322,7 @@ TEST(File, CustomProperties)
       LayerImage* layer = static_cast<LayerImage*>(doc->sprite()->root()->firstLayer());
       ASSERT_TRUE(layer != NULL);
       ImageRef image = layer->cel(frame_t(0))->imageRef();
+
       std::srand(test.w * test.h);
       int c = 0;
       for (int y = 0; y < test.h; y++) {
@@ -318,7 +332,9 @@ TEST(File, CustomProperties)
           put_pixel_fast<IndexedTraits>(image.get(), x, y, c);
         }
       }
+
       test.setProperties(test, doc->sprite());
+
       save_document(&ctx, doc.get());
       doc->close();
     }
@@ -326,6 +342,7 @@ TEST(File, CustomProperties)
       std::unique_ptr<Doc> doc(load_document(&ctx, test.filename));
       ASSERT_EQ(test.w, doc->sprite()->width());
       ASSERT_EQ(test.h, doc->sprite()->height());
+
       // Same random pixels (see the seed)
       Layer* layer = doc->sprite()->root()->firstLayer();
       ASSERT_TRUE(layer != nullptr);
@@ -339,7 +356,9 @@ TEST(File, CustomProperties)
           ASSERT_EQ(c, get_pixel_fast<IndexedTraits>(image, x, y));
         }
       }
+
       test.assertions(test, doc->sprite());
+
       doc->close();
     }
   }

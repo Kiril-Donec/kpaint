@@ -1,33 +1,39 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite UI Library
+// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint UI Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "base/debug.h"
- include "base/replace_string.h"
- include "base/split_string.h"
- include "base/string.h"
- include "os/system.h"
- include "ui/accelerator.h"
- include <algorithm>
- include <cctype>
- include <cstdlib>
- include <string>
- include <vector>
+#endif
+
+#include "ui/accelerator.h"
+
+#include "base/debug.h"
+#include "base/replace_string.h"
+#include "base/split_string.h"
+#include "base/string.h"
+#include "os/system.h"
+
+#include <cctype>
+#include <cstdlib>
+#include <string>
+#include <vector>
+
+#include <algorithm>
+
 namespace ui {
- ifdef _WIN32
+
+#ifdef _WIN32
 const char* kWinKeyName = "Win";
- else
+#else
 const char* kWinKeyName = "Super";
- endif
+#endif
+
 namespace {
+
 const char* scancode_to_string[] = {
   // Same order that os::KeyScancode
   nullptr,
@@ -135,16 +141,20 @@ const char* scancode_to_string[] = {
   "Kanji",
 };
 int scancode_to_string_size = sizeof(scancode_to_string) / sizeof(scancode_to_string[0]);
+
 } // anonymous namespace
+
 Accelerator::Accelerator() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0)
 {
 }
+
 Accelerator::Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
   : m_modifiers(modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
 {
 }
+
 Accelerator::Accelerator(const std::string& str)
   : m_modifiers(kKeyNoneModifier)
   , m_scancode(kKeyNil)
@@ -155,16 +165,19 @@ Accelerator::Accelerator(const std::string& str)
     m_unicodeChar = '+';
     return;
   }
+
   std::size_t i, j;
   for (i = 0; i < str.size(); i = j + 1) {
     // i+1 because the first character can be '+' sign
     for (j = i + 1; j < str.size() && str[j] != '+'; ++j)
       ;
     std::string tok = base::string_to_lower(str.substr(i, j - i));
+
     if (m_scancode == kKeySpace) {
       m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeySpaceModifier);
       m_scancode = kKeyNil;
     }
+
     // Modifiers
     if (tok == "shift") {
       m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyShiftModifier);
@@ -261,18 +274,22 @@ Accelerator::Accelerator(const std::string& str)
       m_scancode = kKeyEnterPad;
   }
 }
+
 bool Accelerator::operator==(const Accelerator& other) const
 {
   // TODO improve this, avoid conversion to std::string
   return toString() == other.toString();
 }
+
 bool Accelerator::isEmpty() const
 {
   return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0);
 }
+
 std::string Accelerator::toString() const
 {
   std::string buf;
+
   // Shifts
   if (m_modifiers & kKeyCtrlModifier)
     buf += "Ctrl+";
@@ -289,6 +306,7 @@ std::string Accelerator::toString() const
     buf += kWinKeyName;
     buf += "+";
   }
+
   // Key
   if (m_unicodeChar) {
     std::wstring wideUnicodeChar;
@@ -299,41 +317,53 @@ std::string Accelerator::toString() const
     buf += scancode_to_string[m_scancode];
   else if (!buf.empty() && buf[buf.size() - 1] == '+')
     buf.erase(buf.size() - 1);
+
   return buf;
 }
+
 bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
 {
   return ((scancode && *this == Accelerator(modifiers, scancode, 0)) ||
           (unicodeChar && *this == Accelerator(modifiers, kKeyNil, unicodeChar)));
 }
+
 bool Accelerator::isPressed() const
 {
   os::System* sys = os::instance();
   if (!sys)
     return false;
+
   KeyModifiers pressedModifiers = sys->keyModifiers();
+
   // Check if this shortcut is only
   if (m_scancode == kKeyNil && m_unicodeChar == 0)
     return (m_modifiers == pressedModifiers);
+
   // Compare with all pressed scancodes
   for (int s = int(kKeyNil); s < int(kKeyFirstModifierScancode); ++s) {
     if (sys->isKeyPressed(KeyScancode(s)) &&
         isPressed(pressedModifiers, KeyScancode(s), sys->getUnicodeFromScancode(KeyScancode(s))))
       return true;
   }
+
   return false;
 }
+
 bool Accelerator::isLooselyPressed() const
 {
   os::System* sys = os::instance();
   if (!sys)
     return false;
+
   KeyModifiers pressedModifiers = sys->keyModifiers();
+
   if ((m_modifiers & pressedModifiers) != m_modifiers)
     return false;
+
   // Check if this shortcut is only
   if (m_scancode == kKeyNil && m_unicodeChar == 0)
     return true;
+
   // Compare with all pressed scancodes
   for (int s = int(kKeyNil); s < int(kKeyFirstModifierScancode); ++s) {
     if (sys->isKeyPressed(KeyScancode(s)) && isPressed(m_modifiers, // Use same modifiers (we've
@@ -343,23 +373,29 @@ bool Accelerator::isLooselyPressed() const
                                                        sys->getUnicodeFromScancode(KeyScancode(s))))
       return true;
   }
+
   return false;
 }
-// ////////////////////////////////////////////////////////////////////
- Accelerators
+
+//////////////////////////////////////////////////////////////////////
+// Accelerators
+
 bool Accelerators::has(const Accelerator& accel) const
 {
   return (std::find(begin(), end(), accel) != end());
 }
+
 void Accelerators::add(const Accelerator& accel)
 {
   if (!has(accel))
     m_list.push_back(accel);
 }
+
 void Accelerators::remove(const Accelerator& accel)
 {
   auto it = std::find(begin(), end(), accel);
   if (it != end())
     m_list.erase(it);
 }
+
 } // namespace ui

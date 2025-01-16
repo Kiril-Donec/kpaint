@@ -1,16 +1,16 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite Document Library
+// Copyright (c) 2019-2023 Igara Studio S.A.
+// Copyright (c) 2001-2014 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-Copyright (C) 2024-2025 KiriX Company
- KPaint Document Library
-// // This file is released under the terms of the MIT license.
- Read LICENSE.txt for more information.
- ifndef DOC_COLOR_MODE_H_INCLUDED
- define DOC_COLOR_MODE_H_INCLUDED
- pragma once
+#ifndef DOC_COLOR_MODE_H_INCLUDED
+#define DOC_COLOR_MODE_H_INCLUDED
+#pragma once
+
 namespace doc {
+
 enum class ColorMode {
   RGB,
   GRAYSCALE,
@@ -18,6 +18,7 @@ enum class ColorMode {
   BITMAP,
   TILEMAP,
 };
+
 inline constexpr int bytes_per_pixel_for_colormode(ColorMode cm)
 {
   switch (cm) {
@@ -29,5 +30,7 @@ inline constexpr int bytes_per_pixel_for_colormode(ColorMode cm)
   }
   return 0;
 }
+
 } // namespace doc
- endif
+
+#endif

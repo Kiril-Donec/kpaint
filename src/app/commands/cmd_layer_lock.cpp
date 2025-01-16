@@ -1,26 +1,26 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2017  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/app.h"
- include "app/commands/command.h"
- include "app/context_access.h"
- include "app/modules/gui.h"
- include "app/ui/timeline/timeline.h"
- include "doc/image.h"
- include "doc/layer.h"
+#endif
+
+#include "app/app.h"
+#include "app/commands/command.h"
+#include "app/context_access.h"
+#include "app/modules/gui.h"
+#include "app/ui/timeline/timeline.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+
 namespace app {
+
 using namespace ui;
+
 class LayerLockCommand : public Command {
 public:
   LayerLockCommand();
@@ -30,18 +30,22 @@ protected:
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
 };
+
 LayerLockCommand::LayerLockCommand() : Command(CommandId::LayerLock(), CmdRecordableFlag)
 {
 }
+
 bool LayerLockCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
 }
+
 bool LayerLockCommand::onChecked(Context* context)
 {
   const ContextReader reader(context);
   if (!reader.document() || !reader.layer())
     return false;
+
   SelectedLayers selLayers;
   auto range = App::instance()->timeline()->range();
   if (range.enabled()) {
@@ -57,6 +61,7 @@ bool LayerLockCommand::onChecked(Context* context)
   }
   return lock;
 }
+
 void LayerLockCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
@@ -76,10 +81,13 @@ void LayerLockCommand::onExecute(Context* context)
   }
   for (auto* layer : selLayers)
     doc->setLayerEditableWithNotifications(layer, anyLock);
+
   update_screen_for_document(writer.document());
 }
+
 Command* CommandFactory::createLayerLockCommand()
 {
   return new LayerLockCommand;
 }
+
 } // namespace app

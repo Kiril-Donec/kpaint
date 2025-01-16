@@ -1,55 +1,63 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/i18n/strings.h"
- include "app/pref/preferences.h"
- include "app/ui/tileset_selector.h"
- include "doc/sprite.h"
- include "doc/tilesets.h"
- include "fmt/format.h"
- include "ui/listitem.h"
- include "ui/window.h"
+#endif
+
+#include "app/ui/tileset_selector.h"
+
+#include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
+#include "doc/sprite.h"
+#include "doc/tilesets.h"
+#include "fmt/format.h"
+#include "ui/listitem.h"
+#include "ui/window.h"
+
 namespace app {
+
 using namespace ui;
+
 TilesetSelector::TilesetSelector(const doc::Sprite* sprite, const TilesetSelector::Info& info)
   : m_sprite(sprite)
   , m_info(info)
 {
   initTheme();
+
   fillControls(m_info.name, m_info.grid.tileSize(), m_info.baseIndex, m_info.matchFlags);
+
   if (!m_info.allowNewTileset) {
     tilesets()->deleteAllItems();
   }
+
   if (m_info.allowExistentTileset) {
     doc::tileset_index tsi = 0;
     for (doc::Tileset* tileset : *sprite->tilesets()) {
       if (!tileset)
         continue;
+
       auto item = new ListItem(fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
                                            tsi,
                                            tileset->grid().tileSize().w,
                                            tileset->grid().tileSize().h,
                                            tileset->name()));
       tilesets()->addItem(item);
+
       if (m_info.tsi == tsi)
         tilesets()->setSelectedItem(item);
+
       ++tsi;
     }
   }
+
   if (m_info.enabled) {
     tilesets()->Change.connect([this]() { updateControlsState(); });
   }
+
   // Advanced controls
   const Preferences& pref = Preferences::instance();
   advanced()->setSelected(pref.tileset.advanced());
@@ -58,9 +66,11 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite, const TilesetSelecto
     if (auto win = window())
       win->expandWindow(win->sizeHint());
   });
+
   updateControlsState();
   updateControlsVisibility();
 }
+
 void TilesetSelector::fillControls(const std::string& nameValue,
                                    const gfx::Size& gridSize,
                                    const int baseIndexValue,
@@ -74,9 +84,11 @@ void TilesetSelector::fillControls(const std::string& nameValue,
   yflip()->setSelected((matchFlags & doc::tile_f_yflip) ? true : false);
   dflip()->setSelected((matchFlags & doc::tile_f_dflip) ? true : false);
 }
+
 void TilesetSelector::updateControlsState()
 {
   const doc::Tilesets* spriteTilesets = m_sprite->tilesets();
+
   if (m_info.enabled) {
     const int index = getSelectedItemIndex();
     const bool isNewTileset = (index == 0);
@@ -88,6 +100,7 @@ void TilesetSelector::updateControlsState()
       const doc::Tileset* ts = spriteTilesets->get(index - 1);
       fillControls(ts->name(), ts->grid().tileSize(), ts->baseIndex(), ts->matchFlags());
     }
+
     name()->setEnabled(true);
     gridWidth()->setEnabled(isNewTileset);
     gridHeight()->setEnabled(isNewTileset);
@@ -103,6 +116,7 @@ void TilesetSelector::updateControlsState()
     dflip()->setEnabled(false);
   }
 }
+
 void TilesetSelector::updateControlsVisibility()
 {
   const bool v = advanced()->isSelected();
@@ -113,12 +127,14 @@ void TilesetSelector::updateControlsVisibility()
   flips()->setVisible(v);
   flipsFiller()->setVisible(v);
 }
+
 TilesetSelector::Info TilesetSelector::getInfo()
 {
   int itemIndex = getSelectedItemIndex();
   Info info;
   if (itemIndex == 0) {
     gfx::Size sz(std::max(1, gridWidth()->textInt()), std::max(1, gridHeight()->textInt()));
+
     info.newTileset = true;
     info.grid = doc::Grid::MakeRect(sz);
   }
@@ -127,6 +143,7 @@ TilesetSelector::Info TilesetSelector::getInfo()
     info.tsi = itemIndex - 1;
   }
   info.name = name()->text();
+
   // If we are creating a new tilemap/tileset, and the advanced
   // options are hidden, we use the default values (only in that
   // case). In other case we use the edited options (even if the
@@ -141,13 +158,16 @@ TilesetSelector::Info TilesetSelector::getInfo()
                       (yflip()->isSelected() ? doc::tile_f_yflip : 0) |
                       (dflip()->isSelected() ? doc::tile_f_dflip : 0);
   }
+
   return info;
 }
+
 void TilesetSelector::saveAdvancedPreferences()
 {
   Preferences& pref = Preferences::instance();
   pref.tileset.advanced(advanced()->isSelected());
 }
+
 int TilesetSelector::getSelectedItemIndex()
 {
   int index = tilesets()->getSelectedItemIndex();
@@ -158,4 +178,5 @@ int TilesetSelector::getSelectedItemIndex()
   }
   return index;
 }
+
 } // namespace app

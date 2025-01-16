@@ -1,34 +1,36 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2001-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/commands/filters/filter_target_buttons.h"
- include "app/i18n/strings.h"
- include "app/modules/gfx.h"
- include "app/modules/gui.h"
- include "app/ui/skin/skin_theme.h"
- include "doc/image.h"
- include "fmt/format.h"
- include "ui/box.h"
- include "ui/button.h"
- include "ui/theme.h"
- include "ui/widget.h"
- include <cstring>
+#endif
+
+#include "app/commands/filters/filter_target_buttons.h"
+
+#include "app/i18n/strings.h"
+#include "app/modules/gfx.h"
+#include "app/modules/gui.h"
+#include "app/ui/skin/skin_theme.h"
+#include "doc/image.h"
+#include "fmt/format.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/theme.h"
+#include "ui/widget.h"
+
+#include <cstring>
+
 namespace app {
+
 using namespace app::skin;
 using namespace doc;
 using namespace filters;
 using namespace ui;
+
 FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   : ButtonSet(4)
   , m_target(0)
@@ -43,6 +45,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 {
   setMultiMode(MultiMode::Set);
   addChild(&m_tooltips);
+
   if (withChannels) {
     switch (imgtype) {
       case IMAGE_RGB:
@@ -51,20 +54,24 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
         m_green = addItem("G");
         m_blue = addItem("B");
         m_alpha = addItem("A");
+
         if (imgtype == IMAGE_INDEXED)
           m_index = addItem("Index", 4, 1);
         break;
+
       case IMAGE_GRAYSCALE:
         m_gray = addItem("K", 2, 1);
         m_alpha = addItem("A", 2, 1);
         break;
     }
   }
+
   // Create the button to select which cels will be modified by the
   // filter.
   m_cels = addItem(getCelsTargetText(), 4, 1);
   initTheme();
 }
+
 void FilterTargetButtons::setTarget(const int target)
 {
   m_target = target;
@@ -76,16 +83,19 @@ void FilterTargetButtons::setTarget(const int target)
   selectTargetButton(m_index, TARGET_INDEX_CHANNEL);
   updateFromTarget();
 }
+
 void FilterTargetButtons::setCelsTarget(const CelsTarget celsTarget)
 {
   m_celsTarget = celsTarget;
   updateFromCelsTarget();
 }
+
 void FilterTargetButtons::selectTargetButton(Item* item, Target specificTarget)
 {
   if (item)
     item->setSelected((m_target & specificTarget) == specificTarget);
 }
+
 void FilterTargetButtons::updateFromTarget()
 {
   updateComponentTooltip(m_red, "Red", BOTTOM);
@@ -95,11 +105,13 @@ void FilterTargetButtons::updateFromTarget()
   updateComponentTooltip(m_alpha, "Alpha", BOTTOM);
   updateComponentTooltip(m_index, "Index", LEFT);
 }
+
 void FilterTargetButtons::updateFromCelsTarget()
 {
   m_cels->setText(getCelsTargetText());
   m_tooltips.addTooltipFor(m_cels, getCelsTargetTooltip(), LEFT);
 }
+
 void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channelName, int align)
 {
   if (item) {
@@ -108,9 +120,11 @@ void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channel
     m_tooltips.addTooltipFor(item, buf, align);
   }
 }
+
 void FilterTargetButtons::onItemChange(Item* item)
 {
   ButtonSet::onItemChange(item);
+
   if (m_index && item && item->isSelected()) {
     if (item == m_index) {
       m_red->setSelected(false);
@@ -122,6 +136,7 @@ void FilterTargetButtons::onItemChange(Item* item)
       m_index->setSelected(false);
     }
   }
+
   Target target = 0;
   if (m_red && m_red->isSelected())
     target |= TARGET_RED_CHANNEL;
@@ -135,12 +150,14 @@ void FilterTargetButtons::onItemChange(Item* item)
     target |= TARGET_INDEX_CHANNEL;
   if (m_alpha && m_alpha->isSelected())
     target |= TARGET_ALPHA_CHANNEL;
+
   CelsTarget celsTarget = m_celsTarget;
   if (m_cels->isSelected()) {
     m_cels->setSelected(false);
     celsTarget = // Switch cels target
       (m_celsTarget == CelsTarget::Selected ? CelsTarget::All : CelsTarget::Selected);
   }
+
   if (m_target != target || m_celsTarget != celsTarget) {
     if (m_target != target) {
       m_target = target;
@@ -153,6 +170,7 @@ void FilterTargetButtons::onItemChange(Item* item)
     TargetChange();
   }
 }
+
 std::string FilterTargetButtons::getCelsTargetText() const
 {
   switch (m_celsTarget) {
@@ -161,6 +179,7 @@ std::string FilterTargetButtons::getCelsTargetText() const
   }
   return std::string();
 }
+
 std::string FilterTargetButtons::getCelsTargetTooltip() const
 {
   switch (m_celsTarget) {
@@ -169,4 +188,5 @@ std::string FilterTargetButtons::getCelsTargetTooltip() const
   }
   return std::string();
 }
+
 } // namespace app

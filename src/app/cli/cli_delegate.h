@@ -1,24 +1,24 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2016-2018  David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_CLI_CLI_DELEGATE_H_INCLUDED
+#define APP_CLI_CLI_DELEGATE_H_INCLUDED
+#pragma once
 
+#include <string>
 
-
- ifndef APP_CLI_CLI_DELEGATE_H_INCLUDED
- define APP_CLI_CLI_DELEGATE_H_INCLUDED
- pragma once
- include <string>
 namespace app {
+
 class AppOptions;
 class Context;
 class DocExporter;
 class Params;
 struct CliOpenFile;
+
 class CliDelegate {
 public:
   virtual ~CliDelegate() {}
@@ -32,9 +32,11 @@ public:
   virtual void saveFile(Context* ctx, const CliOpenFile& cof) {}
   virtual void loadPalette(Context* ctx, const std::string& filename) {}
   virtual void exportFiles(Context* ctx, DocExporter& exporter) {}
- ifdef ENABLE_SCRIPTING
+#ifdef ENABLE_SCRIPTING
   virtual int execScript(const std::string& filename, const Params& params) { return 0; }
-// endif // ENABLE_SCRIPTING
+#endif // ENABLE_SCRIPTING
 };
+
 } // namespace app
- endif
+
+#endif

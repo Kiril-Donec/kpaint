@@ -1,4 +1,4 @@
-# KPaint Document IO Library
+# Aseprite Document IO Library
 
 > Distributed under [MIT license](LICENSE.txt)
 

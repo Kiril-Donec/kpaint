@@ -1,35 +1,38 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2019-2022  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
-
-
-
- ifdef HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
   #include "config.h"
- endif
- include "app/task.h"
- include "base/task.h"
- include "base/thread.h"
- include "base/thread_pool.h"
+#endif
+
+#include "app/task.h"
+
+#include "base/task.h"
+#include "base/thread.h"
+#include "base/thread_pool.h"
+
 namespace app {
+
 static base::thread_pool tasks_pool(4);
+
 Task::Task() : m_token(nullptr)
 {
 }
+
 Task::~Task()
 {
 }
+
 void Task::run(base::task::func_t&& func)
 {
   const std::lock_guard lock(m_token_mutex);
   m_task.on_execute(std::move(func));
   m_token = &m_task.start(tasks_pool);
 }
+
 void Task::wait()
 {
   // TODO wait a condition variable
@@ -37,4 +40,5 @@ void Task::wait()
     base::this_thread::sleep_for(0.1);
   }
 }
+
 } // namespace app

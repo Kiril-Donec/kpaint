@@ -1,19 +1,16 @@
-// KPaint
-// Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
-// the End-User License Agreement for KPaint.
+// Aseprite
+// Copyright (C) 2018 David Capello
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-Copyright (C) 2024-2025 KiriX Company
-// // This program is distributed under the terms of
- the End-User License Agreement for KPaint.
+#ifndef APP_TAGS_HANDLING_H_INCLUDED
+#define APP_TAGS_HANDLING_H_INCLUDED
+#pragma once
 
-
-
- ifndef APP_TAGS_HANDLING_H_INCLUDED
- define APP_TAGS_HANDLING_H_INCLUDED
- pragma once
 namespace app {
- How to adjust tags when we move a frame in the border of a tag.
+
+// How to adjust tags when we move a frame in the border of a tag.
 enum TagsHandling {
   // Do not move tags.
   kDontAdjustTags,
@@ -25,5 +22,7 @@ enum TagsHandling {
   // Put frames outside tags.
   kFitOutsideTags,
 };
+
 } // namespace app
- endif
+
+#endif
