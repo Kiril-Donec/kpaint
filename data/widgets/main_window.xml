@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2017 by David Capello -->
+<!-- Copyright (C) 2024-2025 KiriX Studio -->
 <gui>
   <window id="main_window" noborders="true" desktop="true" text="KPaint Belko Edition">
     <vbox noborders="true" expansive="true">

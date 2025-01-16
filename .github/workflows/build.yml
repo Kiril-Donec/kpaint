@@ -99,6 +99,32 @@ jobs:
           export XVFB=xvfb-run
         fi
         cd build && $XVFB ctest --output-on-failure
+    - name: Create Archive
+      if: matrix.ui == 'gui' && matrix.build_type == 'RelWithDebInfo'
+      shell: bash
+      run: |
+        cd build
+        mkdir -p kpaint
+        if [[ "${{ runner.os }}" == "Windows" ]] ; then
+          cp bin/kpaint.exe kpaint/
+          cp -r ../data kpaint/
+          7z a kpaint-windows.zip kpaint
+        elif [[ "${{ runner.os }}" == "macOS" ]] ; then
+          cp bin/kpaint kpaint/
+          cp -r ../data kpaint/
+          zip -r kpaint-macos.zip kpaint
+        else
+          cp bin/kpaint kpaint/
+          cp -r ../data kpaint/
+          zip -r kpaint-linux.zip kpaint
+        fi
+    - name: Upload Build Artifacts
+      if: matrix.ui == 'gui' && matrix.build_type == 'RelWithDebInfo'
+      uses: actions/upload-artifact@v2
+      with:
+        name: kpaint-${{ runner.os }}
+        path: |
+          build/kpaint-*.zip
     - name: Running CLI Tests
       if: ${{ matrix.scripting == 'lua' }}
       shell: bash
