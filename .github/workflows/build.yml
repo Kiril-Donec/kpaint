@@ -106,15 +106,15 @@ jobs:
         cd build
         mkdir -p kpaint
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          cp bin/kpaint.exe kpaint/
+          cp bin/aseprite.exe kpaint/kpaint.exe
           cp -r ../data kpaint/
           7z a kpaint-windows.zip kpaint
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
-          cp bin/kpaint kpaint/
+          cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
           zip -r kpaint-macos.zip kpaint
         else
-          cp bin/kpaint kpaint/
+          cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
           zip -r kpaint-linux.zip kpaint
         fi
