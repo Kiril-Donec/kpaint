@@ -33,11 +33,7 @@ jobs:
       if: runner.os == 'Windows'
       shell: bash
       run: |
-        choco install -y wget 7zip openssl
-        # Создаем самоподписанный сертификат
-        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout selfsigned.key -out selfsigned.crt -subj "/CN=KiriX Studio"
-        openssl pkcs12 -export -out certificate.pfx -inkey selfsigned.key -in selfsigned.crt -password pass:kpaint
-        # Скачиваем нужную DLL
+        choco install -y wget 7zip
         wget https://github.com/libgit2/libgit2/releases/download/v1.9.0/git2-1.9.0.tar.gz
         tar xf git2-1.9.0.tar.gz
         mkdir -p build/bin
@@ -122,12 +118,7 @@ jobs:
           cp bin/aseprite.exe kpaint/kpaint.exe
           # Copy required DLLs
           cp bin/*.dll kpaint/
-          cp bin/vcruntime*.dll kpaint/ || true
-          cp bin/msvcp*.dll kpaint/ || true
-          cp bin/libcrypt*.dll kpaint/ || true
           cp -r ../data kpaint/
-          # Sign Windows executable (раскомментировать после получения сертификата)
-          # signtool sign /f certificate.pfx /p password /tr http://timestamp.digicert.com /td sha256 /fd sha256 kpaint/kpaint.exe
           7z a kpaint-windows.zip kpaint
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
           cp bin/aseprite kpaint/kpaint
@@ -160,36 +151,7 @@ jobs:
 </dict>
 </plist>
 EOF
-          # Create temporary development certificate
-          security create-keychain -p github_actions build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p github_actions build.keychain
-          # Create self-signed certificate
-          cat > certificate.pem << 'EOF'
------BEGIN CERTIFICATE-----
-MIIDYDCCAkigAwIBAgIJALnVZWP9LJ2WMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
-BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
-aWRnaXRzIFB0eSBMdGQwHhcNMjQwMTE2MDAwMDAwWhcNMjUwMTE1MjM1OTU5WjBF
-MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
-ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
-CgKCAQEA2ovdfhjjPtXUnR/fDlDS1AnlnmMrnHmrmrmrmrmrmrmrmrmrmrmrmrmr
-mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
-mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
-mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
-mrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmrmr
-CAwEAAaNQME4wHQYDVR0OBBYEFHXs6v5q7q5q5q5q5q5q5q5q5qMB8GA1UdIwQY
-MBaAFHXs6v5q7q5q5q5q5q5q5q5q5qMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcN
-AQELBQADggEBAK8X8Y4Y4z7V1J0f3w5Q0tQJ5Z5jK5x5q5q5q5q5q5q5q5q5q5
-q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5q5
------END CERTIFICATE-----
-EOF
-          # Import certificate
-          security import certificate.pem -k build.keychain -T /usr/bin/codesign
-          # Sign the app
-          codesign --force --sign "KPaint Development" --deep "kpaint/KPaint.app"
-          # Create DMG
-          hdiutil create -volname "KPaint" -srcfolder "kpaint/KPaint.app" -ov -format UDZO "kpaint-macos.dmg"
-          codesign --force --sign "KPaint Development" "kpaint-macos.dmg"
+          zip -r kpaint-macos.zip "kpaint/KPaint.app"
         else
           cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
