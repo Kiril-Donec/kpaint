@@ -120,7 +120,7 @@ jobs:
         fi
     - name: Upload Build Artifacts
       if: matrix.ui == 'gui' && matrix.build_type == 'RelWithDebInfo'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: kpaint-${{ runner.os }}
         path: |
