@@ -119,14 +119,21 @@ jobs:
         cd build
         mkdir -p kpaint
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
+          # Copy executable and DLLs to the same directory
           cp bin/aseprite.exe kpaint/kpaint.exe
-          # Copy required DLLs
           cp bin/*.dll kpaint/
-          # Copy Visual C++ Runtime DLLs if they exist
-          cp bin/vcruntime*.dll kpaint/ || true
-          cp bin/msvcp*.dll kpaint/ || true
-          cp bin/libcrypt*.dll kpaint/ || true
+          # Make sure all required DLLs are in the same directory as the exe
+          mv libcrypt-1.1-x64.dll kpaint/ || true
+          mv libcrypto-3-x64.dll kpaint/ || true
+          cp "C:/Windows/System32/msvcp140.dll" kpaint/ || true
+          cp "C:/Windows/System32/vcruntime140.dll" kpaint/ || true
+          cp "C:/Windows/System32/vcruntime140_1.dll" kpaint/ || true
           cp -r ../data kpaint/
+          
+          # List all files in kpaint directory to verify DLLs
+          echo "Contents of kpaint directory:"
+          ls -la kpaint/
+          
           7z a kpaint-windows.zip kpaint
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
           cp bin/aseprite kpaint/kpaint
