@@ -29,6 +29,14 @@ jobs:
         sudo apt-get install -y \
           libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
           libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+    - name: Install Dependencies
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        choco install -y wget 7zip
+        wget https://github.com/libgit2/libgit2/releases/download/v1.7.1/libcrypt-1.1-x64.dll
+        mkdir -p build/bin
+        cp libcrypt-1.1-x64.dll build/bin/
     - name: Install Skia
       if: ${{ matrix.ui == 'gui' }}
       shell: bash
@@ -104,28 +112,26 @@ jobs:
       shell: bash
       run: |
         cd build
-        echo "Creating archive in $(pwd)"
-        echo "Listing contents of bin directory:"
-        ls -la bin/
         mkdir -p kpaint
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          echo "Creating Windows archive..."
           cp bin/aseprite.exe kpaint/kpaint.exe
+          # Copy required DLLs
+          cp bin/*.dll kpaint/
+          # Copy Visual C++ Runtime DLLs if they exist
+          cp bin/vcruntime*.dll kpaint/ || true
+          cp bin/msvcp*.dll kpaint/ || true
+          cp bin/libcrypt*.dll kpaint/ || true
           cp -r ../data kpaint/
           7z a kpaint-windows.zip kpaint
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
-          echo "Creating macOS archive..."
           cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
           zip -r kpaint-macos.zip kpaint
         else
-          echo "Creating Linux archive..."
           cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
           zip -r kpaint-linux.zip kpaint
         fi
-        echo "Archive created. Listing contents:"
-        ls -la kpaint-*.zip
     - name: Upload Build Artifacts
       if: matrix.ui == 'gui' && matrix.build_type == 'RelWithDebInfo'
       uses: actions/upload-artifact@v4
