@@ -119,18 +119,19 @@ jobs:
         cd build
         mkdir -p kpaint
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          # Download resource compiler
-          choco install -y resourcehacker
+          # Download Resource Hacker
+          curl -L -o reshacker.exe http://www.angusj.com/resourcehacker/resource_hacker.zip
+          7z x reshacker.exe
           
           # Create resource script
           echo "1 RCDATA \"../data\"" > resources.rc
           
           # Compile resources
-          rc resources.rc
+          ./ResourceHacker.exe -open resources.rc -save resources.res -action compile
           
           # Link resources with executable
           cp bin/aseprite.exe kpaint/kpaint.exe
-          ResourceHacker -open kpaint/kpaint.exe -save kpaint/kpaint_with_resources.exe -action addskip -res resources.res -mask RCDATA,,
+          ./ResourceHacker.exe -open kpaint/kpaint.exe -save kpaint/kpaint_with_resources.exe -action addskip -res resources.res -mask RCDATA,,
           mv kpaint/kpaint_with_resources.exe kpaint/kpaint.exe
           
           # Download and extract VC++ Redistributable
