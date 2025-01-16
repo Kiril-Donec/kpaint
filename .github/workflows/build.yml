@@ -119,22 +119,35 @@ jobs:
         cd build
         mkdir -p kpaint
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          # Copy executable and DLLs to the same directory
+          # Download resource compiler
+          choco install -y resourcehacker
+          
+          # Create resource script
+          echo "1 RCDATA \"../data\"" > resources.rc
+          
+          # Compile resources
+          rc resources.rc
+          
+          # Link resources with executable
           cp bin/aseprite.exe kpaint/kpaint.exe
+          ResourceHacker -open kpaint/kpaint.exe -save kpaint/kpaint_with_resources.exe -action addskip -res resources.res -mask RCDATA,,
+          mv kpaint/kpaint_with_resources.exe kpaint/kpaint.exe
+          
+          # Download and extract VC++ Redistributable
+          curl -L -o vc_redist.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
+          7z x vc_redist.exe -o*
+          cp `find . -name "vcruntime*.dll" -o -name "msvcp*.dll" -o -name "concrt*.dll"` kpaint/
+          
+          # Copy crypto DLLs
           cp bin/*.dll kpaint/
-          # Make sure all required DLLs are in the same directory as the exe
           mv libcrypt-1.1-x64.dll kpaint/ || true
           mv libcrypto-3-x64.dll kpaint/ || true
-          cp "C:/Windows/System32/msvcp140.dll" kpaint/ || true
-          cp "C:/Windows/System32/vcruntime140.dll" kpaint/ || true
-          cp "C:/Windows/System32/vcruntime140_1.dll" kpaint/ || true
-          cp -r ../data kpaint/
           
-          # List all files in kpaint directory to verify DLLs
-          echo "Contents of kpaint directory:"
-          ls -la kpaint/
+          # Create self-extracting archive with all dependencies
+          7z a -sfx7z.sfx kpaint-windows.exe kpaint/*
           
-          7z a kpaint-windows.zip kpaint
+          echo "Created self-extracting executable. Contents:"
+          ls -la kpaint-windows.exe
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
           cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
@@ -150,6 +163,7 @@ jobs:
       with:
         name: kpaint-${{ runner.os }}
         path: |
+          build/kpaint-*.exe
           build/kpaint-*.zip
     - name: Running CLI Tests
       if: ${{ matrix.scripting == 'lua' }}
