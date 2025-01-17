@@ -119,36 +119,20 @@ jobs:
         cd build
         mkdir -p kpaint
         if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          # Download Resource Hacker
-          curl -L -o reshacker.zip http://www.angusj.com/resourcehacker/resource_hacker.zip
-          7z x reshacker.zip
-          
-          # Create resource script
-          echo "1 RCDATA \"../data\"" > resources.rc
-          
-          # Compile resources directly
-          ./ResourceHacker.exe -script resources.rc
-          
-          # Link resources with executable
+          # Copy executable and data
           cp bin/aseprite.exe kpaint/kpaint.exe
-          ./ResourceHacker.exe -add kpaint/kpaint.exe, kpaint/kpaint_with_resources.exe, resources.res, RCDATA,, 
-          mv kpaint/kpaint_with_resources.exe kpaint/kpaint.exe
+          cp -r ../data kpaint/
           
           # Download and extract VC++ Redistributable
           curl -L -o vc_redist.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
           7z x vc_redist.exe -o*
           cp `find . -name "vcruntime*.dll" -o -name "msvcp*.dll" -o -name "concrt*.dll"` kpaint/
           
-          # Copy crypto DLLs
-          cp bin/*.dll kpaint/
-          mv libcrypt-1.1-x64.dll kpaint/ || true
-          mv libcrypto-3-x64.dll kpaint/ || true
+          # Copy all DLLs from bin directory
+          cp bin/*.dll kpaint/ || true
           
-          # Create self-extracting archive with all dependencies
-          7z a -sfx7z.sfx kpaint-windows.exe kpaint/*
-          
-          echo "Created self-extracting executable. Contents:"
-          ls -la kpaint-windows.exe
+          # Create archive with all dependencies
+          7z a kpaint-windows.zip kpaint/*
         elif [[ "${{ runner.os }}" == "macOS" ]] ; then
           cp bin/aseprite kpaint/kpaint
           cp -r ../data kpaint/
