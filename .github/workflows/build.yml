@@ -34,16 +34,15 @@ jobs:
       shell: bash
       run: |
         choco install -y wget 7zip vcredist140
-        # Download VC++ Redistributable only if not in cache
-        if [ ! -f "deps/vc_redist.exe" ]; then
-          mkdir -p deps
-          curl -L -o deps/vc_redist.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
-          7z x deps/vc_redist.exe -o*
-        fi
-        # Download Visual C++ Redistributable DLLs
+        # Download OpenSSL DLLs
         mkdir -p build/bin
-        curl -L -o build/bin/libcrypto-3-x64.dll https://github.com/libgit2/libgit2/releases/download/v1.9.0/libcrypto-3-x64.dll
-        curl -L -o build/bin/libcrypt-1.1-x64.dll https://github.com/libgit2/libgit2/releases/download/v1.9.0/libcrypt-1.1-x64.dll
+        curl -L -o build/bin/libcrypto-1.1-x64.dll https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/libcrypto-1_1-x64.dll
+        curl -L -o build/bin/libssl-1.1-x64.dll https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/libssl-1_1-x64.dll
+        
+        # Download VC++ Redistributable
+        mkdir -p deps
+        curl -L -o deps/vc_redist.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
+        7z x deps/vc_redist.exe -o*
         # Copy Visual C++ Runtime DLLs
         cp "C:/Windows/System32/msvcp140.dll" build/bin/ || true
         cp "C:/Windows/System32/vcruntime140.dll" build/bin/ || true
