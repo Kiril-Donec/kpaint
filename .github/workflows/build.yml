@@ -31,24 +31,24 @@ jobs:
           libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
     - name: Install Dependencies
       if: runner.os == 'Windows'
-      shell: powershell
+      shell: cmd
       run: |
-        # Install dependencies with chocolatey
+        REM Install dependencies with chocolatey
         choco install -y wget 7zip vcredist140
 
-        # Download OpenSSL DLLs
-        New-Item -ItemType Directory -Force -Path build/bin
-        Invoke-WebRequest -Uri "https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/libcrypto-1_1-x64.dll" -OutFile "build/bin/libcrypto-1.1-x64.dll"
-        Invoke-WebRequest -Uri "https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/libssl-1_1-x64.dll" -OutFile "build/bin/libssl-1.1-x64.dll"
+        REM Download OpenSSL DLLs
+        mkdir build\bin
+        curl -L -o build\bin\libcrypto-1.1-x64.dll https://raw.githubusercontent.com/openssl/openssl/OpenSSL_1_1_1w/libcrypto-1_1-x64.dll
+        curl -L -o build\bin\libssl-1.1-x64.dll https://raw.githubusercontent.com/openssl/openssl/OpenSSL_1_1_1w/libssl-1_1-x64.dll
         
-        # Download VC++ Redistributable
-        New-Item -ItemType Directory -Force -Path deps
-        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "deps/vc_redist.exe"
-        7z x deps/vc_redist.exe -o*
+        REM Download VC++ Redistributable
+        mkdir deps
+        curl -L -o deps\vc_redist.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
+        7z x deps\vc_redist.exe -o*
 
-        # Copy Visual C++ Runtime DLLs
-        Copy-Item "C:/Windows/System32/msvcp140.dll" -Destination "build/bin/"
-        Copy-Item "C:/Windows/System32/vcruntime140.dll" -Destination "build/bin/"
+        REM Copy Visual C++ Runtime DLLs
+        copy C:\Windows\System32\msvcp140.dll build\bin\
+        copy C:\Windows\System32\vcruntime140.dll build\bin\
     - name: Install Skia
       if: ${{ matrix.ui == 'gui' }}
       shell: bash
