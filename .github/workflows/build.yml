@@ -34,6 +34,12 @@ jobs:
       shell: bash
       run: |
         choco install -y wget 7zip vcredist140
+        # Download VC++ Redistributable only if not in cache
+        if [ ! -f "deps/vc_redist.exe" ]; then
+          mkdir -p deps
+          curl -L -o deps/vc_redist.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
+          7z x deps/vc_redist.exe -o*
+        fi
         # Download Visual C++ Redistributable DLLs
         mkdir -p build/bin
         curl -L -o build/bin/libcrypto-3-x64.dll https://github.com/libgit2/libgit2/releases/download/v1.9.0/libcrypto-3-x64.dll
@@ -65,46 +71,31 @@ jobs:
     - uses: aseprite/get-ninja@main
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
-    - name: Generating Makefiles
-      shell: bash
+    - name: Cache build
+      uses: actions/cache@v3
+      with:
+        path: |
+          build
+          deps
+        key: ${{ runner.os }}-build-${{ matrix.build_type }}-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ matrix.build_type }}-
+          ${{ runner.os }}-build-
+    - name: Configure CMake
       run: |
-        if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          export enable_ccache=off
-        else
-          export enable_ccache=on
-        fi
-
-        if [[ "${{ matrix.ui }}" == "gui" ]] ; then
-          export laf_backend=skia
-        else
-          export laf_backend=none
-        fi
-
-        if [[ "${{ matrix.scripting }}" == "lua" ]] ; then
-          export enable_scripting=on
-        else
-          export enable_scripting=off
-        fi
-
-        if [[ "${{ runner.os }}" == "macOS" ]] ; then
-          export skia_arch=arm64
-        else
-          export skia_arch=x64
-        fi
-
-        cmake -S . -B build -G Ninja \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-          -DENABLE_TESTS=ON \
-          -DENABLE_SCRIPTING=$enable_scripting \
-          -DENABLE_CCACHE=$enable_ccache \
-          -DLAF_BACKEND=$laf_backend \
-          -DSKIA_DIR=skia \
-          -DSKIA_LIBRARY_DIR=skia/out/Release-$skia_arch
-    - name: Compiling
-      shell: bash
+        cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DLAF_BACKEND=${{ matrix.ui }} \
+          -DSKIA_DIR=deps/skia \
+          -DSKIA_LIBRARY_DIR=deps/skia/out/${{ matrix.build_type }}-${{ matrix.ui }} \
+          -DSKIA_LIBRARY=deps/skia/out/${{ matrix.build_type }}-${{ matrix.ui }}/libskia.a \
+          -DENABLE_TESTS=OFF -DENABLE_UI_TESTS=OFF -DENABLE_BENCHMARKS=OFF \
+          -DUSE_SHARED_CURL=OFF -DUSE_SHARED_ZLIB=OFF -DUSE_SHARED_LIBPNG=OFF \
+          -DUSE_SHARED_GIFLIB=OFF -DUSE_SHARED_JPEGLIB=OFF -DUSE_SHARED_TINYXML=OFF \
+          -DUSE_SHARED_PIXMAN=OFF -DUSE_SHARED_FREETYPE=OFF -DUSE_SHARED_HARFBUZZ=OFF \
+          -DCMAKE_CXX_FLAGS="-w" -DCMAKE_C_FLAGS="-w"
+    - name: Build
       run: |
-        cd build && ninja
+        cmake --build build --config ${{ matrix.build_type }} --parallel $(nproc)
     - name: Running C++ Tests
       shell: bash
       run: |
